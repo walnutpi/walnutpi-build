@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# toilet -f standard -F metal $(cat /proc/device-tree/model | sed 's/Walnut Pi/WPi/')
+toilet -f standard -F metal Walnut Pi
+
+KERNELID=$(uname -r)
+echo  -e "\e[0;91mLinux $KERNELID\x1B[0m\n "

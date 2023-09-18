@@ -1,0 +1,73 @@
+#!/bin/bash
+
+PATH_APP="/usr/share/applications"
+PATH_Locale="/home/pi/.local/share/applications"
+
+language="en"
+# language="zh_CN"
+
+run_as_client() {
+    output=$("$@" 2>&1)
+}
+_replace_name() {
+    local filename="$1"
+    local keyword="$2"
+    value=$(grep "^${keyword}\[${language}\]=" "${PATH_APP}/${filename}" | sed -r "s/^${keyword}\[${language}\]=//" | head -n 1)
+    if [ -z "$value" ]
+    then
+        value=$(grep "^${keyword}=" "${PATH_APP}/${filename}" | sed -r "s/^${keyword}=//" | head -n 1)
+    fi
+    
+    sed -i "s/^${keyword}=.*/${keyword}=$value/" "${PATH_Locale}/${filename}"
+}
+
+_run() {
+    for file in $PATH_Locale/*.desktop; do
+        filename=$(basename $file)
+        _replace_name $filename "Name"
+        _replace_name $filename "GenericName"
+        _replace_name $filename "Comment"
+        _replace_name $filename "Keywords"
+    done
+    
+}
+
+title_replay() {
+    conf_file='/home/pi/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml'
+    conf_file2='/root/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-panel.xml'
+    str=$1
+    sed -i "s#<property name=\"button-title\" type=\"string\" value=\"[^\"]*\"/>#<property name=\"button-title\" type=\"string\" value=\"$str\"/>#" $conf_file
+    sed -i "s#<property name=\"button-title\" type=\"string\" value=\"[^\"]*\"/>#<property name=\"button-title\" type=\"string\" value=\"$str\"/>#" $conf_file2
+}
+thonny_language() {
+    file="/home/pi/.config/Thonny/configuration.ini"
+    sed -i "s/^language.*/language = $1/" $file
+}
+
+cn() {
+    localectl set-locale LANG=zh_CN.UTF-8
+    language="zh_CN"
+    _run
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+    title_replay "开始  "
+    run_as_client thonny_language zh_CN
+    echo "重启后生效"
+}
+en() {
+    localectl set-locale LANG=C.UTF-8
+    language="en"
+    _run
+    if [[ $? -ne 0 ]]; then
+        exit 1
+    fi
+    title_replay "start  "
+    run_as_client thonny_language en_US
+
+    echo "Take effect after reboot"
+}
+
+
+FUNCTION_NAME=$1
+$FUNCTION_NAME 

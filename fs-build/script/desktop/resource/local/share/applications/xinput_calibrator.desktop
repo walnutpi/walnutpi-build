@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=Calibrate Touchscreen
+NoDisplay=true
+Comment=Run the calibration tool for touchscreens
+Icon=xinput_calibrator
+Exec=/bin/sh -c "xinput_calibrator; cat"
+Terminal=true
+Actions=
+Categories=Settings;System;
+StartupNotify=true

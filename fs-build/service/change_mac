@@ -1,0 +1,40 @@
+#!/bin/bash
+
+
+file_end1="/sys/class/net/end1/address"
+file_eth0="/sys/class/net/eth0/address"
+file_link="/etc/systemd/network/00-default.link"
+
+mac_range=$(cat /sys/class/addr_mgt/addr_eth)
+
+
+# 如果end1存在,则代表本配置未被运行过,则创建配置文件
+if [[ -f "$file_end1" ]]; then
+    mac_end1=$(cat $file_end1 )
+    cat << EOF > $file_link
+[Match]
+MACAddress=$mac_end1
+
+[Link]
+MACAddress=$mac_range
+EOF
+    echo "add new conf"
+    reboot
+fi
+
+# 如果第5行不相同,则是换卡到新板,则重新修改
+line_number=5
+file_content="MACAddress=$mac_range"
+if [[ -f "$file_eth0" ]]; then
+    line=$(sed "${line_number}q;d" "$file_link")
+    if [[ "$line" != "$file_content" ]]; then
+        sed -i "${line_number}s/.*/$file_content/" "$file_link"
+        reboot
+    fi
+
+fi
+
+
+# 
+
+

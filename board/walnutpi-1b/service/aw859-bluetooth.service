@@ -1,0 +1,17 @@
+[Unit]
+Description=aw859 setting
+After=basic.target
+
+
+[Service]
+RemainAfterExit=yes
+TimeoutStartSec=2min
+ExecStartPre=rfkill unblock all
+ExecStart= /usr/bin/hciattach  -n -s 1500000 /dev/ttyBT0 sprd  &
+
+
+
+[Install]
+WantedBy=basic.target
+
+

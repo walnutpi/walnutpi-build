@@ -1,0 +1,17 @@
+#!/bin/bash
+
+
+# 计算分区位置
+root_partition=$(findmnt -n -o SOURCE /)
+root_partition_last_digit=${root_partition: -1}
+disk_device=$(lsblk -no pkname $root_partition)
+disk_size=$(cat /sys/block/$disk_device/size)
+
+# 拓展分区
+sudo parted /dev/$disk_device resizepart ${root_partition_last_digit} 100%
+sudo resize2fs $root_partition
+
+
+
+systemctl disable firstboot
+

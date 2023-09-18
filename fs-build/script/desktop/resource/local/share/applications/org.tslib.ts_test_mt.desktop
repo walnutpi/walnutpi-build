@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=ts_test_mt
+NoDisplay=true
+Comment=Test your touchscreen tslib configuration
+Icon=applications-other
+TryExec=ts_test_mt
+Exec=ts_test_mt
+Actions=
+Categories=Utility;
+Keywords=touchscreen

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=Web Browser
+NoDisplay=true
+Comment=Browse the web
+Icon=org.xfce.webbrowser
+OnlyShowIn=XFCE;
+Exec=exo-open --launch WebBrowser %u
+Actions=
+Categories=Network;X-XFCE;X-Xfce-Toplevel;
+StartupNotify=true

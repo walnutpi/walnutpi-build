@@ -1,0 +1,18 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=New Drawing
+GenericName=Drawing Program
+Comment=Create and edit drawings, flow charts, and logos by using Draw.
+Icon=libreoffice-draw
+Exec=libreoffice --draw %U
+Actions=NewDocument;
+MimeType=application/vnd.oasis.opendocument.graphics;application/vnd.oasis.opendocument.graphics-flat-xml;application/vnd.oasis.opendocument.graphics-template;application/vnd.sun.xml.draw;application/vnd.sun.xml.draw.template;application/vnd.visio;application/x-wpg;application/vnd.corel-draw;application/vnd.ms-publisher;image/x-freehand;application/clarisworks;application/x-pagemaker;application/pdf;application/x-stardraw;image/x-emf;image/x-wmf;
+Categories=2DGraphics;FlowChart;Office;VectorGraphics;
+Keywords=Vector;Schema;Diagram;Layout;OpenDocument Graphics;Microsoft Publisher;Microsoft Visio;Corel Draw;cdr;odg;svg;pdf;vsd;
+StartupNotify=true
+StartupWMClass=libreoffice-draw
+
+[Desktop Action NewDocument]
+Name=New Drawing
+Exec=libreoffice --draw
