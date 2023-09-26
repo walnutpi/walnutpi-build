@@ -4,17 +4,21 @@ walnutpi-build
 - 需要在ubuntu22.04上运行
 - toolchain会在运行时从清华源下载
 - 各种软件也是当场apt安装最新版
-- 运行时要全程联网，确保能连接github
+- 运行时要从github下载东西，请确保科学上网，科学上网，科学上网
 
 
+0. 运行本脚本前先安装好两个软件
+```
+sudo apt install whiptail bc
+```
 
-
-1.clone
+1. clone
 ------
 ```
 git clone -b main --depth 1 https://github.com/walnutpi/walnutpi-build.git
 ```
-2.run
+
+2. run
 ------
 ```
 sudo ./build.sh

@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-run_as_client_try3() {
-    local max_attempts=3
+run_as_client_try_many () {
+    local max_attempts=5
     local attempt=0
     local success=0
 
@@ -15,26 +15,27 @@ run_as_client_try3() {
         fi
     done
 
-    if [[ $success -eq 0 ]]; then
-        echo "$output"
-    fi
+    echo "$output"
 }
 
 chmod 777 /opt
 
 cd /opt
 
-run_as_client_try3 git clone https://github.com/sc-bin/aw.gpio.git
-run_as_client_try3 git clone https://github.com/walnutpi/Adafruit_Blinka.git
-run_as_client_try3 git clone https://github.com/walnutpi/WiringPi.git
+echo "start to clone aw.gpio"
+run_as_client_try_many  git clone https://github.com/sc-bin/aw.gpio.git
+echo "start to clone blinka"
+run_as_client_try_many  git clone https://github.com/walnutpi/Adafruit_Blinka.git
+echo "start to clone WiringPi"
+run_as_client_try_many  git clone https://github.com/walnutpi/WiringPi.git
 
 
 echo "Adafruit_Blinka"
-pip3 install -e Adafruit_Blinka/
+run_as_client_try_many  pip3 install -e Adafruit_Blinka/
 echo "aw.gpio"
-pip3 install -e aw.gpio/
+run_as_client_try_many  pip3 install -e aw.gpio/
 echo "WiringPi"
 cd WiringPi/
-./build
+run_as_client_try_many  ./build
 
-
+echo "end"

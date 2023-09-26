@@ -13,6 +13,8 @@ bash-completion
 systemd-timesyncd
 parted
 wget
+curl
+fdisk
 
 fbterm
 locales 

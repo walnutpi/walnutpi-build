@@ -83,7 +83,11 @@ create_rootfs() {
         cp -r $PATH_SAVE_ROOTFS $PATH_ROOTFS 
     else
         run_as_client mkdir ${PATH_ROOTFS} -p
-        debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.huaweicloud.com/debian/    
+        debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/   
+        # debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/    
+        # debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.huaweicloud.com/debian/    
+        exit_if_last_error
+        
         qemu_arch=""
         case "${CHIP_ARCH}" in
             "arm64")
@@ -100,6 +104,8 @@ create_rootfs() {
         cd ${PATH_ROOTFS}
         mount_chroot $PATH_ROOTFS
         LC_ALL=C LANGUAGE=C LANG=C chroot ${PATH_ROOTFS} /debootstrap/debootstrap --second-stage –verbose
+        exit_if_last_error
+
         # cd ${PATH_ROOTFS}
         umount_chroot $PATH_ROOTFS
         cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS

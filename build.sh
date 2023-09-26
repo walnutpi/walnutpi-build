@@ -1,8 +1,5 @@
 #!/bin/bash
 
-
-
-
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 # PATH_RESOURCE="${PATH_PWD}/resource"
 PATH_SOURCE="${PATH_PWD}/source"
@@ -87,7 +84,7 @@ source $CONF_DIR/$(basename "$CONF_DIR").conf
 FILE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
 
 
-source "${PATH_PWD}"/scripts/common.sh
+
 source "${PATH_PWD}"/scripts/compile.sh
 source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
@@ -103,9 +100,12 @@ esac
 
 echo "apt install software"
 
-apt update
-apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools -y
+source "${PATH_PWD}"/scripts/common.sh
 
+apt update
+exit_if_last_error
+apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
+exit_if_last_error
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
     # echo "解压$FILE_CROSS_COMPILE"

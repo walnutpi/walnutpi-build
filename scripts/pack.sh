@@ -69,7 +69,7 @@ do_pack() {
 
     # echo "开始格式化"
     run_status "format part 1" mkfs.vfat $MAPPER_DEVICE1
-    run_status "format part 1" mkfs.ext4 $MAPPER_DEVICE2
+    run_status "format part 2" mkfs.ext4 $MAPPER_DEVICE2
 
 
     BOOT_UUID=$(blkid -s UUID -o value $MAPPER_DEVICE1)

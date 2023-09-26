@@ -1,0 +1,63 @@
+#!/bin/bash
+
+-h() {
+    echo -e "\n"
+    echo -e "set-vnc enable :"
+    echo -e "   enable the x11vnc service \n"
+    
+    echo -e "set-vnc disable :"
+    echo -e "   disable the x11vnc service \n"
+    
+    echo -e "set-vnc password [newpassword] :"
+    echo -e "   set the x11vnc connect password "
+    echo -e "   examples:  \n\tset-vnc password pi\n"
+    
+    echo -e "set-vnc port [newport] :"
+    echo -e "   set the x11vnc connect port"
+    echo -e "   examples:  \n\tset-vnc port 5900\n"
+    
+}
+enable() {
+    systemctl enable x11vnc.service
+    echo -e "\n\nplease reboot\n"
+}
+
+disable() {
+    systemctl disable x11vnc.service
+    echo -e "\n\nplease reboot\n"
+}
+password() {
+    if [ ! -z "$1" ]; then
+        x11vnc -storepasswd $1 /etc/x11vnc.pwd
+    else
+        echo "Command error!"
+    fi
+}
+port() {
+
+    if [[ $1 =~ ^[0-9]{1,5}$ ]]; then
+        sed -i -r "s/(-rfbport[[:space:]]{1,5})[0-9]{1,5}/\1$1/" /lib/systemd/system/x11vnc.service
+        echo "ok"
+    else
+        echo "Command error!"
+    fi
+    echo -e "\n\nplease reboot\n"
+    
+    
+
+}
+FUNCTION_NAME=$1
+VALUE=$2
+
+
+# 检查是否有同名的函数
+if declare -F "$FUNCTION_NAME" >/dev/null; then
+    $FUNCTION_NAME $VALUE
+else
+    -h
+fi
+
+# set-vnc enable
+# set-vnc disable
+# set-vnc password
+# set-vnc port

@@ -11,6 +11,7 @@ lightdm
 xserver-xorg-input-evdev
 xserver-xorg-input-synaptics
 xinput-calibrator
+x11vnc
 
 menulibre
 dmz-cursor-theme
@@ -22,6 +23,7 @@ thonny
 geany
 ristretto
 vlc
+galculator
 
 chromium 
 chromium-driver
