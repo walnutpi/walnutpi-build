@@ -111,6 +111,17 @@ create_rootfs() {
         cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS
     fi
 
+    # 创建release文件
+    relseas_file="${PATH_ROOTFS}/etc/WalnutPi-release"
+    touch $relseas_file
+    echo "version=$(cat $PATH_PWD/VERSION)" >> $relseas_file
+    echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
+    echo "kernel_git=$LINUX_GIT"  >> $relseas_file
+    echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
+    echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
+    echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
+
+    cat $relseas_file
 
     cd $PATH_ROOTFS
     # sudo tar czpvf - . | split -d -b 80M - ../bookworm_arm64.tar
@@ -119,6 +130,8 @@ create_rootfs() {
     # exit_if_last_error
 
     mount_chroot $PATH_ROOTFS
+
+
 
     # apt安装指定软件
     PATH_APT_CACHE="${PATH_TMP}/apt_cache_${OPT_OS_VER}_${CHIP_ARCH}"
