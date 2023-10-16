@@ -1,0 +1,41 @@
+待测试项目
+======
+- 本文件是否正确装入
+- 修改过显示的rootfs.sh是否正常跑完
+- 通过ip来切换构建镜像源的代码是否正常
+- 增加一个配置apt源的脚本
+- 如果不赋值display变量，能否在外部终端运行pyqt程序，显示到桌面
+- 更新set-lcd
+
+
+v1.2
+========
+both 
+------
+- modify use sudo no passwd necessary
+- add library `python3-pyqt5`
+- add library `python3-paho-mqtt`
+- add library `python3-pyautogui`
+
+desktop 
+------
+- add software `pyqt-tools`
+
+
+V1.1
+========
+both 
+------
+- add library `python3-numpy`
+
+desktop 
+------
+- add software `vnc server`
+- add commond `set-vnc`
+- add software `galculator`
+
+
+
+V1.0
+========
+first release

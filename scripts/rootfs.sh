@@ -83,8 +83,13 @@ create_rootfs() {
         cp -r $PATH_SAVE_ROOTFS $PATH_ROOTFS
     else
         run_as_client mkdir ${PATH_ROOTFS} -p
-        debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-        # debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+        if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
+            debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+        else
+            debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+            
+        fi
+        
         # debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.huaweicloud.com/debian/
         exit_if_last_error
         
@@ -122,7 +127,9 @@ create_rootfs() {
     echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
     echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
     echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
-
+    echo -e "\n\n[update-info]"   >> $relseas_file
+    echo "$(cat $PATH_PWD/update-info)" >> $relseas_file
+    
     cat $relseas_file
     
     cd $PATH_ROOTFS
@@ -267,6 +274,8 @@ create_rootfs() {
         
     done
     
+    
+
     # 配置中文
     # if [ "$OPT_LANGUAGE" = "cn" ]; then
     #     echo "设置语言为中文"
