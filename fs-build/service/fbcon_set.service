@@ -1,0 +1,12 @@
+[Unit]
+Description=Expand partition size
+After=sysinit.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/walnutpi/fbcon_set
+RemainAfterExit=yes
+StandardOutput=null
+
+[Install]
+WantedBy=multi-user.target

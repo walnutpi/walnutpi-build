@@ -5,6 +5,11 @@ fdtfile=sun50i-h616-walnutpi-1b
 ## 'display' for screen, 'serial' for uart0
 console=display
 
+
+## you can disable the console with screen
+fbcon=enable
+#fbcon=disable
+
 ## loglevel
 printk_level=3
 
