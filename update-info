@@ -1,13 +1,10 @@
-待测试项目
-======
-- 测试是否开机就配置好lcd
-
 
 v1.2
 ========
 both 
 ------
 - modify use sudo no passwd necessary
+- default enable `lcd35`
 - add library `python3-pyqt5`
 - add library `python3-paho-mqtt`
 - add library `python3-pyautogui`
@@ -28,7 +25,6 @@ desktop
 - add software `vnc server`
 - add commond `set-vnc`
 - add software `galculator`
-
 
 
 V1.0

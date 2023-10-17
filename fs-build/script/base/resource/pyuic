@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# python3 -m PyQt5.uic.pyuic window.ui -o window.py
+
+file_uic=$1
+
+if [[ -f $file_uic ]]; then
+    if [[ ${file_uic: -3} == ".ui" ]]; then
+        file_py="${file_uic%.ui}.py"
+        python3 -m PyQt5.uic.pyuic $file_uic -o $file_py
+        exit
+    fi
+    
+fi
+echo -e "please use:\n\n\tpyuic xxx.ui\n"
+
+# /mnt/walnutpi-build/fs-build/script/base/resource/pyuic
