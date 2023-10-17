@@ -1,5 +1,5 @@
 [Unit]
-Description=Expand partition size
+Description=modify the eth0 mac
 After=sysinit.target
 
 [Service]
