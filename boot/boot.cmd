@@ -20,10 +20,14 @@ if test -e ${devtype} ${devnum} ${prefix}config.txt; then
 	load ${devtype} ${devnum} ${load_addr} ${prefix}config.txt
 	env import -t ${load_addr} ${filesize}
 fi
+if test "${console_display}" = "enable"; then setenv consoleargs_diplay "console=tty0"; fi
 
-if test "${console}" = "display"; then setenv consoleargs "console=ttyS0,115200 console=tty0 console=tty1 "; fi
-if test "${console}" = "serial"; then setenv consoleargs "console=ttyS0,115200"; fi
-if test "${console}" = "null"; then setenv consoleargs "console=/dev/null"; fi
+if test "${console_uart}" = "uart0"; then setenv consoleargs "console=ttyS0,115200"; fi
+if test "${console_uart}" = "uart1"; then setenv consoleargs "console=ttyS1,115200"; fi
+if test "${console_uart}" = "uart2"; then setenv consoleargs "console=ttyS2,115200"; fi
+if test "${console_uart}" = "uart3"; then setenv consoleargs "console=ttyS3,115200"; fi
+if test "${console_uart}" = "uart4"; then setenv consoleargs "console=ttyS4,115200"; fi
+if test "${console_uart}" = "null"; then setenv consoleargs "console=/dev/null"; fi
 
 if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=bootsplash.armbian ${consoleargs}"; fi
 
@@ -31,7 +35,7 @@ if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=boo
 # mmc 0 is always mapped to device u-boot (2016.09+) was loaded from
 if test "${devtype}" = "mmc"; then part uuid mmc 0:1 partuuid; fi
 
-setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} ${consoleargs}, consoleblank=0 loglevel=${printk_level} ubootpart=${partuuid} usb-storage.quirks=${usbstoragequirks} ${extraargs} ${extraboardargs}"
+setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} ${consoleargs} ${consoleargs_diplay}, consoleblank=0 loglevel=${printk_level} ubootpart=${partuuid} usb-storage.quirks=${usbstoragequirks} ${extraargs} ${extraboardargs}"
 
 if test "${docker_optimizations}" = "on"; then setenv bootargs "${bootargs} cgroup_enable=memory swapaccount=1"; fi
 
