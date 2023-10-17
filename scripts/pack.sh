@@ -102,6 +102,29 @@ do_pack() {
     echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
+    mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
+    cp -r $PATH_S_FS_PACK/* $MOUNT_DISK2/opt
+    ls $MOUNT_DISK2/opt
+
+ 
+    declare -a files_array
+    for file in ${MOUNT_DISK2}/opt/*.sh; do
+        files_array+=("${file}")
+    done
+    echo "files_array=$files_array"
+
+    for (( i=0; i<${#files_array[@]}; i++ )); do
+        file=${files_array[$i]}
+        chmod +x $file
+        file_name=$(basename -- "${file}")
+        # echo "running script [$((i+1))/${#files_array[@]}] $file_name"
+        run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $MOUNT_DISK2 /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
+        rm $file
+    done
+
+
+    umount $MOUNT_DISK2/boot
+
     umount $MOUNT_DISK1
     umount $MOUNT_DISK2
     kpartx -dv $LOOP_DEVICE
@@ -110,3 +133,4 @@ do_pack() {
     echo -e "\noutputfile:\n\n\t\033[32m${IMG_FILE}\033[0m\n\n"
 
 }
+

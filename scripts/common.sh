@@ -69,3 +69,24 @@ run_as_client_try3() {
 
 
 
+
+mount_chroot()
+{
+    local target=$1
+    mount -t proc chproc "${target}"/proc
+    mount -t sysfs chsys "${target}"/sys
+    mount -t devtmpfs chdev "${target}"/dev || mount --bind /dev "${target}"/dev
+    mount -t devpts chpts "${target}"/dev/pts
+}
+
+umount_chroot()
+{
+    local target=$1
+    while grep -Eq "${target}.*(dev|proc|sys)" /proc/mounts
+    do
+        umount -l --recursive "${target}"/dev >/dev/null 2>&1
+        umount -l "${target}"/proc >/dev/null 2>&1
+        umount -l "${target}"/sys >/dev/null 2>&1
+        sleep 5
+    done
+}

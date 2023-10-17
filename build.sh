@@ -14,6 +14,7 @@ PATH_S_FS_BASE="${PATH_FS_BUILD}/script/base"
 PATH_S_FS_BASE_RESOURCE="${PATH_S_FS_BASE}/resource"
 PATH_S_FS_DESK="${PATH_FS_BUILD}/script/desktop"
 PATH_S_FS_DESK_RESOURCE="${PATH_S_FS_DESK}/resource"
+PATH_S_FS_PACK="${PATH_FS_BUILD}/pack-script"
 
 FILE_PIP_LIST="${PATH_FS_BUILD}/pip-list"
 FILE_APT_BASE="${PATH_FS_BUILD}/apt-list/base"
@@ -25,7 +26,7 @@ CONF_DIR=""
 PATH_S_FS_USER="${CONF_DIR}/script"
 PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
 
-
+START_DATE=$(date)
 
 if [ ! -d $PATH_SOURCE ]; then
     mkdir $PATH_SOURCE
@@ -98,7 +99,6 @@ case "$BUILD_OPT" in
 
 esac
 
-echo "apt install software"
 
 source "${PATH_PWD}"/scripts/common.sh
 
@@ -134,3 +134,5 @@ case "$BUILD_OPT" in
         do_pack
         
 esac
+echo -e "开始时间\t$START_DATE"
+echo -e "结束时间\t$(date)"
