@@ -20,19 +20,39 @@ run_as_client() {
     $@ > /dev/null 2>&1
 }
 
+# run_status() {
+#     echo -e  -n "...\t$1"
+#     shift
+#     output=$("$@" 2>&1)
+#     exit_status=$?
+#     if [ $exit_status -ne 0 ]; then
+#         echo -e "\r\033[31m[error]\033[0m"
+#         echo -e $output
+#         exit 1
+#     else
+#         echo -e "\r\033[32m[ok]\033[0m"
+#     fi
+# }
 run_status() {
-    echo -e  -n "...\t$1"
+    local message=$1
     shift
-    output=$("$@" 2>&1)
-    exit_status=$?
-    if [ $exit_status -ne 0 ]; then
-        echo -e "\r\033[31m[error]\033[0m"
-        echo -e $output
-        exit 1
-    else
-        echo -e "\r\033[32m[ok]\033[0m"
-    fi
+    set +e
+    while true; do
+        echo -e  -n "...\t$message"
+        output=$("$@" 2>&1)
+        exit_status=$?
+        if [ $exit_status -ne 0 ]; then
+            echo -e "\r\033[31m[error]\033[0m"
+            echo -e $output
+            sleep 1
+        else
+            echo -e "\r\033[32m[ok]\033[0m"
+            break
+        fi
+    done
+    set -e
 }
+
 run_status_piped() {
     echo -e  -n "...\t$1"
     shift
@@ -66,6 +86,11 @@ run_as_client_try3() {
     fi
 }
 
+_try_command() {
+    set +e
+    "$@" >/dev/null 2>&1
+    set -e
+}
 
 
 

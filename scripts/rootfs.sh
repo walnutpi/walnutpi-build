@@ -9,7 +9,6 @@ FILE_ROOTFS_TAR=""
 
 
 choose_rootfs() {
-    
     # titlestr="Choose an version"
     # options+=("bookworm"    "debian 12(bookworm)")
     # options+=("bullseye"    "debian 11(bullseye)")
@@ -52,7 +51,7 @@ choose_rootfs() {
 }
 
 create_rootfs() {
-    
+    set -e
     run_as_client umount_chroot $PATH_ROOTFS
     rm -r ${PATH_ROOTFS}
     
@@ -194,7 +193,7 @@ create_rootfs() {
         file_name=$(basename -- "${file}")
         # echo "running script [$((i+1))/${#files_array[@]}] $file_name"
         run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
-        rm $file
+        _try_command rm $file
     done
     # for file in $(find ${PATH_ROOTFS}/opt -type f -name "*.sh" | sort); do
     #     chmod +x $file
@@ -205,12 +204,13 @@ create_rootfs() {
     #     rm $file
     # done
     
-    
     # firmware
     cd ${PATH_SOURCE}
     firm_dir=$(basename "${FIRMWARE_GIT}" .git)
     if [ -n "${FIRMWARE_GIT}" ]; then
-        run_as_client git clone "${FIRMWARE_GIT}"
+        if [[ ! -d "firmware" ]]; then
+            run_status "download firmware" git clone "${FIRMWARE_GIT}"
+        fi
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
     
@@ -255,7 +255,7 @@ create_rootfs() {
     done
     
     
-
+    
     # 配置中文
     # if [ "$OPT_LANGUAGE" = "cn" ]; then
     #     echo "设置语言为中文"
