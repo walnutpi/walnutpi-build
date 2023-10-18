@@ -20,7 +20,7 @@ if test -e ${devtype} ${devnum} ${prefix}config.txt; then
 	load ${devtype} ${devnum} ${load_addr} ${prefix}config.txt
 	env import -t ${load_addr} ${filesize}
 fi
-if test "${console_display}" = "enable"; then setenv consoleargs_diplay "console=tty0"; fi
+if test "${display_bootinfo}" = "enable"; then setenv consoleargs_diplay "console=tty0"; fi
 
 if test "${console_uart}" = "uart0"; then setenv consoleargs "console=ttyS0,115200"; fi
 if test "${console_uart}" = "uart1"; then setenv consoleargs "console=ttyS1,115200"; fi

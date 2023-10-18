@@ -2,13 +2,13 @@ bootlogo=false
 overlay_prefix=sun50i-h616
 fdtfile=sun50i-h616-walnutpi-1b
 
-
+##  enable the console with screen
 console_display=enable
-console_uart=uart2
+console_uart=uart0
 
+## show the bootinfo to the screen
+display_bootinfo=enable
 
-##  disable the console with screen
-#fbcon=disable
 
 ## loglevel
 printk_level=3

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if grep -q "^fbcon=disable" /boot/config.txt; then
+if ! grep -q "^console_display=enable" /boot/config.txt; then
     systemctl stop getty@tty1.service
     echo 0 > /sys/class/graphics/fbcon/cursor_blink
 fi
