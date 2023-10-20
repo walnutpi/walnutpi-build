@@ -2,3 +2,4 @@ jedi
 numpy
 pyautogui
 paho-mqtt
+pyinstaller

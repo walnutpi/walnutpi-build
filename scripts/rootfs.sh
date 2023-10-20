@@ -168,7 +168,58 @@ create_rootfs() {
         run_status "pip3 [$((i+1))/${total}] : $package" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 install --no-cache-dir  ${package}"
     done
     
+  
+    # firmware
+    cd ${PATH_SOURCE}
+    firm_dir=$(basename "${FIRMWARE_GIT}" .git)
+    if [ -n "${FIRMWARE_GIT}" ]; then
+        if [[ ! -d "firmware" ]]; then
+            run_status "download firmware" git clone "${FIRMWARE_GIT}"
+        fi
+        cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
+    fi
     
+    
+    # 驱动
+    if [ -d "${PATH_OUTPUT}" ]; then
+        cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
+    fi
+    
+    
+    # modules
+    MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
+    echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
+    
+    
+    
+    SYSTEMD_DIR="${PATH_ROOTFS}/lib/systemd/system/"
+    WALNUTPI_DIR="${PATH_ROOTFS}/usr/lib/walnutpi/"
+    mkdir -p "$WALNUTPI_DIR"
+    
+    echo "service"
+    
+    # 启用通用service
+    for file in "$PATH_SERVICE"/*; do
+        # echo $file
+        if [[ $file == *.service ]]; then
+            cp $file $SYSTEMD_DIR
+            run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
+        else
+            cp "$file" "$WALNUTPI_DIR"
+            chmod +x "${WALNUTPI_DIR}/$(basename $file)"
+        fi
+    done
+    
+    
+    # 启用board自带service
+    for file in ${CONF_DIR}/service/*.service; do
+        echo $file
+        cp $file $SYSTEMD_DIR
+        run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
+        
+    done
+    
+      
     
     # 复制脚本进rootfs内执行
     shopt -s dotglob
@@ -195,66 +246,7 @@ create_rootfs() {
         run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
         _try_command rm $file
     done
-    # for file in $(find ${PATH_ROOTFS}/opt -type f -name "*.sh" | sort); do
-    #     chmod +x $file
-    #     file_name=$(basename "$file")
-    #     # echo $file_name
-    #     # chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
-    #     run_status "running script \t${file_name}" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
-    #     rm $file
-    # done
-    
-    # firmware
-    cd ${PATH_SOURCE}
-    firm_dir=$(basename "${FIRMWARE_GIT}" .git)
-    if [ -n "${FIRMWARE_GIT}" ]; then
-        if [[ ! -d "firmware" ]]; then
-            run_status "download firmware" git clone "${FIRMWARE_GIT}"
-        fi
-        cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
-    fi
-    
-    
-    # 驱动
-    if [ -d "${PATH_OUTPUT}" ]; then
-        cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
-    fi
-    
-    
-    # modules
-    MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
-    echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
-    
-    
-    
-    SYSTEMD_DIR="${PATH_ROOTFS}/lib/systemd/system/"
-    WALNUTPI_DIR="${PATH_ROOTFS}/usr/lib/walnutpi"
-    mkdir -p "$WALNUTPI_DIR"
-    
-    echo "service"
-    
-    # 启用通用service
-    for file in "$PATH_SERVICE"/*; do
-        # echo $file
-        if [[ $file == *.service ]]; then
-            cp $file $SYSTEMD_DIR
-            run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
-        else
-            cp "$file" "$WALNUTPI_DIR"
-            chmod +x "${WALNUTPI_DIR}/$(basename $file)"
-        fi
-    done
-    
-    
-    # 启用board自带service
-    for file in ${CONF_DIR}/service/*.service; do
-        echo $file
-        cp $file $SYSTEMD_DIR
-        run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
-        
-    done
-    
-    
+
     
     # 配置中文
     # if [ "$OPT_LANGUAGE" = "cn" ]; then

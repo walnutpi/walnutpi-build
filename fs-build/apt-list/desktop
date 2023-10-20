@@ -1,5 +1,4 @@
 
-dbus-x11
 xfce4
 xfce4-notifyd
 xfce4-screenshooter
@@ -7,10 +6,6 @@ xfce4-terminal
 xfce4-power-manager
 xfce4-pulseaudio-plugin
 xfce4-taskmanager
-lightdm
-xserver-xorg-input-evdev
-xserver-xorg-input-synaptics
-xinput-calibrator
 x11vnc
 
 menulibre

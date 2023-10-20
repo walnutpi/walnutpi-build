@@ -44,7 +44,7 @@ run_status() {
         if [ $exit_status -ne 0 ]; then
             echo -e "\r\033[31m[error]\033[0m"
             echo -e $output
-            sleep 1
+            sleep 3
         else
             echo -e "\r\033[32m[ok]\033[0m"
             break

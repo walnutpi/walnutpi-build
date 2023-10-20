@@ -15,6 +15,7 @@ parted
 wget
 curl
 fdisk
+tree
 
 fbterm
 locales 
@@ -40,3 +41,11 @@ alsa-utils
 u-boot-tools
 initramfs-tools
 device-tree-compiler
+
+dbus-x11
+xorg
+xserver-xorg-input-evdev
+xinput-calibrator
+xserver-xorg-input-synaptics
+xfwm4  
+lightdm
