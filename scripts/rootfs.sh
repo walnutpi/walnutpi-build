@@ -106,8 +106,8 @@ create_rootfs() {
     echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
     echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
     echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
-    echo -e "\n\n[update-info]"   >> $relseas_file
-    echo "$(cat $PATH_PWD/update-info)" >> $relseas_file
+    # echo -e "\n\n[update-info]"   >> $relseas_file
+    # echo "$(cat $PATH_PWD/update-info)" >> $relseas_file
     
     cat $relseas_file
     

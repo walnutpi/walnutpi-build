@@ -1,32 +1,18 @@
-
-v1.2
-========
-both 
-------
+# v1.2
+## Core update
 - modify use sudo no passwd necessary
-- default enable `lcd35`
-- add library `python3-pyqt5`
-- add library `python3-paho-mqtt`
-- add library `python3-pyautogui`
-
-desktop 
-------
-- add software `pyqt-tools`
+- config.txt add env `console_uart` `console_display` `display_bootinfo`
+- add `python3-pyqt5` and settings
+- desktop system add software `qt-designed`
+- server system add a xorg console
 
 
-V1.1
-========
-both 
-------
-- add library `python3-numpy`
 
-desktop 
-------
-- add software `vnc server`
-- add commond `set-vnc`
-- add software `galculator`
+# V1.1
+## Core update
+- command `set-vnc`: setting the vnc server
 
 
-V1.0
-========
+
+# V1.0
 first release
