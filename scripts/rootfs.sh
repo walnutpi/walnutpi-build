@@ -119,6 +119,15 @@ create_rootfs() {
     
     mount_chroot $PATH_ROOTFS
     
+    # clone 相关项目
+    mapfile -t git_links < <(grep -vE '^#|^$' "$FILE_GIT_LIST")
+    total=${#git_links[@]}
+    for i in "${!git_links[@]}"; do
+        link="${git_links[$i]}"
+        project_name=$(basename "$link" .git)
+        run_status "clone/pull [$((i+1))/${total}] : $project_name "  clone_url $PATH_SOURCE $link
+        cp -r ${PATH_SOURCE}/${project_name} ${PATH_ROOTFS}/opt
+    done
     
     
     # apt安装指定软件
@@ -129,16 +138,6 @@ create_rootfs() {
     run_as_client cp -r ${PATH_APT_CACHE}/* ${PATH_ROOTFS}/var/cache/apt/archives/
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
-    # while read -r package; do
-    #     if [[ ${package} == \#* ]] || [[ -z ${package} ]]; then
-    #         continue
-    #     fi
-    #     run_status "install ${package}" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y  ${package}"
-    # done < ${FILE_APT_BASE}
-    
-    
-    
-    # apt安装
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE})
     if [[ ${OPT_ROOTFS_TYPE} == "desktop" ]]; then
         mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP})
@@ -155,6 +154,7 @@ create_rootfs() {
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     
+    
     # pip 安装指定软件
     # 删除一个用于禁止pip安装的文件 如在debian12中是/usr/lib/python3.11/EXTERNALLY-MANAGED
     LIB_DIR="${PATH_ROOTFS}/usr/lib"
@@ -168,7 +168,7 @@ create_rootfs() {
         run_status "pip3 [$((i+1))/${total}] : $package" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 install --no-cache-dir  ${package}"
     done
     
-  
+    
     # firmware
     cd ${PATH_SOURCE}
     firm_dir=$(basename "${FIRMWARE_GIT}" .git)
@@ -219,7 +219,7 @@ create_rootfs() {
         
     done
     
-      
+    
     
     # 复制脚本进rootfs内执行
     shopt -s dotglob
@@ -246,7 +246,7 @@ create_rootfs() {
         run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
         _try_command rm $file
     done
-
+    
     
     # 配置中文
     # if [ "$OPT_LANGUAGE" = "cn" ]; then

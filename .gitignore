@@ -35,3 +35,5 @@ source/
 walnut1b.img
 toolchain/
 boot/boot.scr
+*.log
+debug/
