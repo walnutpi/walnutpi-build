@@ -15,7 +15,7 @@
 *.tar.gz
 *.o.cmd
 *.gz.cmd
-*.deb
+
 
 .config
 .config.old

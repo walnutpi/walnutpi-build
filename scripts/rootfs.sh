@@ -154,6 +154,25 @@ create_rootfs() {
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     
+    # 安装deb包
+    find $PATH_FS_DEB_BASE -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    if [ "$OPT_ROOTFS_TYPE" = "desktop" ]; then
+        find $PATH_FS_DEB_DESK -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    fi
+    
+    declare -a debs_array
+    for file in ${PATH_ROOTFS}/opt/*.deb; do
+        debs_array+=("${file}")
+    done
+    for (( i=0; i<${#debs_array[@]}; i++ )); do
+        file=${debs_array[$i]}
+        chmod +x $file
+        file_name=$(basename -- "${file}")
+        # echo "running script [$((i+1))/${#debs_array[@]}] $file_name"
+        run_status "debs [$((i+1))/${#debs_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ &&  dpkg -i ${file_name}"
+        _try_command rm $file
+    done
+    
     
     # pip 安装指定软件
     # 删除一个用于禁止pip安装的文件 如在debian12中是/usr/lib/python3.11/EXTERNALLY-MANAGED
@@ -259,14 +278,14 @@ create_rootfs() {
     #     # chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  localectl set-locale LANG=zh_CN.UTF-8"
     # fi
     
-    echo "create tar"
+    # echo "create tar"
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
     if [ -f "$FILE_ROOTFS_TAR" ]; then
         rm $FILE_ROOTFS_TAR
     fi
     
-    run_client_when_successfuly tar -czf $FILE_ROOTFS_TAR ./
+    run_status "create tar"  tar -czf $FILE_ROOTFS_TAR ./
     # rm -r $PATH_ROOTFS
     
 }

@@ -21,6 +21,9 @@ PATH_S_FS_BASE_RESOURCE="${PATH_S_FS_BASE}/resource"
 PATH_S_FS_DESK="${PATH_FS_BUILD}/script/desktop"
 PATH_S_FS_DESK_RESOURCE="${PATH_S_FS_DESK}/resource"
 PATH_S_FS_PACK="${PATH_FS_BUILD}/pack-script"
+PATH_FS_DEB_BASE="${PATH_FS_BUILD}/deb/base"
+PATH_FS_DEB_DESK="${PATH_FS_BUILD}/deb/desktop"
+
 
 FILE_GIT_LIST="${PATH_FS_BUILD}/git-list"
 FILE_PIP_LIST="${PATH_FS_BUILD}/pip-list"

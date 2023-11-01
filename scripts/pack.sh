@@ -39,7 +39,7 @@ do_pack() {
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
     fi
-    echo "开始打包"
+    # echo "开始打包"
     check_resource
     
     ROOTFS_SIZE=$(du -sm $PATH_ROOTFS | cut -f1)
@@ -81,15 +81,15 @@ do_pack() {
     
     
     # echo "装载文件到img"
-    run_status "uboot" dd if=$FILE_UBOOT of=$IMG_FILE bs=1K seek=8 conv=notrunc
+    run_status "add uboot" dd if=$FILE_UBOOT of=$IMG_FILE bs=1K seek=8 conv=notrunc
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK1
     mount $MAPPER_DEVICE2 $MOUNT_DISK2
     
     
     # echo "output之前生成的文件"
-    run_status "kernel" cp $FILE_IMAGE $MOUNT_DISK1
-    run_status "rootfs" tar xf $FILE_ROOTFS -C $MOUNT_DISK2
+    run_status "add kernel" cp $FILE_IMAGE $MOUNT_DISK1
+    run_status "add rootfs" tar xf $FILE_ROOTFS -C $MOUNT_DISK2
     
     run_status "boot.scr" mkimage -C none -A arm -T script -d ${PATH_BOOTFILE}/boot.cmd ${PATH_BOOTFILE}/boot.scr
     cp ${PATH_BOOTFILE}/boot.cmd $MOUNT_DISK1
@@ -106,14 +106,12 @@ do_pack() {
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
     cp -r $PATH_S_FS_PACK/* $MOUNT_DISK2/opt
-    ls $MOUNT_DISK2/opt
     
     
     declare -a files_array
     for file in ${MOUNT_DISK2}/opt/*.sh; do
         files_array+=("${file}")
     done
-    echo "files_array=$files_array"
     
     for (( i=0; i<${#files_array[@]}; i++ )); do
         file=${files_array[$i]}
