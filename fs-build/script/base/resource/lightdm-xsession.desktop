@@ -1,7 +1,0 @@
-[Desktop Entry]
-Version=1.0
-Name= Xsession
-Exec=bash /etc/xsession
-Icon=
-Type=Application
-

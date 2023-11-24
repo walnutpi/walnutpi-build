@@ -11,24 +11,27 @@ PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
+PATH_LOG="${PATH_PWD}/log"
 PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
 
 PATH_BOOTFILE="${PATH_PWD}/boot"
 
 PATH_FS_BUILD="${PATH_PWD}/fs-build"
-PATH_S_FS_BASE="${PATH_FS_BUILD}/script/base"
-PATH_S_FS_BASE_RESOURCE="${PATH_S_FS_BASE}/resource"
-PATH_S_FS_DESK="${PATH_FS_BUILD}/script/desktop"
-PATH_S_FS_DESK_RESOURCE="${PATH_S_FS_DESK}/resource"
-PATH_S_FS_PACK="${PATH_FS_BUILD}/pack-script"
-PATH_FS_DEB_BASE="${PATH_FS_BUILD}/deb/base"
-PATH_FS_DEB_DESK="${PATH_FS_BUILD}/deb/desktop"
+# PATH_S_FS_BASE="${PATH_FS_BUILD}/script/base"
+# PATH_S_FS_BASE_RESOURCE="${PATH_S_FS_BASE}/resource"
+# PATH_S_FS_DESK="${PATH_FS_BUILD}/script/desktop"
+# PATH_S_FS_DESK_RESOURCE="${PATH_S_FS_DESK}/resource"
+# PATH_S_FS_PACK="${PATH_FS_BUILD}/pack-script"
+# PATH_FS_DEB_BASE="${PATH_FS_BUILD}/deb/base"
+# PATH_FS_DEB_DESK="${PATH_FS_BUILD}/deb/desktop"
 
 
-FILE_GIT_LIST="${PATH_FS_BUILD}/git-list"
+# FILE_GIT_LIST="${PATH_FS_BUILD}/git-list"
 FILE_PIP_LIST="${PATH_FS_BUILD}/pip-list"
 FILE_APT_BASE="${PATH_FS_BUILD}/apt-list/base"
 FILE_APT_DESKTOP="${PATH_FS_BUILD}/apt-list/desktop"
+FILE_APT_BASE_BOARD=""
+FILE_APT_DESKTOP_BOARD=""
 
 PATH_DEBUG="${PATH_PWD}/debug"
 if [ $DEBUG -eq 1 ]; then
@@ -41,19 +44,25 @@ fi
 PATH_SERVICE="${PATH_FS_BUILD}/service"
 
 CONF_DIR=""
-PATH_S_FS_USER="${CONF_DIR}/script"
-PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
+# PATH_S_FS_USER=""
+# PATH_S_FS_USER_RESOURCE=""
 
 START_DATE=$(date)
 
 if [ ! -d $PATH_DEBUG ]; then
     mkdir $PATH_DEBUG
 fi
+if [ ! -d $PATH_SOURCE ]; then
+    mkdir $PATH_SOURCE
+fi
 if [ ! -d $PATH_OUTPUT ]; then
     mkdir $PATH_OUTPUT
 fi
-if [ ! -d $PATH_TOOLCHAIN ]; then
-    mkdir $PATH_TOOLCHAIN
+if [ ! -d $PATH_TMP ]; then
+    mkdir $PATH_TMP
+fi
+if [ ! -d $PATH_LOG ]; then
+    mkdir $PATH_LOG
 fi
 
 if [ ! -d $PATH_TOOLCHAIN ]; then
@@ -94,14 +103,16 @@ titlestr="Choose Board"
 CONF_DIR=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
-3>&1 1>&2 2>&3)
+    3>&1 1>&2 2>&3)
 unset options
 echo $CONF_DIR
 [[ -z $CONF_DIR ]] && exit
 
-PATH_S_FS_USER="${CONF_DIR}/script"
-PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
+# PATH_S_FS_USER="${CONF_DIR}/script"
+# PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
 
+FILE_APT_BASE_BOARD="${CONF_DIR}/apt-list/base"
+FILE_APT_DESKTOP_BOARD="${CONF_DIR}/apt-list/desktop"
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
@@ -139,7 +150,6 @@ case "$BUILD_OPT" in
 esac
 
 
-
 if [ $DEBUG -eq 0 ]; then
     apt update
     exit_if_last_error
@@ -148,9 +158,6 @@ if [ $DEBUG -eq 0 ]; then
 fi
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
-    # echo "解压$FILE_CROSS_COMPILE"
-    # sudo tar czpvf - gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu/ | split -d -b 80M - gcc-arm-9.2-2019.12-x86_64-aarch64-none-linux-gnu.tar
-    # run_status "unzip toolchain" cat ${PATH_RESOURCE}/${TOOLCHAIN_FILE_NAME}.tar* | tar xzpvf - -C $PATH_TOOLCHAIN
     wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
     run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
     
@@ -159,7 +166,7 @@ fi
 
 
 exec 3>&1 4>&2
-exec > >(tee -a ${PATH_PWD}/$(date +%m-%d_%H:%M).log) 2>&1
+exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
 case "$BUILD_OPT" in
     "u-boot")
         compile_uboot
@@ -172,8 +179,8 @@ case "$BUILD_OPT" in
         create_rootfs
     ;;
     "image")
-        compile_uboot
-        compile_kernel
+        # compile_uboot
+        # compile_kernel
         create_rootfs
         do_pack
     ;;
@@ -182,8 +189,8 @@ esac
 exec 1>&3 2>&4
 exec 3>&- 4>&-
 
-cd $PATH_PWD
-sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_PWD}/*.log
+cd $PATH_LOG
+sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_LOG}/*.log
 
 
 echo -e "开始时间\t${START_DATE}"

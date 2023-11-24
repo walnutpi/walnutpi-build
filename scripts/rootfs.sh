@@ -2,13 +2,13 @@
 
 OPT_OS_VER=""
 OPT_ROOTFS_TYPE=""
-# OPT_LANGUAGE=""
 PATH_ROOTFS=""
 FILE_ROOTFS_TAR=""
 
 
 
 choose_rootfs() {
+    # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
     # titlestr="Choose an version"
     # options+=("bookworm"    "debian 12(bookworm)")
     # options+=("bullseye"    "debian 11(bullseye)")
@@ -20,6 +20,7 @@ choose_rootfs() {
     # unset options
     # echo ${OPT_OS_VER}
     # [[ -z ${OPT_OS_VER} ]] && exit
+    
     
     OPT_OS_VER="bookworm"
     
@@ -69,7 +70,6 @@ create_rootfs() {
             
         fi
         
-        # debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.huaweicloud.com/debian/
         exit_if_last_error
         
         qemu_arch=""
@@ -112,25 +112,22 @@ create_rootfs() {
     cat $relseas_file
     
     cd $PATH_ROOTFS
-    # sudo tar czpvf - . | split -d -b 80M - ../bookworm_arm64.tar
-    # run_status_piped "unzip rootfs" "cat ${PATH_RESOURCE}/${OPT_OS_VER}_${CHIP_ARCH}.tar* | tar xzpvf - -C ${PATH_ROOTFS}"
-    
-    # exit_if_last_error
-    
     mount_chroot $PATH_ROOTFS
     
-    # clone 相关项目
-    mapfile -t git_links < <(grep -vE '^#|^$' "$FILE_GIT_LIST")
-    total=${#git_links[@]}
-    for i in "${!git_links[@]}"; do
-        link="${git_links[$i]}"
-        project_name=$(basename "$link" .git)
-        run_status "clone/pull [$((i+1))/${total}] : $project_name "  clone_url $PATH_SOURCE $link
-        cp -r ${PATH_SOURCE}/${project_name} ${PATH_ROOTFS}/opt
-    done
+    # # clone 相关项目
+    # mapfile -t git_links < <(grep -vE '^#|^$' "$FILE_GIT_LIST")
+    # total=${#git_links[@]}
+    # for i in "${!git_links[@]}"; do
+    #     link="${git_links[$i]}"
+    #     project_name=$(basename "$link" .git)
+    #     run_status "clone/pull [$((i+1))/${total}] : $project_name "  clone_url $PATH_SOURCE $link
+    #     cp -r ${PATH_SOURCE}/${project_name} ${PATH_ROOTFS}/opt
+    # done
     
+    # 插入walnutpi的apt源
+    echo $APT_SOURCES_WALNUT >> ${PATH_ROOTFS}/etc/apt/sources.list
     
-    # apt安装指定软件
+    # apt安装通用软件
     PATH_APT_CACHE="${PATH_TMP}/apt_cache_${OPT_OS_VER}_${CHIP_ARCH}"
     if [ ! -d $PATH_APT_CACHE ]; then
         mkdir $PATH_APT_CACHE
@@ -146,33 +143,32 @@ create_rootfs() {
     total=${#packages[@]}
     for (( i=0; i<${total}; i++ )); do
         package=${packages[$i]}
-        # echo "apt [$((i+1))/${total}] : $package"
         run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y  ${package}"
     done
+    # run_status "apt  ${packages[*]} " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y  ${packages[*]}"
     
     run_as_client cp -r  ${PATH_ROOTFS}/var/cache/apt/archives/* ${PATH_APT_CACHE}/
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     
-    # 安装deb包
-    find $PATH_FS_DEB_BASE -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
-    if [ "$OPT_ROOTFS_TYPE" = "desktop" ]; then
-        find $PATH_FS_DEB_DESK -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
-    fi
+    # # 安装本项目保存的deb包
+    # find $PATH_FS_DEB_BASE -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    # if [ "$OPT_ROOTFS_TYPE" = "desktop" ]; then
+    #     find $PATH_FS_DEB_DESK -type f -name "*.deb" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    # fi
     
-    declare -a debs_array
-    for file in ${PATH_ROOTFS}/opt/*.deb; do
-        debs_array+=("${file}")
-    done
-    for (( i=0; i<${#debs_array[@]}; i++ )); do
-        file=${debs_array[$i]}
-        chmod +x $file
-        file_name=$(basename -- "${file}")
-        # echo "running script [$((i+1))/${#debs_array[@]}] $file_name"
-        run_status "debs [$((i+1))/${#debs_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ &&  dpkg -i ${file_name}"
-        _try_command rm $file
-    done
-    
+    # declare -a debs_array
+    # for file in ${PATH_ROOTFS}/opt/*.deb; do
+    #     debs_array+=("${file}")
+    # done
+    # for (( i=0; i<${#debs_array[@]}; i++ )); do
+    #     file=${debs_array[$i]}
+    #     chmod +x $file
+    #     file_name=$(basename -- "${file}")
+    #     # echo "running script [$((i+1))/${#debs_array[@]}] $file_name"
+    #     run_status "debs [$((i+1))/${#debs_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ &&  dpkg -i ${file_name}"
+    #     _try_command rm $file
+    # done
     
     # pip 安装指定软件
     # 删除一个用于禁止pip安装的文件 如在debian12中是/usr/lib/python3.11/EXTERNALLY-MANAGED
@@ -184,9 +180,11 @@ create_rootfs() {
     for (( i=0; i<${total}; i++ )); do
         package=${packages[$i]}
         # echo "pip3 [$((i+1))/${total}] : $package"
-        run_status "pip3 [$((i+1))/${total}] : $package" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 install --no-cache-dir  ${package}"
+        run_status "pip3 [$((i+1))/${total}] : $package" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
     done
     
+    # umount_chroot $PATH_ROOTFS
+    # exit -1
     
     # firmware
     cd ${PATH_SOURCE}
@@ -203,82 +201,82 @@ create_rootfs() {
     if [ -d "${PATH_OUTPUT}" ]; then
         cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
     fi
-    
-    
-    # modules
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
     
     
-    
+    # # 启用通用service
     SYSTEMD_DIR="${PATH_ROOTFS}/lib/systemd/system/"
     WALNUTPI_DIR="${PATH_ROOTFS}/usr/lib/walnutpi/"
-    mkdir -p "$WALNUTPI_DIR"
-    
-    echo "service"
-    
-    # 启用通用service
-    for file in "$PATH_SERVICE"/*; do
-        # echo $file
-        if [[ $file == *.service ]]; then
-            cp $file $SYSTEMD_DIR
-            run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
-        else
-            cp "$file" "$WALNUTPI_DIR"
-            chmod +x "${WALNUTPI_DIR}/$(basename $file)"
-        fi
-    done
+    # mkdir -p "$WALNUTPI_DIR"
+    # for file in "$PATH_SERVICE"/*; do
+    #     # echo $file
+    #     if [[ $file == *.service ]]; then
+    #         cp $file $SYSTEMD_DIR
+    #         run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
+    #     else
+    #         cp "$file" "$WALNUTPI_DIR"
+    #         chmod +x "${WALNUTPI_DIR}/$(basename $file)"
+    #     fi
+    # done
     
     
-    # 启用board自带service
-    for file in ${CONF_DIR}/service/*.service; do
-        echo $file
-        cp $file $SYSTEMD_DIR
-        run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
-        
-    done
+    # # 启用board自带service
+    # for file in ${CONF_DIR}/service/*.service; do
+    #     echo $file
+    #     cp $file $SYSTEMD_DIR
+    #     run_status "enable service\t${file}" chroot ${PATH_ROOTFS} /bin/bash -c "systemctl enable  $(basename "$file" .service)"
+    
+    # done
     
     
     
-    # 复制脚本进rootfs内执行
-    shopt -s dotglob
-    find $PATH_S_FS_BASE -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
-    cp -r ${PATH_S_FS_BASE_RESOURCE}/. ${PATH_ROOTFS}/opt/
+    # # 复制脚本进rootfs内执行
+    # shopt -s dotglob
+    # find $PATH_S_FS_BASE -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    # cp -r ${PATH_S_FS_BASE_RESOURCE}/. ${PATH_ROOTFS}/opt/
     
-    find ${PATH_S_FS_USER}/ -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
-    cp -r ${PATH_S_FS_USER_RESOURCE}/. ${PATH_ROOTFS}/opt/
+    # find ${PATH_S_FS_USER}/ -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    # cp -r ${PATH_S_FS_USER_RESOURCE}/. ${PATH_ROOTFS}/opt/
     
-    if [ "$OPT_ROOTFS_TYPE" = "desktop" ]; then
-        find $PATH_S_FS_DESK -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
-        cp -r ${PATH_S_FS_DESK_RESOURCE}/. ${PATH_ROOTFS}/opt/
-    fi
-    
-    declare -a files_array
-    for file in ${PATH_ROOTFS}/opt/*.sh; do
-        files_array+=("${file}")
-    done
-    for (( i=0; i<${#files_array[@]}; i++ )); do
-        file=${files_array[$i]}
-        chmod +x $file
-        file_name=$(basename -- "${file}")
-        # echo "running script [$((i+1))/${#files_array[@]}] $file_name"
-        run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
-        _try_command rm $file
-    done
-    
-    
-    # 配置中文
-    # if [ "$OPT_LANGUAGE" = "cn" ]; then
-    #     echo "设置语言为中文"
-    #     # FILE="${PATH_ROOTFS}/etc/locale.gen"
-    #     # sed -i '/^# zh_CN.UTF-8/ s/^# //' $FILE
-    #     # chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  locale-gen"
-    
-    #     # sed -i '$i\\localectl set-locale LANG=zh_CN.UTF-8' ${PATH_ROOTFS}/usr/lib/walnutpi/firstboot
-    #     # chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  localectl set-locale LANG=zh_CN.UTF-8"
+    # if [ "$OPT_ROOTFS_TYPE" = "desktop" ]; then
+    #     find $PATH_S_FS_DESK -type f -name "*.sh" -exec cp {} ${PATH_ROOTFS}/opt/ \;
+    #     cp -r ${PATH_S_FS_DESK_RESOURCE}/. ${PATH_ROOTFS}/opt/
     # fi
     
-    # echo "create tar"
+    # declare -a files_array
+    # for file in ${PATH_ROOTFS}/opt/*.sh; do
+    #     files_array+=("${file}")
+    # done
+    # for (( i=0; i<${#files_array[@]}; i++ )); do
+    #     file=${files_array[$i]}
+    #     chmod +x $file
+    #     file_name=$(basename -- "${file}")
+    #     # echo "running script [$((i+1))/${#files_array[@]}] $file_name"
+    #     run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $PATH_ROOTFS /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
+    #     _try_command rm $file
+    # done
+    
+    
+    # apt安装各板指定软件
+    
+    run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
+    
+    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
+    if [[ ${OPT_ROOTFS_TYPE} == "desktop" ]]; then
+        mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP_BOARD})
+        packages=("${packages[@]}" "${desktop_packages[@]}")
+    fi
+    total=${#packages[@]}
+    for (( i=0; i<${total}; i++ )); do
+        package=${packages[$i]}
+        run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
+        # run_status "board apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y -f  ${package}"
+    done
+    
+    run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    
+    
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
     if [ -f "$FILE_ROOTFS_TAR" ]; then

@@ -17,7 +17,9 @@ run_client_when_successfuly() {
 }
 
 run_as_client() {
+    set +e
     $@ > /dev/null 2>&1
+    set -e
 }
 
 
