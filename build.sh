@@ -6,7 +6,7 @@ PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
 PATH_LOG="${PATH_PWD}/log"
 PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-PATH_BOOTFILE="${PATH_PWD}/boot"
+# PATH_BOOTFILE="${PATH_PWD}/boot"
 
 PATH_SF_LIST="${PATH_PWD}/software-list"
 
@@ -80,9 +80,6 @@ unset options
 echo $CONF_DIR
 [[ -z $CONF_DIR ]] && exit
 
-# PATH_S_FS_USER="${CONF_DIR}/script"
-# PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
-
 FILE_APT_BASE_BOARD="${CONF_DIR}/apt-base"
 FILE_APT_DESKTOP_BOARD="${CONF_DIR}/apt-desktop"
 
@@ -101,7 +98,7 @@ echo $BUILD_OPT
 
 
 
-source $CONF_DIR/$(basename "$CONF_DIR").conf
+source $CONF_DIR/board.conf
 
 FILE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
 
@@ -123,9 +120,9 @@ esac
 
 
 # if [ $DEBUG -eq 0 ]; then
-    apt update
+    # apt update
     exit_if_last_error
-    apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
+    # apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
     exit_if_last_error
 # fi
 
@@ -151,8 +148,8 @@ case "$BUILD_OPT" in
         create_rootfs
     ;;
     "image")
-        # compile_uboot
-        # compile_kernel
+        compile_uboot
+        compile_kernel
         create_rootfs
         do_pack
     ;;

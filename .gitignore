@@ -34,6 +34,7 @@ external/cache/rootfs
 source/
 walnut1b.img
 toolchain/
-boot/boot.scr
 *.log
 debug/
+boot.scr
+

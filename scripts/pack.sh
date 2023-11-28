@@ -86,18 +86,18 @@ do_pack() {
     mount $MAPPER_DEVICE1 $MOUNT_DISK1
     mount $MAPPER_DEVICE2 $MOUNT_DISK2
     
-    
     # echo "output之前生成的文件"
-    run_status "add kernel" cp $FILE_IMAGE $MOUNT_DISK1
+    # run_status "add kernel" cp $FILE_IMAGE $MOUNT_DISK1
     run_status "add rootfs" tar xf  $FILE_ROOTFS -C $MOUNT_DISK2  -I 'xz -T0'
+    run_status "move part2/boot to part1" mv $MOUNT_DISK2/boot/*  $MOUNT_DISK1
     
-    run_status "boot.scr" mkimage -C none -A arm -T script -d ${PATH_BOOTFILE}/boot.cmd ${PATH_BOOTFILE}/boot.scr
-    cp ${PATH_BOOTFILE}/boot.cmd $MOUNT_DISK1
-    cp ${PATH_BOOTFILE}/boot.scr $MOUNT_DISK1
-    cp ${CONF_DIR}/config.txt $MOUNT_DISK1
+    # run_status "boot.scr" mkimage -C none -A arm -T script -d ${PATH_BOOTFILE}/boot.cmd ${PATH_BOOTFILE}/boot.scr
+    # cp ${PATH_BOOTFILE}/boot.cmd $MOUNT_DISK1
+    # cp ${PATH_BOOTFILE}/boot.scr $MOUNT_DISK1
+    # cp ${CONF_DIR}/config.txt $MOUNT_DISK1
     
-    run_status "device-tree" cp -r ${PATH_OUTPUT}/dtb/allwinner/* $MOUNT_DISK1
-    mv $MOUNT_DISK1/overlay $MOUNT_DISK1/overlays
+    # run_status "device-tree" cp -r ${PATH_OUTPUT}/dtb/allwinner/* $MOUNT_DISK1
+    # mv $MOUNT_DISK1/overlay $MOUNT_DISK1/overlays
     
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${MOUNT_DISK1}/config.txt

@@ -66,9 +66,7 @@ create_rootfs() {
     # 为节省编译时间，第一次编译时会构建一个基本rootfs，并安装base的软件
     PATH_SAVE_ROOTFS=${PATH_SOURCE}/${OPT_OS_VER}_${CHIP_ARCH}_${OPT_ROOTFS_TYPE}
     if [[ -f $FILE_SAVE_ROOTFS ]]; then
-        rsync -a $PATH_SAVE_ROOTFS/ $PATH_ROOTFS
         run_status "unzip last rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
-        # cp -r $PATH_SAVE_ROOTFS $PATH_ROOTFS
     else
         run_as_client mkdir ${PATH_ROOTFS} -p
         if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
@@ -100,9 +98,7 @@ create_rootfs() {
         run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
         umount_chroot $PATH_ROOTFS
         
-        # rsync -a $PATH_ROOTFS/ $PATH_SAVE_ROOTFS
         tar -czf $FILE_SAVE_ROOTFS ./
-        # cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS
     fi
     
     
@@ -210,10 +206,15 @@ create_rootfs() {
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
     
-    # 驱动
-    if [ -d "${PATH_OUTPUT}" ]; then
-        cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
-    fi
+    # # 驱动
+    # if [ -d "${PATH_OUTPUT}" ]; then
+    #     cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
+    # fi
+
+    # 安装kernel Image的deb包
+    cp ${PATH_OUTPUT}/${DEB_NAME} ${PATH_ROOTFS}/opt/
+    run_status "install ${DEB_NAME}" chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${DEB_NAME}"
+    rm ${PATH_ROOTFS}/opt/${DEB_NAME}
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
     

@@ -1,4 +1,7 @@
 #!/bin/bash
+PACKAGE_NAME=kernel-${LINUX_BRANCH}-${CHIP_NAME}
+
+DEB_NAME=${PACKAGE_NAME}_1.0.0_all.deb
 
 
 
@@ -32,40 +35,78 @@ compile_uboot() {
     dirname=$(basename "$UBOOT_GIT" .git)
     cd $dirname
     git checkout $UBOOT_BRANCH
-
-    make $UBOOT_CONFIG 
+    
+    make $UBOOT_CONFIG
     make BL31=../arm-trusted-firmware/build/$ATF_PLAT/debug/bl31.bin \
-        CROSS_COMPILE=$FILE_CROSS_COMPILE 
+    CROSS_COMPILE=$FILE_CROSS_COMPILE
     exit_if_last_error
     cp $UBOOT_BIN_NAME $PATH_OUTPUT
-
+    
 }
 
 
 compile_kernel() {
     cd $PATH_SOURCE
     clone_source $LINUX_GIT
-
+    
     dirname=$(basename "$LINUX_GIT" .git)
     cd $dirname
     git checkout $LINUX_BRANCH
-
+    
+    PATH_KERNEL=${PATH_SOURCE}/${dirname}
+    
     thread_count=$(grep -c ^processor /proc/cpuinfo)
     make $LINUX_CONFIG CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     make -j$thread_count CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     exit_if_last_error
-    cp arch/${CHIP_ARCH}/boot/Image $PATH_OUTPUT
+    
     
     echo "kernel compile success"
+    
+    # cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $PATH_OUTPUT
+    # run_status "export modules"     make  modules_install INSTALL_MOD_PATH="$PATH_OUTPUT" ARCH=${CHIP_ARCH}
+    # run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$PATH_OUTPUT/dtb" ARCH=${CHIP_ARCH}
+    
+    TMP_DEB=${PATH_TMP}/kernel_${LINUX_CONFIG}_${LINUX_BRANCH}
+    if [[ -d $TMP_DEB ]]; then
+        rm -r $TMP_DEB
+    fi
+    mkdir -p  $TMP_DEB/boot
+    
+    run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $TMP_DEB/boot/
+    run_status "export modules" make  modules_install INSTALL_MOD_PATH="$TMP_DEB" ARCH=${CHIP_ARCH}
+    run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$TMP_DEB/boot/" ARCH=${CHIP_ARCH}
+    
+    # if []
+    mkdir   $TMP_DEB/DEBIAN/
+    cd $TMP_DEB
+    size=$(du -sk --exclude=DEBIAN . | cut -f1)
+    echo "size=$size"
+    git_email=$(git config --global user.email)
+    
+    cd $PATH_KERNEL
+    git_log=$(git log --oneline)
+    commit_count=$(echo "$git_log" | wc -l)
+    deb_version="1.$commit_count.0"
+    DEB_NAME=${PACKAGE_NAME}_${deb_version}_all.deb
 
-    run_status "export modules"     make  modules_install INSTALL_MOD_PATH="$PATH_OUTPUT" ARCH=${CHIP_ARCH}
-    run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$PATH_OUTPUT/dtb" ARCH=${CHIP_ARCH}
 
-
-    kernel_release_path="./include/config/kernel.release"
-    kernel_version=$(head -n 1 "$kernel_release_path")
-    # echo "Kernel version: $kernel_version"
-    cp .config "${PATH_OUTPUT}/config-$kernel_version"
-
+cat << EOF > $TMP_DEB/DEBIAN/control
+Package: ${PACKAGE_NAME}
+Description: linux kernel file
+Maintainer: ${git_email}
+Version: ${deb_version}
+Section: free
+Priority: optional
+Installed-Size: ${size}
+Architecture: all
+EOF
+    run_status "boot.scr" mkimage -C none -A arm -T script -d ${CONF_DIR}/boot.cmd ${CONF_DIR}/boot.scr
+    cp ${CONF_DIR}/boot.cmd $TMP_DEB/boot
+    cp ${CONF_DIR}/boot.scr $TMP_DEB/boot
+    cp ${CONF_DIR}/config.txt $TMP_DEB/boot
+    
+    run_status "创建deb包 ${DEB_NAME} " dpkg -b "$TMP_DEB" "${PATH_OUTPUT}/${DEB_NAME}"
+    
 }
 

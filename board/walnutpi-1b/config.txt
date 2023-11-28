@@ -1,4 +1,5 @@
 bootlogo=false
+manufacturers=allwinner
 overlay_prefix=sun50i-h616
 fdtfile=sun50i-h616-walnutpi-1b
 

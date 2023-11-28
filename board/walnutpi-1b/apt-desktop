@@ -1,8 +1,8 @@
 wpi-xfce4
 
-#wpi-chromium 
-#conf-google-pinyin
-#conf-thonny
+wpi-chromium 
+conf-google-pinyin
+conf-thonny
 
-#realvnc-vnc-viewer
-#set-vnc
+realvnc-vnc-viewer
+set-vnc
