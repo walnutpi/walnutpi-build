@@ -89,7 +89,7 @@ do_pack() {
     
     # echo "output之前生成的文件"
     run_status "add kernel" cp $FILE_IMAGE $MOUNT_DISK1
-    run_status "add rootfs" tar xf $FILE_ROOTFS -C $MOUNT_DISK2
+    run_status "add rootfs" tar xf  $FILE_ROOTFS -C $MOUNT_DISK2  -I 'xz -T0'
     
     run_status "boot.scr" mkimage -C none -A arm -T script -d ${PATH_BOOTFILE}/boot.cmd ${PATH_BOOTFILE}/boot.scr
     cp ${PATH_BOOTFILE}/boot.cmd $MOUNT_DISK1
@@ -105,22 +105,7 @@ do_pack() {
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
-    # cp -r $PATH_S_FS_PACK/* $MOUNT_DISK2/opt
-    
-    # declare -a files_array
-    # for file in ${MOUNT_DISK2}/opt/*.sh; do
-    #     files_array+=("${file}")
-    # done
-    
-    # for (( i=0; i<${#files_array[@]}; i++ )); do
-    #     file=${files_array[$i]}
-    #     chmod +x $file
-    #     file_name=$(basename -- "${file}")
-    #     # echo "running script [$((i+1))/${#files_array[@]}] $file_name"
-    #     run_status "running script [$((i+1))/${#files_array[@]}] $file_name" chroot  $MOUNT_DISK2 /bin/bash -c "export HOME=/root; cd /opt/ && ./${file_name}"
-    #     rm $file
-    # done
-    
+
     
     umount $MOUNT_DISK2/boot
     

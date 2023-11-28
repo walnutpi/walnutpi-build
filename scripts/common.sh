@@ -17,9 +17,7 @@ run_client_when_successfuly() {
 }
 
 run_as_client() {
-    set +e
     $@ > /dev/null 2>&1
-    set -e
 }
 
 
@@ -28,7 +26,7 @@ run_as_client() {
 run_status() {
     local message=$1
     shift
-    set +e
+    # set +e
     start_time=$(date +%s)
     while true; do
         echo -e  -n "...\t$message"
@@ -45,7 +43,7 @@ run_status() {
             break
         fi
     done
-    set -e
+    # set -e
 }
 
 
@@ -67,14 +65,6 @@ run_as_client_try3() {
         echo "$output"
     fi
 }
-
-_try_command() {
-    set +e
-    "$@" >/dev/null 2>&1
-    set -e
-}
-
-
 
 
 mount_chroot()

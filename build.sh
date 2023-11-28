@@ -1,47 +1,22 @@
 #!/bin/bash
-DEBUG=0
-if [[ ! -z "$1" && "$1" == "debug" ]]
-then
-    DEBUG=1
-fi
-
 
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-# PATH_RESOURCE="${PATH_PWD}/resource"
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
 PATH_LOG="${PATH_PWD}/log"
 PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-
 PATH_BOOTFILE="${PATH_PWD}/boot"
 
-PATH_FS_BUILD="${PATH_PWD}/fs-build"
-# PATH_S_FS_BASE="${PATH_FS_BUILD}/script/base"
-# PATH_S_FS_BASE_RESOURCE="${PATH_S_FS_BASE}/resource"
-# PATH_S_FS_DESK="${PATH_FS_BUILD}/script/desktop"
-# PATH_S_FS_DESK_RESOURCE="${PATH_S_FS_DESK}/resource"
-# PATH_S_FS_PACK="${PATH_FS_BUILD}/pack-script"
-# PATH_FS_DEB_BASE="${PATH_FS_BUILD}/deb/base"
-# PATH_FS_DEB_DESK="${PATH_FS_BUILD}/deb/desktop"
+PATH_SF_LIST="${PATH_PWD}/software-list"
 
-
-# FILE_GIT_LIST="${PATH_FS_BUILD}/git-list"
-FILE_PIP_LIST="${PATH_FS_BUILD}/pip-list"
-FILE_APT_BASE="${PATH_FS_BUILD}/apt-list/base"
-FILE_APT_DESKTOP="${PATH_FS_BUILD}/apt-list/desktop"
+FILE_PIP_LIST="${PATH_SF_LIST}/pip"
+FILE_APT_BASE="${PATH_SF_LIST}/apt-base"
+FILE_APT_DESKTOP="${PATH_SF_LIST}/apt-desktop"
 FILE_APT_BASE_BOARD=""
 FILE_APT_DESKTOP_BOARD=""
 
-PATH_DEBUG="${PATH_PWD}/debug"
-if [ $DEBUG -eq 1 ]; then
-    FILE_PIP_LIST="${PATH_DEBUG}/pip-list"
-    FILE_APT_BASE="${PATH_DEBUG}/apt-base"
-    FILE_APT_DESKTOP="${PATH_DEBUG}/apt-desktop"
-fi
 
-
-PATH_SERVICE="${PATH_FS_BUILD}/service"
 
 CONF_DIR=""
 # PATH_S_FS_USER=""
@@ -49,9 +24,6 @@ CONF_DIR=""
 
 START_DATE=$(date)
 
-if [ ! -d $PATH_DEBUG ]; then
-    mkdir $PATH_DEBUG
-fi
 if [ ! -d $PATH_SOURCE ]; then
     mkdir $PATH_SOURCE
 fi
@@ -111,8 +83,8 @@ echo $CONF_DIR
 # PATH_S_FS_USER="${CONF_DIR}/script"
 # PATH_S_FS_USER_RESOURCE="${PATH_S_FS_USER}/resource"
 
-FILE_APT_BASE_BOARD="${CONF_DIR}/apt-list/base"
-FILE_APT_DESKTOP_BOARD="${CONF_DIR}/apt-list/desktop"
+FILE_APT_BASE_BOARD="${CONF_DIR}/apt-base"
+FILE_APT_DESKTOP_BOARD="${CONF_DIR}/apt-desktop"
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
@@ -150,12 +122,12 @@ case "$BUILD_OPT" in
 esac
 
 
-if [ $DEBUG -eq 0 ]; then
+# if [ $DEBUG -eq 0 ]; then
     apt update
     exit_if_last_error
     apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
     exit_if_last_error
-fi
+# fi
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
     wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL

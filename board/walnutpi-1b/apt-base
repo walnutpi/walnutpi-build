@@ -1,5 +1,6 @@
 walnutpi-base 
- 
+walnutpi-lib
+
 conf-h616-amixer
 conf-qtenv   
 enable-ssh-root  

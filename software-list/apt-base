@@ -12,7 +12,7 @@ ntp
 ssh
 sudo
 bash-completion
-#systemd-timesyncd
+systemd-timesyncd
 parted
 wget
 curl
