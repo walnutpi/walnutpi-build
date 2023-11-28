@@ -35,7 +35,7 @@ choose_rootfs() {
     echo $OPT_ROOTFS_TYPE
     [[ -z $OPT_ROOTFS_TYPE ]] && exit
     
-    FILE_ROOTFS_TAR="${PATH_OUTPUT}/rootfs_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
+    FILE_ROOTFS_TAR="${PATH_OUTPUT}/rootfs_${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
     PATH_ROOTFS=${PATH_TMP}/${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
     # titlestr="Choose  Language"
@@ -171,11 +171,11 @@ create_rootfs() {
         echo "$package" >> $SF_LIST
     done
     
-    rm -r $FILE_SAVE_ROOTFS
     umount_chroot $PATH_ROOTFS
     # rsync -a $PATH_ROOTFS/ $PATH_SAVE_ROOTFS
     # 如果本次对保存的rootfs的apt软件有增删，则重设压缩包
     if [ ${#packages_install[@]} -gt 0 ] || [ ${#packages_remove[@]} -gt 0 ]; then
+        rm -r $FILE_SAVE_ROOTFS
         cd ${PATH_ROOTFS}
         run_status "create the tar to save now rootfs" tar -czf $FILE_SAVE_ROOTFS ./
     fi
