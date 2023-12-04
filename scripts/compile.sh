@@ -76,8 +76,14 @@ compile_kernel() {
     run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $TMP_DEB/boot/
     run_status "export modules" make  modules_install INSTALL_MOD_PATH="$TMP_DEB" ARCH=${CHIP_ARCH}
     run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$TMP_DEB/boot/" ARCH=${CHIP_ARCH}
+    # 设备树导出后，可能会产生一个allwinner/.dtb的路径，把里面的dtb提取到外面
+    folder_name=$(ls -d $TMP_DEB/boot/*/ | head -n 1)
+    cp -r $folder_name* $TMP_DEB/boot/
+    rm -r $folder_name
+    if [[ -d $TMP_DEB/boot/overlay  ]]; then
+        mv $TMP_DEB/boot/overlay $TMP_DEB/boot/overlays
+    fi
     
-    # if []
     mkdir   $TMP_DEB/DEBIAN/
     cd $TMP_DEB
     size=$(du -sk --exclude=DEBIAN . | cut -f1)
@@ -89,8 +95,8 @@ compile_kernel() {
     commit_count=$(echo "$git_log" | wc -l)
     deb_version="1.$commit_count.0"
     DEB_NAME=${PACKAGE_NAME}_${deb_version}_all.deb
-
-
+    
+    
 cat << EOF > $TMP_DEB/DEBIAN/control
 Package: ${PACKAGE_NAME}
 Description: linux kernel file
