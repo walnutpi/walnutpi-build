@@ -8,6 +8,10 @@ exit_if_last_error() {
     fi
 }
 
+run_as_client() {
+    $@ > /dev/null 2>&1
+}
+
 
 run_client_when_successfuly() {
     output=$("$@" 2>&1)
@@ -15,12 +19,6 @@ run_client_when_successfuly() {
         echo "$output"
     fi
 }
-
-run_as_client() {
-    $@ > /dev/null 2>&1
-}
-
-
 
 
 run_status() {
@@ -47,26 +45,6 @@ run_status() {
 }
 
 
-run_as_client_try3() {
-    local max_attempts=3
-    local attempt=0
-    local success=0
-    
-    while [[ $attempt -lt $max_attempts && $success -eq 0 ]]; do
-        output=$("$@" 2>&1)
-        if [ $? -eq 0 ]; then
-            success=1
-        else
-            attempt=$((attempt + 1))
-        fi
-    done
-    
-    if [[ $success -eq 0 ]]; then
-        echo "$output"
-    fi
-}
-
-
 mount_chroot()
 {
     local target=$1
@@ -88,24 +66,35 @@ umount_chroot()
     done
 }
 
+
+# 获取sudo运行脚本前是什么用户，然后以那个用户的权限执行指令
+run_as_user() {
+    local original_user=$(who am i | awk '{print $1}')
+    sudo -u $original_user bash -c "$*"
+}
+
 clone_url() {
-    local path="$1"
-    local git_url="$2"
-    local dir_name=$(basename "$git_url" .git)
-
-    if [[ ! -z "$SUDO_USER" ]]; then
-        user="$SUDO_USER"
+    local git_url="$1"
+    dir_name=$(basename "$git_url" .git)
+    
+    if [ -d "$dir_name" ]; then
+        cd "$dir_name"
+        run_status "pull : $git_url" run_as_user git pull
     else
-        user="$USER"
+        run_status "clone : $git_url" run_as_user git clone $git_url
     fi
+}
+clone_branch() {
+    local git_url="$1"
+    local branch="$2"
 
-    sudo -u "$user" bash << EOF
-        cd "$path"
-        if [ -d "$dir_name" ]; then
-            cd "$dir_name"
-            git pull
-        else
-            git clone "$git_url"
-        fi
-EOF
+    dir_name=$(basename "$git_url" .git)
+    [[ -n $3 ]] && dir_name=$3
+    
+    if [ -d "$dir_name" ]; then
+        cd "$dir_name"
+        run_status "pull : $git_url" run_as_user git pull
+    else
+        run_status "clone : $git_url" run_as_user git clone -b $branch --depth=1 $git_url $dir_name
+    fi
 }
