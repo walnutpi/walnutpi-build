@@ -79,9 +79,11 @@ clone_url() {
     
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
-        run_status "pull : $git_url" run_as_user git pull
+        echo "pull : $git_url" 
+        run_as_user git pull
     else
-        run_status "clone : $git_url" run_as_user git clone $git_url
+        echo "clone : $git_url" 
+        run_as_user git clone $git_url
     fi
 }
 clone_branch() {
@@ -93,8 +95,11 @@ clone_branch() {
     
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
-        run_status "pull : $git_url" run_as_user git pull
+        run_as_user git config --global --add safe.directory $(pwd)
+        echo "pull : $git_url" 
+        run_as_user git pull
     else
-        run_status "clone : $git_url" run_as_user git clone -b $branch --depth=1 $git_url $dir_name
+        echo "clone : $git_url" 
+        run_as_user git clone -b $branch  $git_url $dir_name
     fi
 }

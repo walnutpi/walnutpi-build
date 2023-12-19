@@ -1,5 +1,8 @@
 #!/bin/bash
 
+FILE_BEFOR_ROOTFS="befor_rootfs.sh"
+FILE_BOARD_BEFOR_ROOTFS="${DIR_BOARD}/${FILE_BEFOR_ROOTFS}"
+
 OPT_OS_VER=""
 OPT_ROOTFS_TYPE=""
 PATH_ROOTFS=""
@@ -113,9 +116,8 @@ create_rootfs() {
     # cd $PATH_ROOTFS
     mount_chroot $PATH_ROOTFS
     PATH_APT_CACHE="${PATH_TMP}/apt_cache_${OPT_OS_VER}_${CHIP_ARCH}"
-    if [ ! -d $PATH_APT_CACHE ]; then
-        mkdir $PATH_APT_CACHE
-    fi
+    [[ ! -d $PATH_APT_CACHE ]] && mkdir $PATH_APT_CACHE
+    
     # run_as_client cp -r ${PATH_APT_CACHE}/* ${PATH_ROOTFS}/var/cache/apt/archives/
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
@@ -177,8 +179,15 @@ create_rootfs() {
     fi
     
     
+    # 运行板子自带的脚本
+    if [ -f $FILE_BOARD_BEFOR_ROOTFS ]; then
+        cp $FILE_BOARD_BEFOR_ROOTFS  ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
+        run_status "run ${FILE_BEFOR_ROOTFS}" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash /opt/${FILE_BEFOR_ROOTFS}"
+
+    fi
+
+
     # cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS
-    
     
     
     # pip 安装指定软件
@@ -206,15 +215,17 @@ create_rootfs() {
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
     
-    # # 驱动
-    # if [ -d "${PATH_OUTPUT}" ]; then
-    #     cp -r ${PATH_OUTPUT}/lib/* ${PATH_ROOTFS}/lib/
-    # fi
-
-    # 安装kernel Image的deb包
-    cp ${PATH_OUTPUT}/${DEB_NAME} ${PATH_ROOTFS}/opt/
-    run_status "install ${DEB_NAME}" chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${DEB_NAME}"
-    rm ${PATH_ROOTFS}/opt/${DEB_NAME}
+    # 安装kernel产生的的deb包
+    cp ${PATH_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
+    cd ${PATH_ROOTFS}/opt/
+    deb_packages=(*.deb)
+    
+    total=${#deb_packages[@]}
+    for (( i=0; i<$total; i++ )); do
+        deb_package=${deb_packages[$i]}
+        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${deb_package}"
+    done
+   
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
     

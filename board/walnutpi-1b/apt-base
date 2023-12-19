@@ -1,9 +1,10 @@
 walnutpi1b-base 
 walnutpi-lib
 
-conf-h616-amixer
+conf-h616-audio
 conf-qtenv   
 enable-ssh-root  
+disable-wifi-random
 
 set-device  
 set-language  

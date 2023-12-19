@@ -1,4 +1,9 @@
 
+libc6-dev
+bison
+flex
+libssl-dev
+
 network-manager
 net-tools
 iw

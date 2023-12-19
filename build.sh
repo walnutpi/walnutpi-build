@@ -6,7 +6,6 @@ PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
 PATH_LOG="${PATH_PWD}/log"
 PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-# PATH_BOOTFILE="${PATH_PWD}/boot"
 
 PATH_SF_LIST="${PATH_PWD}/software-list"
 
@@ -16,30 +15,15 @@ FILE_APT_DESKTOP="${PATH_SF_LIST}/apt-desktop"
 FILE_APT_BASE_BOARD=""
 FILE_APT_DESKTOP_BOARD=""
 
-
-
-CONF_DIR=""
-# PATH_S_FS_USER=""
-# PATH_S_FS_USER_RESOURCE=""
+DIR_BOARD=""
 
 START_DATE=$(date)
 
-if [ ! -d $PATH_SOURCE ]; then
-    mkdir $PATH_SOURCE
-fi
-if [ ! -d $PATH_OUTPUT ]; then
-    mkdir $PATH_OUTPUT
-fi
-if [ ! -d $PATH_TMP ]; then
-    mkdir $PATH_TMP
-fi
-if [ ! -d $PATH_LOG ]; then
-    mkdir $PATH_LOG
-fi
-
-if [ ! -d $PATH_TOOLCHAIN ]; then
-    mkdir $PATH_TOOLCHAIN
-fi
+[[ ! -d $PATH_SOURCE ]] && mkdir $PATH_SOURCE
+[[ ! -d $PATH_OUTPUT ]] && mkdir $PATH_OUTPUT
+[[ ! -d $PATH_TMP ]] && mkdir $PATH_TMP
+[[ ! -d $PATH_LOG ]] && mkdir $PATH_LOG
+[[ ! -d $PATH_TOOLCHAIN ]] && mkdir $PATH_TOOLCHAIN
 
 if [ ! -f $FILE_PIP_LIST ]; then
     touch $FILE_PIP_LIST
@@ -72,21 +56,21 @@ for dir in $dirs; do
 done
 
 titlestr="Choose Board"
-CONF_DIR=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+DIR_BOARD=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
+3>&1 1>&2 2>&3)
 unset options
-echo $CONF_DIR
-[[ -z $CONF_DIR ]] && exit
+echo $DIR_BOARD
+[[ -z $DIR_BOARD ]] && exit
 
-FILE_APT_BASE_BOARD="${CONF_DIR}/apt-base"
-FILE_APT_DESKTOP_BOARD="${CONF_DIR}/apt-desktop"
+FILE_APT_BASE_BOARD="${DIR_BOARD}/apt-base"
+FILE_APT_DESKTOP_BOARD="${DIR_BOARD}/apt-desktop"
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
 options+=("u-boot"	 "U-boot bin")
-options+=("kernel"	 "Kernel bin")
+options+=("kernel"	 "Kernel Package")
 options+=("rootfs"	 "Rootfs tar")
 BUILD_OPT=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
@@ -98,7 +82,7 @@ echo $BUILD_OPT
 
 
 
-source $CONF_DIR/board.conf
+source $DIR_BOARD/board.conf
 
 FILE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
 
@@ -119,17 +103,16 @@ case "$BUILD_OPT" in
 esac
 
 
-# if [ $DEBUG -eq 0 ]; then
-    # apt update
+if [ $DEBUG_MODE -eq 0 ]; then
+    apt update
     exit_if_last_error
-    # apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
+    apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
     exit_if_last_error
-# fi
+fi
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
     wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
     run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
-    
 fi
 
 
@@ -148,8 +131,10 @@ case "$BUILD_OPT" in
         create_rootfs
     ;;
     "image")
-        compile_uboot
-        compile_kernel
+        if [ $DEBUG_MODE -eq 0 ]; then
+            compile_uboot
+            compile_kernel
+        fi
         create_rootfs
         do_pack
     ;;
