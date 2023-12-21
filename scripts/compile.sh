@@ -7,7 +7,7 @@ PACKAGE_HEADERS_NAME=linux-headers-${LINUX_BRANCH}
 DEB_HEADERS_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 
 PATH_KERNEL_PACKAGE=${PATH_OUTPUT}/kernel-${BOARD_NAME}
-[[ ! -d $PATH_KERNEL_PACKAGE ]] && mkdir $PATH_KERNEL_PACKAGE
+create_dir $PATH_KERNEL_PACKAGE
 
 
 
@@ -82,10 +82,10 @@ is_enabled() {
 generate_kernel_headers() {
     tmpdir=$1
     arch=$2
-    version=$(get_linux_version ./)
+    version=$(get_linux_version ./)``
     
     destdir=$tmpdir/usr/src/linux-headers-$version
-    [[ ! -d $destdir ]] && mkdir -p $destdir
+    create_dir $destdir
     [[ ! -d debian ]] && mkdir -p debian
     
     
@@ -135,6 +135,18 @@ make -j\$NCPU ARCH=$arch -s M=scripts/mod/ >/dev/null
 exit 0
 EOF
     chmod +x $tmpdir/DEBIAN/postinst
+    
+    cat << EOF > $tmpdir/DEBIAN/postrm
+#!/bin/bash
+
+if [ -d /usr/src/linux-headers-$version ]; then
+    rm -r /usr/src/linux-headers-$version
+fi
+
+echo "remove OK"
+exit 0
+EOF
+    chmod +x $tmpdir/DEBIAN/postrm
     
     cp .config  $destdir/.config
     mkdir -p $tmpdir/lib/modules/$version

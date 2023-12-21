@@ -20,6 +20,14 @@ run_client_when_successfuly() {
     fi
 }
 
+create_dir() {
+    directory_path=$1
+    if [ ! -d "$directory_path" ]; then
+        mkdir -p "$directory_path"
+    fi
+}
+
+
 
 run_status() {
     local message=$1
@@ -79,6 +87,7 @@ clone_url() {
     
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
+        run_as_user git config --global --add safe.directory $(pwd)
         echo "pull : $git_url" 
         run_as_user git pull
     else

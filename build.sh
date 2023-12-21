@@ -1,6 +1,7 @@
 #!/bin/bash
-
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+source "${PATH_PWD}"/scripts/common.sh
+
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
@@ -19,11 +20,11 @@ DIR_BOARD=""
 
 START_DATE=$(date)
 
-[[ ! -d $PATH_SOURCE ]] && mkdir $PATH_SOURCE
-[[ ! -d $PATH_OUTPUT ]] && mkdir $PATH_OUTPUT
-[[ ! -d $PATH_TMP ]] && mkdir $PATH_TMP
-[[ ! -d $PATH_LOG ]] && mkdir $PATH_LOG
-[[ ! -d $PATH_TOOLCHAIN ]] && mkdir $PATH_TOOLCHAIN
+create_dir $PATH_SOURCE
+create_dir $PATH_OUTPUT
+create_dir $PATH_TMP
+create_dir $PATH_LOG
+create_dir $PATH_TOOLCHAIN
 
 if [ ! -f $FILE_PIP_LIST ]; then
     touch $FILE_PIP_LIST
@@ -87,7 +88,6 @@ source $DIR_BOARD/board.conf
 FILE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
 
 
-source "${PATH_PWD}"/scripts/common.sh
 
 source "${PATH_PWD}"/scripts/compile.sh
 source "${PATH_PWD}"/scripts/rootfs.sh
