@@ -138,11 +138,11 @@ EOF
     
     cat << EOF > $tmpdir/DEBIAN/postrm
 #!/bin/bash
-
-if [ -d /usr/src/linux-headers-$version ]; then
-    rm -r /usr/src/linux-headers-$version
+if [ "$1" = "remove" ]  ; then
+    if [ -d /usr/src/linux-headers-$version ]; then
+        rm -r /usr/src/linux-headers-$version
+    fi
 fi
-
 echo "remove OK"
 exit 0
 EOF
