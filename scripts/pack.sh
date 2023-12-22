@@ -113,7 +113,7 @@ do_pack() {
     if [ -f $FILE_BOARD_AFTER_PACK ]; then
         cp $FILE_BOARD_AFTER_PACK  ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
         run_status "run ${FILE_AFTER_PACK}" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash  /opt/${FILE_AFTER_PACK}"
-
+        rm ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
     fi
 
 

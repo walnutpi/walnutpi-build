@@ -183,7 +183,7 @@ create_rootfs() {
     if [ -f $FILE_BOARD_BEFOR_ROOTFS ]; then
         cp $FILE_BOARD_BEFOR_ROOTFS  ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
         run_status "run ${FILE_BEFOR_ROOTFS}" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash /opt/${FILE_BEFOR_ROOTFS}"
-
+        rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
     fi
 
 
@@ -224,6 +224,7 @@ create_rootfs() {
     for (( i=0; i<$total; i++ )); do
         deb_package=${deb_packages[$i]}
         run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${deb_package}"
+        rm ${PATH_ROOTFS}/opt/${deb_package}
     done
    
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
