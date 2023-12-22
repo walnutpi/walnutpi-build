@@ -1,6 +1,10 @@
 #!/bin/bash
 
-
+# 获取sudo运行脚本前是什么用户，然后以那个用户的权限执行指令
+run_as_user() {
+    local original_user=$(who am i | awk '{print $1}')
+    sudo -u $original_user bash -c "$*"
+}
 exit_if_last_error() {
     if [[ $? -ne 0 ]]; then
         echo "上一条命令执行失败，脚本将退出。"
@@ -23,7 +27,7 @@ run_client_when_successfuly() {
 create_dir() {
     directory_path=$1
     if [ ! -d "$directory_path" ]; then
-        mkdir -p "$directory_path"
+        run_as_user mkdir -p "$directory_path"
     fi
 }
 
@@ -75,11 +79,7 @@ umount_chroot()
 }
 
 
-# 获取sudo运行脚本前是什么用户，然后以那个用户的权限执行指令
-run_as_user() {
-    local original_user=$(who am i | awk '{print $1}')
-    sudo -u $original_user bash -c "$*"
-}
+
 
 clone_url() {
     local git_url="$1"
