@@ -115,10 +115,7 @@ create_rootfs() {
     # apt安装通用软件
     # cd $PATH_ROOTFS
     mount_chroot $PATH_ROOTFS
-    PATH_APT_CACHE="${PATH_TMP}/apt_cache_${OPT_OS_VER}_${CHIP_ARCH}"
-    [[ ! -d $PATH_APT_CACHE ]] && mkdir $PATH_APT_CACHE
-    
-    # run_as_client cp -r ${PATH_APT_CACHE}/* ${PATH_ROOTFS}/var/cache/apt/archives/
+
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     # 获取要本脚本的软件安装列表
@@ -157,7 +154,6 @@ create_rootfs() {
         package=${packages_remove[$i]}
         run_status "apt remove [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get remove -y  ${package}"
     done
-    # run_as_client cp -r  ${PATH_ROOTFS}/var/cache/apt/archives/* ${PATH_APT_CACHE}/
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     # 将安装过的软件名称，都写进文件内

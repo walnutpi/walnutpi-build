@@ -87,7 +87,7 @@ generate_kernel_headers() {
     
     destdir=$tmpdir/usr/src/linux-headers-$version
     create_dir $destdir
-    [[ ! -d debian ]] && mkdir -p debian
+    create_dir debian
     
     
     configobj=CONFIG_OBJTOOL
@@ -120,7 +120,7 @@ generate_kernel_headers() {
     rm -f debian/hdrsrcfiles debian/hdrobjfiles
     
     # copy .config manually to be where it's expected to be
-    [[ ! -d $tmpdir/DEBIAN ]] && mkdir -p $tmpdir/DEBIAN
+    create_dir $tmpdir/DEBIAN
     [[ ! -f $tmpdir/DEBIAN/postinst ]] && touch $tmpdir/DEBIAN/postinst
     
     cat << EOF > $tmpdir/DEBIAN/postinst
@@ -158,7 +158,7 @@ EOF
     #     chmod +x $tmpdir/DEBIAN/preinst
     
     cp .config  $destdir/.config
-    mkdir -p $tmpdir/lib/modules/$version
+    create_dir $tmpdir/lib/modules/$version
     ln -s /usr/src/linux-headers-$version $tmpdir/lib/modules/$version/build
     
     
@@ -195,7 +195,7 @@ compile_kernel() {
     if [[ -d $TMP_KERNEL_DEB ]]; then
         rm -r $TMP_KERNEL_DEB
     fi
-    mkdir -p  $TMP_KERNEL_DEB/boot
+    create_dir  $TMP_KERNEL_DEB/boot
     
     
     run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $TMP_KERNEL_DEB/boot/
@@ -244,7 +244,7 @@ EOF
     
     
     [[ -d ${PATH_KERNEL_PACKAGE}/  ]] && rm -r ${PATH_KERNEL_PACKAGE}/
-    mkdir ${PATH_KERNEL_PACKAGE}
+    create_dir ${PATH_KERNEL_PACKAGE}
     
     # 计算准备写进deb包的控制信息
     
