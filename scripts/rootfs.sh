@@ -115,7 +115,7 @@ create_rootfs() {
     # apt安装通用软件
     # cd $PATH_ROOTFS
     mount_chroot $PATH_ROOTFS
-
+    
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     # 获取要本脚本的软件安装列表
@@ -181,8 +181,8 @@ create_rootfs() {
         run_status "run ${FILE_BEFOR_ROOTFS}" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash /opt/${FILE_BEFOR_ROOTFS}"
         rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
     fi
-
-
+    
+    
     # cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS
     
     
@@ -211,6 +211,12 @@ create_rootfs() {
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
     
+    # wpi-update
+    cd ${PATH_SOURCE}
+    run_status "download wpi-update" clone_url "https://github.com/sc-bin/wpi-update.git"
+    cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
+    
+    
     # 安装kernel产生的的deb包
     cp ${PATH_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
     cd ${PATH_ROOTFS}/opt/
@@ -222,7 +228,7 @@ create_rootfs() {
         run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${deb_package}"
         rm ${PATH_ROOTFS}/opt/${deb_package}
     done
-   
+    
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
     
@@ -235,12 +241,11 @@ create_rootfs() {
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
     echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
     echo ""   >> $relseas_file
-    echo "kernel_git=$LINUX_GIT"  >> $relseas_file
-    echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
-    echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
-    echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
-    # echo -e "\n\n[update-info]"   >> $relseas_file
-    # echo "$(cat $PATH_PWD/update-info)" >> $relseas_file
+    # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
+    # echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
+    # echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
+    # echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
+
     cat $relseas_file
     
     
@@ -248,7 +253,7 @@ create_rootfs() {
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
     # 插入walnutpi的apt源
-    echo $APT_SOURCES_WALNUT >> ${PATH_ROOTFS}/etc/apt/sources.list
+    echo $APT_SOURCES_TMP >> ${PATH_ROOTFS}/etc/apt/sources.list
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
@@ -262,8 +267,10 @@ create_rootfs() {
         run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
     done
     
+    # 去除残余
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-    
+    # sed -i "/${APT_SOURCES_TMP}/d" ${PATH_ROOTFS}/etc/apt/sources.list
+    sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
