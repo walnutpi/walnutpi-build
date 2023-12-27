@@ -1,10 +1,8 @@
 #!/bin/bash
 
-PACKAGE_IMAGE_NAME=linux-image-${BOARD_NAME_SMALL}
+PACKAGE_IMAGE_NAME=linux-image-${BOARD_NAME_SMALL}-${LINUX_BRANCH}
 DEB_IMAGE_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 
-PACKAGE_HEADERS_NAME=linux-headers-${LINUX_BRANCH}
-DEB_HEADERS_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 
 PATH_KERNEL_PACKAGE=${PATH_OUTPUT}/kernel-${BOARD_NAME}
 create_dir $PATH_KERNEL_PACKAGE
@@ -122,8 +120,10 @@ generate_kernel_headers() {
     # copy .config manually to be where it's expected to be
     create_dir $tmpdir/DEBIAN
     [[ ! -f $tmpdir/DEBIAN/postinst ]] && touch $tmpdir/DEBIAN/postinst
+    relseas_file="/etc/WalnutPi-release"
     
     cat << EOF > $tmpdir/DEBIAN/postinst
+#!/bin/bash
 cd /usr/src/linux-headers-$version
 
 echo "Compiling headers - please wait ..."
@@ -134,6 +134,23 @@ yes "" | make ARCH=$arch oldconfig
 make -j\$NCPU ARCH=$arch -s scripts
 make -j\$NCPU ARCH=$arch -s M=scripts/mod/
 echo "Compiling end"
+
+function replace_or_append() {
+    local file_path="$relseas_file"
+    local search_string="\$1"
+    local replace_string="\$2"
+
+    if grep -q "^\$search_string" "\$file_path"; then
+        sed -i "/^\$search_string/c\\\\\$replace_string" "\$file_path"
+    else
+        echo "\$replace_string" >> "\$file_path"
+    fi
+}
+replace_or_append "kernel_git" "kernel_git=$LINUX_GIT"
+replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
+replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
+replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME"
+
 EOF
     chmod +x $tmpdir/DEBIAN/postinst
     
