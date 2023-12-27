@@ -213,7 +213,7 @@ create_rootfs() {
     
     # wpi-update
     cd ${PATH_SOURCE}
-    run_status "download wpi-update" clone_url "https://github.com/sc-bin/wpi-update.git"
+    run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     
     
