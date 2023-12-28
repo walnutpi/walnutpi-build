@@ -193,13 +193,6 @@ compile_kernel() {
     fi
     
     
-    PATH_KERNEL_CLEAN="${PATH_KERNEL}-clean"
-    if [ ! -d $PATH_KERNEL_CLEAN ]; then
-        run_as_user cp -r $PATH_KERNEL $PATH_KERNEL_CLEAN
-    fi
-    
-    
-    
     thread_count=$(grep -c ^processor /proc/cpuinfo)
     run_as_user make $LINUX_CONFIG CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     run_as_user make -j$thread_count CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
@@ -242,6 +235,10 @@ compile_kernel() {
     
     create_dir $TMP_KERNEL_DEB/DEBIAN
     
+    PATH_KERNEL_CLEAN="${PATH_KERNEL}-clean"
+    if [ ! -d $PATH_KERNEL_CLEAN ]; then
+        run_as_user cp -r $PATH_KERNEL $PATH_KERNEL_CLEAN
+    fi
     
     # 导出linux-headers文件
     cd $PATH_KERNEL_CLEAN
