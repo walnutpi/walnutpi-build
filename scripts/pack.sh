@@ -37,8 +37,12 @@ do_pack() {
     # mkdir -p $MOUNT_DISK1
     # mkdir -p $MOUNT_DISK2
     FILE_ROOTFS="$FILE_ROOTFS_TAR"
-    
-    IMG_FILE="${PATH_OUTPUT}/V$(cat $PATH_PWD/VERSION)_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}.img"
+    cd ${PATH_SOURCE}/wpi-update
+    VERSION_APT=""
+    # run_status "get wpi-update version" 
+    VERSION_APT=$(echo $(./wpi-update -s))
+
+    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}.img"
     # IMG_FILE="${PATH_OUTPUT}/V$(cat $PATH_PWD/VERSION)_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.img"
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
