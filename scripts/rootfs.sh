@@ -182,8 +182,19 @@ create_rootfs() {
         rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
     fi
     
+    # 创建release文件
+    relseas_file="${PATH_ROOTFS}/etc/WalnutPi-release"
+    touch $relseas_file
+    echo "version=$(cat $PATH_PWD/VERSION)" >> $relseas_file
+    echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
+    echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
+    echo ""   >> $relseas_file
+    # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
+    # echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
+    # echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
+    # echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
     
-    # cp -r $PATH_ROOTFS $PATH_SAVE_ROOTFS
+    cat $relseas_file
     
     
     # pip 安装指定软件
@@ -216,6 +227,7 @@ create_rootfs() {
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     
+    run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
     
     # 安装kernel产生的的deb包
     cp ${PATH_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
@@ -231,23 +243,6 @@ create_rootfs() {
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
-    
-    
-    
-    # 创建release文件
-    relseas_file="${PATH_ROOTFS}/etc/WalnutPi-release"
-    touch $relseas_file
-    echo "version=$(cat $PATH_PWD/VERSION)" >> $relseas_file
-    echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
-    echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
-    echo ""   >> $relseas_file
-    # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
-    # echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
-    # echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
-    # echo "toolchain=$TOOLCHAIN_FILE_NAME"  >> $relseas_file
-
-    cat $relseas_file
-    
     
     
     # apt安装各板指定软件
