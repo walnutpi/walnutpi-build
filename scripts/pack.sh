@@ -39,9 +39,9 @@ do_pack() {
     FILE_ROOTFS="$FILE_ROOTFS_TAR"
     cd ${PATH_SOURCE}/wpi-update
     VERSION_APT=""
-    # run_status "get wpi-update version" 
-    VERSION_APT=$(echo $(./wpi-update -s))
-
+    # run_status "get wpi-update version"
+    VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
+    
     IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}.img"
     # IMG_FILE="${PATH_OUTPUT}/V$(cat $PATH_PWD/VERSION)_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.img"
     if [ -f "$IMG_FILE" ]; then
@@ -58,7 +58,7 @@ do_pack() {
     
     # 创建img文件
     IMG_SIZE=$((PART1_SIZE + PART2_SIZE + 2 ))
-    run_status "create img file" dd if=/dev/zero of=$IMG_FILE bs=1M count=$IMG_SIZE
+    run_status "create img file: $IMG_FILE " dd if=/dev/zero of=$IMG_FILE bs=1M count=$IMG_SIZE
     
     # 创建分区
     echo "创建分区"
@@ -112,15 +112,15 @@ do_pack() {
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
-
+    
     # 运行板子自带的脚本
     if [ -f $FILE_BOARD_AFTER_PACK ]; then
         cp $FILE_BOARD_AFTER_PACK  ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
         run_status "run ${FILE_AFTER_PACK}" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash  /opt/${FILE_AFTER_PACK}"
         rm ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
     fi
-
-
+    
+    
     
     umount $MOUNT_DISK2/boot
     

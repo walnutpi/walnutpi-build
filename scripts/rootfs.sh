@@ -182,13 +182,18 @@ create_rootfs() {
         rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
     fi
     
+    cd ${PATH_SOURCE}/wpi-update
+    # run_status "get wpi-update version"
+    VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
+    
     # 创建release文件
     relseas_file="${PATH_ROOTFS}/etc/WalnutPi-release"
     touch $relseas_file
-    echo "version=$(cat $PATH_PWD/VERSION)" >> $relseas_file
+    echo "version=${VERSION_APT}" >> $relseas_file
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
     echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
     echo ""   >> $relseas_file
+
     # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
     # echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
     # echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
