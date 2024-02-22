@@ -70,9 +70,11 @@ FILE_APT_DESKTOP_BOARD="${DIR_BOARD}/apt-desktop"
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
-options+=("u-boot"	 "U-boot bin")
-options+=("kernel"	 "Kernel Package")
-options+=("rootfs"	 "Rootfs tar")
+options+=("u-boot"	 "generate U-boot .bin")
+options+=("kernel"	 "generate Kernel .deb")
+options+=("rootfs"	 "generate Rootfs .tar")
+options+=("pack_rootfs"	 "pack the tmp Rootfs files")
+options+=("pack_image"	 "pack the tmp files to generate image")
 BUILD_OPT=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
@@ -94,10 +96,16 @@ source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
 
 case "$BUILD_OPT" in
+    "pack_rootfs")
+        choose_rootfs
+    ;;
     "rootfs")
         choose_rootfs
     ;;
     "image")
+        choose_rootfs
+    ;;
+    "pack_image")
         choose_rootfs
         
 esac
@@ -128,14 +136,20 @@ case "$BUILD_OPT" in
     ;;
     "rootfs")
         compile_kernel
-        create_rootfs
+        generate_tmp_rootfs
+        pack_rootfs
+    ;;
+    "pack_rootfs")
+        pack_rootfs
     ;;
     "image")
-        if [ $DEBUG_MODE -eq 0 ]; then
-            compile_uboot
-            compile_kernel
-        fi
-        create_rootfs
+        compile_uboot
+        compile_kernel
+        generate_tmp_rootfs
+        pack_rootfs
+        do_pack
+    ;;
+    "pack_image")
         do_pack
     ;;
 esac

@@ -8,8 +8,6 @@ OPT_ROOTFS_TYPE=""
 PATH_ROOTFS=""
 FILE_ROOTFS_TAR=""
 
-
-
 choose_rootfs() {
     # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
     # titlestr="Choose an version"
@@ -39,7 +37,7 @@ choose_rootfs() {
     [[ -z $OPT_ROOTFS_TYPE ]] && exit
     
     FILE_ROOTFS_TAR="${PATH_OUTPUT}/rootfs_${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
-    PATH_ROOTFS=${PATH_TMP}/${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
+    PATH_ROOTFS=${PATH_TMP}/${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
     # titlestr="Choose  Language"
     # options+=("cn"    "Chinese")
@@ -54,7 +52,7 @@ choose_rootfs() {
     
 }
 
-create_rootfs() {
+generate_tmp_rootfs() {
     # set -e
     PATH_SAVE_ROOTFS=${PATH_SOURCE}/${OPT_OS_VER}_${CHIP_ARCH}_${OPT_ROOTFS_TYPE}
     FILE_SAVE_ROOTFS=${PATH_SAVE_ROOTFS}.tar
@@ -280,9 +278,12 @@ create_rootfs() {
     
     
     
-    cd ${PATH_ROOTFS}
-    run_status "create tar" tar -c -I 'xz -T0' -f $FILE_ROOTFS_TAR ./
+
     # run_status "create tar"  tar -czf $FILE_ROOTFS_TAR ./
     # rm -r $PATH_ROOTFS
-    
+}
+
+pack_rootfs() {
+    cd ${PATH_ROOTFS}
+    run_status "create tar" tar -c -I 'xz -T0' -f $FILE_ROOTFS_TAR ./
 }
