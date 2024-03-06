@@ -1,5 +1,6 @@
 #!/bin/bash
-
+FLAG_DEBIAN12_BOOKWORM="debian12"
+FLAG_UBUNTU22_JAMMY="ubuntu22"
 FILE_BEFOR_ROOTFS="befor_rootfs.sh"
 FILE_BOARD_BEFOR_ROOTFS="${DIR_BOARD}/${FILE_BEFOR_ROOTFS}"
 
@@ -10,20 +11,19 @@ FILE_ROOTFS_TAR=""
 
 choose_rootfs() {
     # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
-    # titlestr="Choose an version"
-    # options+=("bookworm"    "debian 12(bookworm)")
-    # options+=("bullseye"    "debian 11(bullseye)")
-    # options+=("buster"  "debian 10(buster)")
-    # OPT_OS_VER=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-    #             --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-    #             --cancel-button Exit --ok-button Select "${options[@]}" \
-    #             3>&1 1>&2 2>&3)
-    # unset options
-    # echo ${OPT_OS_VER}
-    # [[ -z ${OPT_OS_VER} ]] && exit
+    titlestr="Choose an version"
+    options+=(${FLAG_DEBIAN12_BOOKWORM}    "debian 12(bookworm)")
+    options+=(${FLAG_UBUNTU22_JAMMY}    "ubuntu 22.04(Jammy)")
+    OPT_OS_VER=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo ${OPT_OS_VER}
+    [[ -z ${OPT_OS_VER} ]] && exit
     
     
-    OPT_OS_VER="bookworm"
+    # OPT_OS_VER=${FLAG_DEBIAN12_BOOKWORM}
     
     titlestr="Server or Graphics"
     options+=("server"    "server")
@@ -39,6 +39,12 @@ choose_rootfs() {
     FILE_ROOTFS_TAR="${PATH_OUTPUT}/rootfs_${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
     PATH_ROOTFS=${PATH_TMP}/${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
+    FILE_APT_BASE="${DIR_BOARD}/${OPT_OS_VER}/apt-base"
+    FILE_APT_DESKTOP="${DIR_BOARD}/${OPT_OS_VER}/apt-desktop"
+    FILE_APT_BASE_BOARD="${DIR_BOARD}/${OPT_OS_VER}/wpi-base"
+    FILE_APT_DESKTOP_BOARD="${DIR_BOARD}/${OPT_OS_VER}/wpi-desktop"
+    
+
     # titlestr="Choose  Language"
     # options+=("cn"    "Chinese")
     # options+=("en"    "English")
@@ -69,41 +75,70 @@ generate_tmp_rootfs() {
     if [[ -f $FILE_SAVE_ROOTFS ]]; then
         run_status "unzip last rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
     else
+        
         run_as_client mkdir ${PATH_ROOTFS} -p
-        if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
-            debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-        else
-            debootstrap --foreign --verbose  --arch=${CHIP_ARCH} ${OPT_OS_VER} ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+        case "${OPT_OS_VER}" in
+            ${FLAG_DEBIAN12_BOOKWORM})
+                if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
+                    debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+                else
+                    debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+                fi
+                
+                exit_if_last_error
+                
+                qemu_arch=""
+                case "${CHIP_ARCH}" in
+                    "arm64")
+                        qemu_arch="aarch64"
+                    ;;
+                    "arm")
+                        qemu_arch="arm"
+                    ;;
+                esac
+                cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
+                chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
+                
+                # 完成rootfs的初始化
+                cd ${PATH_ROOTFS}
+                mount_chroot $PATH_ROOTFS
+                LC_ALL=C LANGUAGE=C LANG=C chroot ${PATH_ROOTFS} /debootstrap/debootstrap --second-stage –verbose
+                exit_if_last_error
+                run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+                umount_chroot $PATH_ROOTFS
+                
+                tar -czf $FILE_SAVE_ROOTFS ./
+            ;;
             
-        fi
-        
-        exit_if_last_error
-        
-        qemu_arch=""
-        case "${CHIP_ARCH}" in
-            "arm64")
-                qemu_arch="aarch64"
+            ${FLAG_UBUNTU22_JAMMY} )
+                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_SAVE_ROOTFS
+                run_status "unzip rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
+                
+                qemu_arch=""
+                case "${CHIP_ARCH}" in
+                    "arm64")
+                        qemu_arch="aarch64"
+                    ;;
+                    "arm")
+                        qemu_arch="arm"
+                    ;;
+                esac
+                cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
+                chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
+
+                # base默认没写dns服务器
+                # sudo echo "nameserver 8.8.8.8"  > ${PATH_ROOTFS}/etc/resolv.conf
+                FILE="${PATH_ROOTFS}/etc/resolv.conf"
+                LINE="nameserver 8.8.8.8"
+                grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+                
             ;;
-            "arm")
-                qemu_arch="arm"
-            ;;
+            
         esac
-        cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
-        chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
         
-        # 完成rootfs的初始化
-        cd ${PATH_ROOTFS}
-        mount_chroot $PATH_ROOTFS
-        LC_ALL=C LANGUAGE=C LANG=C chroot ${PATH_ROOTFS} /debootstrap/debootstrap --second-stage –verbose
-        exit_if_last_error
-        run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-        umount_chroot $PATH_ROOTFS
-        
-        tar -czf $FILE_SAVE_ROOTFS ./
     fi
     
-    
-    # 这个文件内存放安装过的软件的列表
+    # 用这个文件作为安装过的软件的列表，在重复构建时节省时间
     SF_LIST="${PATH_ROOTFS}/etc/release-apt"
     if [[ ! -f $SF_LIST ]]; then
         touch $SF_LIST
@@ -191,7 +226,7 @@ generate_tmp_rootfs() {
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
     echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
     echo ""   >> $relseas_file
-
+    
     # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
     # echo "kernel_version=$LINUX_BRANCH"  >> $relseas_file
     # echo "kernel_config=$LINUX_CONFIG"  >> $relseas_file
@@ -270,6 +305,13 @@ generate_tmp_rootfs() {
     # sed -i "/${APT_SOURCES_TMP}/d" ${PATH_ROOTFS}/etc/apt/sources.list
     sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     
+    # 某些操作会导致出现一个跟本机用户同名的文件夹，删掉他吧
+    original_user=$(who am i | awk '{print $1}')
+    if [ -d $PATH_ROOTFS/home/$original_user ]; then
+        rm -r $PATH_ROOTFS/home/$original_user
+    fi
+
+
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
     if [ -f "$FILE_ROOTFS_TAR" ]; then
@@ -278,7 +320,7 @@ generate_tmp_rootfs() {
     
     
     
-
+    
     # run_status "create tar"  tar -czf $FILE_ROOTFS_TAR ./
     # rm -r $PATH_ROOTFS
 }

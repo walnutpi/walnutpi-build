@@ -7,12 +7,11 @@ PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
 PATH_LOG="${PATH_PWD}/log"
 PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-
 PATH_SF_LIST="${PATH_PWD}/software-list"
 
 FILE_PIP_LIST="${PATH_SF_LIST}/pip"
-FILE_APT_BASE="${PATH_SF_LIST}/apt-base"
-FILE_APT_DESKTOP="${PATH_SF_LIST}/apt-desktop"
+FILE_APT_BASE=""
+FILE_APT_DESKTOP=""
 FILE_APT_BASE_BOARD=""
 FILE_APT_DESKTOP_BOARD=""
 
@@ -25,23 +24,6 @@ create_dir $PATH_OUTPUT
 create_dir $PATH_TMP
 create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
-
-if [ ! -f $FILE_PIP_LIST ]; then
-    touch $FILE_PIP_LIST
-    touch $FILE_APT_BASE
-    touch $FILE_APT_DESKTOP
-    echo "Please add your configuration to the file ${FILE_PIP_LIST} ${FILE_APT_BASE} ${FILE_APT_DESKTOP}"
-    exit
-fi
-if [ ! -f $FILE_APT_BASE ]; then
-    echo "Please add your configuration to the file ${FILE_APT_BASE}"
-    exit
-fi
-if [ ! -f $FILE_APT_DESKTOP ]; then
-    echo "Please add your configuration to the file ${FILE_APT_DESKTOP}"
-    exit
-fi
-
 
 
 TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
@@ -65,8 +47,6 @@ unset options
 echo $DIR_BOARD
 [[ -z $DIR_BOARD ]] && exit
 
-FILE_APT_BASE_BOARD="${DIR_BOARD}/apt-base"
-FILE_APT_DESKTOP_BOARD="${DIR_BOARD}/apt-desktop"
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
@@ -135,9 +115,7 @@ case "$BUILD_OPT" in
         compile_kernel
     ;;
     "rootfs")
-        compile_kernel
         generate_tmp_rootfs
-        pack_rootfs
     ;;
     "pack_rootfs")
         pack_rootfs

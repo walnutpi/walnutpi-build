@@ -1,7 +1,7 @@
 wpi-user
 wpi-host-name
 wpi-welcome-info
-wpi-lightdm
+# wpi-lightdm
 walnutpi-lib
 
 conf-h616-audio
@@ -22,4 +22,4 @@ service-h616-mac-detect
 service-resize-part
 service-aw859-bluetooth
 
-walnutpi1b-base 
+# walnutpi1b-base 
