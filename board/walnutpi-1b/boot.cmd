@@ -29,7 +29,11 @@ if test "${console_uart}" = "uart3"; then setenv consoleargs "console=ttyS3,1152
 if test "${console_uart}" = "uart4"; then setenv consoleargs "console=ttyS4,115200"; fi
 if test "${console_uart}" = "null"; then setenv consoleargs "console=/dev/null"; fi
 
-if test "${bootlogo}" = "true"; then setenv consoleargs "bootsplash.bootfile=bootsplash.armbian ${consoleargs}"; fi
+if test "${bootlogo}" = "true"; then
+	setenv consoleargs "splash plymouth.ignore-serial-consoles ${consoleargs}"
+else
+	setenv consoleargs "splash=verbose ${consoleargs}"
+fi
 
 # get PARTUUID of first partition on SD/eMMC it was loaded from
 # mmc 0 is always mapped to device u-boot (2016.09+) was loaded from
