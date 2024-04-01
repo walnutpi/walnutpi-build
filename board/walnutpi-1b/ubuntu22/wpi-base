@@ -15,7 +15,7 @@ set-lcd
 pyuic       
 python3-sudo
 
-hcitools 
+bluez 
 
 service-disable-fbcon
 service-h616-mac-detect
