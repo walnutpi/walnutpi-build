@@ -81,7 +81,7 @@ is_enabled() {
 generate_kernel_headers() {
     tmpdir=$1
     arch=$2
-    version=$(get_linux_version ./)``
+    version=$(get_linux_version ./)
     
     destdir=$tmpdir/usr/src/linux-headers-$version
     create_dir $destdir
@@ -151,6 +151,8 @@ replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
 replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
 replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME"
 
+update-initramfs -uv -k $version
+
 EOF
     chmod +x $tmpdir/DEBIAN/postinst
     
@@ -207,7 +209,7 @@ compile_kernel() {
     fi
     create_dir  $TMP_KERNEL_DEB/boot
     
-    
+    cp ${PATH_KERNEL}/.config $TMP_KERNEL_DEB/boot/config-$(get_linux_version ./)
     run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $TMP_KERNEL_DEB/boot/
     run_status "export modules" make  modules_install INSTALL_MOD_PATH="$TMP_KERNEL_DEB" ARCH=${CHIP_ARCH}
     run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$TMP_KERNEL_DEB/boot/" ARCH=${CHIP_ARCH}

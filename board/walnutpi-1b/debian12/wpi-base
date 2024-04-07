@@ -1,7 +1,7 @@
 wpi-user
 wpi-host-name
 wpi-welcome-info
-# wpi-lightdm
+wpi-lightdm
 walnutpi-lib
 
 conf-h616-audio
@@ -16,6 +16,8 @@ pyuic
 python3-sudo
 
 bluez 
+initramfs-tools-hook
+
 
 service-disable-fbcon
 service-h616-mac-detect

@@ -11,7 +11,7 @@ MOUNT_DISK1="${PATH_TMP}/PART1"
 MOUNT_DISK2="${PATH_TMP}/PART2"
 
 IMG_FILE=""
-PART1_SIZE=100
+PART1_SIZE=150
 PART2_SIZE=0
 
 
@@ -51,7 +51,7 @@ do_pack() {
     check_resource
     
     ROOTFS_SIZE=$(du -sm $PATH_ROOTFS | cut -f1)
-    PART2_SIZE=$((ROOTFS_SIZE + 200))
+    PART2_SIZE=$((ROOTFS_SIZE + 500))
     
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
@@ -112,15 +112,18 @@ do_pack() {
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
+
+    PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
+    kernel_version=$(get_linux_version $PATH_KERNEL)
+    run_status "generate initramfs" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
     
+
     # 运行板子自带的脚本
     if [ -f $FILE_BOARD_AFTER_PACK ]; then
         cp $FILE_BOARD_AFTER_PACK  ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
         run_status "run ${FILE_AFTER_PACK}" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash  /opt/${FILE_AFTER_PACK}"
         rm ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}
     fi
-    
-    
     
     umount $MOUNT_DISK2/boot
     

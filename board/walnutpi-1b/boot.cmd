@@ -73,11 +73,11 @@ else
 	fi
 fi
 
-# load ${devtype} ${devnum} ${ramdisk_addr_r} ${prefix}uInitrd
+load ${devtype} ${devnum} ${ramdisk_addr_r} ${prefix}uInitrd
 load ${devtype} ${devnum} ${kernel_addr_r} ${prefix}Image
 
-# booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
-booti ${kernel_addr_r} - ${fdt_addr_r}
+booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
+# booti ${kernel_addr_r} - ${fdt_addr_r}
 
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr
