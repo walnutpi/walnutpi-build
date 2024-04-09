@@ -17,11 +17,12 @@ python3-sudo
 
 bluez 
 initramfs-tools-hook
-
+plymouth-themes-walnutpi
 
 service-disable-fbcon
 service-h616-mac-detect
 service-resize-part
 service-aw859-bluetooth
+service-boot-script
 
 # walnutpi1b-base 

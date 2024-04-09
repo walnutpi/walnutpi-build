@@ -58,3 +58,5 @@ xinput-calibrator
 xserver-xorg-input-synaptics
 xfwm4  
 lightdm
+
+plymouth-themes
