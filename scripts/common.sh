@@ -12,7 +12,7 @@ exit_if_last_error() {
     fi
 }
 
-run_as_client() {
+run_as_silent() {
     $@ > /dev/null 2>&1
 }
 
