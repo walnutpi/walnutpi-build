@@ -18,14 +18,14 @@ run_as_silent() {
 
 
 run_client_when_successfuly() {
-    output=$("$@" 2>&1)
+    local output=$("$@" 2>&1)
     if [ $? -ne 0 ]; then
         echo "$output"
     fi
 }
 
 create_dir() {
-    directory_path=$1
+    local directory_path=$1
     if [ ! -d "$directory_path" ]; then
         run_as_user mkdir -p "$directory_path"
     fi
@@ -37,18 +37,18 @@ run_status() {
     local message=$1
     shift
     # set +e
-    start_time=$(date +%s)
+    local start_time=$(date +%s)
     while true; do
         echo -e  -n "...\t$message"
-        output=$("$@" 2>&1)
-        exit_status=$?
+        local output=$("$@" 2>&1)
+        local exit_status=$?
         if [ $exit_status -ne 0 ]; then
             echo -e "\r\033[31m[error]\033[0m"
             echo -e $output
             sleep 3
         else
-            end_time=$(date +%s)
-            duration=$((end_time - start_time))
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
             echo -e "\r\033[32m[ok]\033[0m\t${message}\t${duration}s"
             break
         fi
@@ -83,7 +83,7 @@ umount_chroot()
 
 clone_url() {
     local git_url="$1"
-    dir_name=$(basename "$git_url" .git)
+    local dir_name=$(basename "$git_url" .git)
     
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
@@ -99,7 +99,7 @@ clone_branch() {
     local git_url="$1"
     local branch="$2"
 
-    dir_name=$(basename "$git_url" .git)
+    local dir_name=$(basename "$git_url" .git)
     [[ -n $3 ]] && dir_name=$3
     
     if [ -d "$dir_name" ]; then

@@ -79,11 +79,11 @@ is_enabled() {
 # 调用前运行先clean
 # 将linux-headers相关文件生成到参数1指定路径
 generate_kernel_headers() {
-    tmpdir=$1
-    arch=$2
-    version=$(get_linux_version ./)
+    local tmpdir=$1
+    local arch=$2
+    local version=$(get_linux_version ./)
     
-    destdir=$tmpdir/usr/src/linux-headers-$version
+    local destdir=$tmpdir/usr/src/linux-headers-$version
     create_dir $destdir
     create_dir debian
     
@@ -186,7 +186,7 @@ EOF
 compile_kernel() {
     cd $PATH_SOURCE
     
-    PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
+    local  PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
     clone_branch $LINUX_GIT $LINUX_BRANCH $PATH_KERNEL
     
     cd $PATH_KERNEL
