@@ -12,9 +12,10 @@ create_dir $PATH_KERNEL_PACKAGE
 COMPILE_ATF() {
     cd $PATH_SOURCE
     echo $ATF_GIT
-    clone_url $ATF_GIT
+    git clone  $ATF_GIT
     dirname="${PATH_SOURCE}/$(basename "$ATF_GIT" .git)"
     cd $dirname
+    git checkout $ATF_BRANCH
     run_as_user make PLAT=$ATF_PLAT  DEBUG=1 bl31 CROSS_COMPILE=$FILE_CROSS_COMPILE
     exit_if_last_error
 }
