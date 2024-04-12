@@ -39,7 +39,7 @@ fi
 # mmc 0 is always mapped to device u-boot (2016.09+) was loaded from
 if test "${devtype}" = "mmc"; then part uuid mmc 0:1 partuuid; fi
 
-setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} ${consoleargs} ${consoleargs_diplay}, consoleblank=0 loglevel=${printk_level} ubootpart=${partuuid} usb-storage.quirks=${usbstoragequirks} ${extraargs} ${extraboardargs}"
+setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} net.ifnames=0 ${consoleargs} ${consoleargs_diplay}, consoleblank=0 loglevel=${printk_level} ubootpart=${partuuid} usb-storage.quirks=${usbstoragequirks} ${extraargs} ${extraboardargs}"
 
 if test "${docker_optimizations}" = "on"; then setenv bootargs "${bootargs} cgroup_enable=memory swapaccount=1"; fi
 
@@ -73,11 +73,19 @@ else
 	fi
 fi
 
-# load ${devtype} ${devnum} ${ramdisk_addr_r} ${prefix}uInitrd
 load ${devtype} ${devnum} ${kernel_addr_r} ${prefix}Image
 
-# booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
-booti ${kernel_addr_r} - ${fdt_addr_r}
+if test ${bootlogo} = true; then
+	if test -e ${devtype} ${devnum} ${prefix}uInitrd; then
+		load ${devtype} ${devnum} ${ramdisk_addr_r} ${prefix}uInitrd
+		booti ${kernel_addr_r} ${ramdisk_addr_r} ${fdt_addr_r}
+	else
+		booti ${kernel_addr_r} - ${fdt_addr_r}
+	fi
+else
+    booti ${kernel_addr_r} - ${fdt_addr_r}
+fi
+
 
 # Recompile with:
 # mkimage -C none -A arm -T script -d boot.cmd boot.scr

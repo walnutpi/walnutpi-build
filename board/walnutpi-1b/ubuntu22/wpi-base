@@ -15,7 +15,9 @@ set-lcd
 pyuic       
 python3-sudo
 
-hcitools 
+bluez 
+initramfs-tools-hook
+plymouth-themes-walnutpi
 
 service-disable-fbcon
 service-h616-mac-detect

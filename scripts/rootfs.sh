@@ -63,7 +63,7 @@ generate_tmp_rootfs() {
     PATH_SAVE_ROOTFS=${PATH_SOURCE}/${OPT_OS_VER}_${CHIP_ARCH}_${OPT_ROOTFS_TYPE}
     FILE_SAVE_ROOTFS=${PATH_SAVE_ROOTFS}.tar
     if [[ -d $PATH_ROOTFS ]]; then
-        run_as_client umount_chroot $PATH_ROOTFS
+        run_as_silent umount_chroot $PATH_ROOTFS
         rm -r ${PATH_ROOTFS}
     fi
     mkdir ${PATH_ROOTFS}
@@ -76,7 +76,7 @@ generate_tmp_rootfs() {
         run_status "unzip last rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
     else
         
-        run_as_client mkdir ${PATH_ROOTFS} -p
+        run_as_silent mkdir ${PATH_ROOTFS} -p
         case "${OPT_OS_VER}" in
             ${FLAG_DEBIAN12_BOOKWORM})
                 if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then

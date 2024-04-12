@@ -1,7 +1,7 @@
 wpi-user
 wpi-host-name
 wpi-welcome-info
-# wpi-lightdm
+wpi-lightdm
 walnutpi-lib
 
 conf-h616-audio
@@ -15,11 +15,14 @@ set-lcd
 pyuic       
 python3-sudo
 
-hcitools 
+bluez 
+initramfs-tools-hook
+plymouth-themes-walnutpi
 
 service-disable-fbcon
 service-h616-mac-detect
 service-resize-part
 service-aw859-bluetooth
+service-boot-script
 
 # walnutpi1b-base 
