@@ -16,6 +16,8 @@ pyuic
 python3-sudo
 
 bluez 
+initramfs-tools-hook
+plymouth-themes-walnutpi
 
 service-disable-fbcon
 service-h616-mac-detect
