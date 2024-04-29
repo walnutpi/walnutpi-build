@@ -23,5 +23,6 @@ service-disable-fbcon
 service-h616-mac-detect
 service-resize-part
 service-aw859-bluetooth
+service-h616-conf-thermal-trip
 
 # walnutpi1b-base 
