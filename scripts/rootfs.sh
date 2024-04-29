@@ -215,6 +215,8 @@ generate_tmp_rootfs() {
         rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
     fi
     
+    cd ${PATH_SOURCE}
+    run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cd ${PATH_SOURCE}/wpi-update
     # run_status "get wpi-update version"
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
@@ -261,8 +263,7 @@ generate_tmp_rootfs() {
     fi
     
     # wpi-update
-    cd ${PATH_SOURCE}
-    run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
+
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
