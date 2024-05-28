@@ -79,20 +79,21 @@ source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
 
 case "$BUILD_OPT" in
-    "pack_rootfs")
+    "pack_rootfs" | "pack_image" | "rootfs" | "image")
         choose_rootfs
-    ;;
-    "rootfs")
-        choose_rootfs
-    ;;
-    "image")
-        choose_rootfs
-    ;;
-    "pack_image")
-        choose_rootfs
-        
 esac
-
+if [ "$BUILD_OPT" == "image" ] && [ -f ${PATH_OUTPUT}/${UBOOT_BIN_NAME} ]; then
+    titlestr="recompile the u-boot ?"
+    options+=("no"    "no")
+    options+=("yes"    "yes")
+    OPT_UBOOT_REBUILD=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo ${OPT_UBOOT_REBUILD}
+    [[ -z ${OPT_UBOOT_REBUILD} ]] && exit
+fi
 
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
@@ -106,7 +107,6 @@ if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
     wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
     run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
 fi
-
 
 
 exec 3>&1 4>&2
@@ -125,7 +125,10 @@ case "$BUILD_OPT" in
         pack_rootfs
     ;;
     "image")
-        compile_uboot
+        if [ -z ${OPT_UBOOT_REBUILD} ] || [ ${OPT_UBOOT_REBUILD} == "yes" ] ; then
+            
+            compile_uboot
+        fi
         compile_kernel
         generate_tmp_rootfs
         pack_rootfs
