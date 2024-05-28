@@ -17,6 +17,9 @@ FILE_APT_DESKTOP_BOARD=""
 
 DIR_BOARD=""
 
+FLAG_DIR="${PATH_TMP}/FLAGS"
+FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
+
 START_DATE=$(date)
 
 create_dir $PATH_SOURCE
@@ -91,11 +94,12 @@ case "$BUILD_OPT" in
 esac
 
 
-if [ $DEBUG_MODE -eq 0 ]; then
+if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
     apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
     exit_if_last_error
+    mkdir -p ${FLAG_DIR_NO_FIRST}
 fi
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
