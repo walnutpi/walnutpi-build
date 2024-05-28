@@ -4,7 +4,7 @@ PACKAGE_IMAGE_NAME=linux-image-${BOARD_NAME_SMALL}-${LINUX_BRANCH}
 DEB_IMAGE_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 
 
-PATH_KERNEL_PACKAGE=${PATH_OUTPUT}/kernel-${BOARD_NAME}
+PATH_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel-${BOARD_NAME}
 create_dir $PATH_KERNEL_PACKAGE
 
 
@@ -35,7 +35,7 @@ compile_uboot() {
     run_as_user make BL31=../arm-trusted-firmware/build/$ATF_PLAT/debug/bl31.bin \
     CROSS_COMPILE=$FILE_CROSS_COMPILE
     exit_if_last_error
-    cp $UBOOT_BIN_NAME $PATH_OUTPUT
+    cp $UBOOT_BIN_NAME $PATH_OUTPUT_BOARD
     
 }
 

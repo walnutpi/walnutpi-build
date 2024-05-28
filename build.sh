@@ -50,6 +50,10 @@ unset options
 echo $DIR_BOARD
 [[ -z $DIR_BOARD ]] && exit
 
+PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${DIR_BOARD##*/}
+echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
+create_dir $PATH_OUTPUT_BOARD
+
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
@@ -82,7 +86,7 @@ case "$BUILD_OPT" in
     "pack_rootfs" | "pack_image" | "rootfs" | "image")
         choose_rootfs
 esac
-if [ "$BUILD_OPT" == "image" ] && [ -f ${PATH_OUTPUT}/${UBOOT_BIN_NAME} ]; then
+if [ "$BUILD_OPT" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
     titlestr="recompile the u-boot ?"
     options+=("no"    "no")
     options+=("yes"    "yes")
@@ -126,7 +130,6 @@ case "$BUILD_OPT" in
     ;;
     "image")
         if [ -z ${OPT_UBOOT_REBUILD} ] || [ ${OPT_UBOOT_REBUILD} == "yes" ] ; then
-            
             compile_uboot
         fi
         compile_kernel
