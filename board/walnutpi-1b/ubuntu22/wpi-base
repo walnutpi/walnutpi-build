@@ -9,6 +9,7 @@ conf-qtenv
 enable-ssh-root  
 disable-wifi-random
 
+set-emmc
 set-device  
 set-language  
 set-lcd
