@@ -36,7 +36,7 @@ choose_rootfs() {
     echo $OPT_ROOTFS_TYPE
     [[ -z $OPT_ROOTFS_TYPE ]] && exit
     
-    FILE_ROOTFS_TAR="${PATH_OUTPUT}/rootfs_${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
+    FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
     PATH_ROOTFS=${PATH_TMP}/${CHIP_NAME}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
     FILE_APT_BASE="${DIR_BOARD}/${OPT_OS_VER}/apt-base"

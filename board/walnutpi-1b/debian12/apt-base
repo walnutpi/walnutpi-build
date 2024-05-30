@@ -13,6 +13,7 @@ evtest
 rfkill
 bluez
 ntp
+ntpdate
 
 ssh
 sudo

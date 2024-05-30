@@ -5,7 +5,7 @@ FILE_BOARD_AFTER_PACK="${DIR_BOARD}/${FILE_AFTER_PACK}"
 
 
 FILE_ROOTFS=""
-FILE_UBOOT="${PATH_OUTPUT}/${UBOOT_BIN_NAME}"
+FILE_UBOOT="${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME}"
 
 MOUNT_DISK1="${PATH_TMP}/PART1"
 MOUNT_DISK2="${PATH_TMP}/PART2"
@@ -43,7 +43,6 @@ do_pack() {
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
     IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}.img"
-    # IMG_FILE="${PATH_OUTPUT}/V$(cat $PATH_PWD/VERSION)_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.img"
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
     fi
@@ -98,26 +97,18 @@ do_pack() {
     run_status "add rootfs" tar xf  $FILE_ROOTFS -C $MOUNT_DISK2  -I 'xz -T0'
     run_status "move part2/boot to part1" mv $MOUNT_DISK2/boot/*  $MOUNT_DISK1
     
-    # run_status "boot.scr" mkimage -C none -A arm -T script -d ${PATH_BOOTFILE}/boot.cmd ${PATH_BOOTFILE}/boot.scr
-    # cp ${PATH_BOOTFILE}/boot.cmd $MOUNT_DISK1
-    # cp ${PATH_BOOTFILE}/boot.scr $MOUNT_DISK1
-    # cp ${DIR_BOARD}/config.txt $MOUNT_DISK1
-    
-    # run_status "device-tree" cp -r ${PATH_OUTPUT}/dtb/allwinner/* $MOUNT_DISK1
-    # mv $MOUNT_DISK1/overlay $MOUNT_DISK1/overlays
-    
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${MOUNT_DISK1}/config.txt
     echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
-
+    
     PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
     kernel_version=$(get_linux_version $PATH_KERNEL)
     run_status "generate initramfs" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
     
-
+    
     # 运行板子自带的脚本
     if [ -f $FILE_BOARD_AFTER_PACK ]; then
         cp $FILE_BOARD_AFTER_PACK  ${MOUNT_DISK2}/opt/${FILE_AFTER_PACK}

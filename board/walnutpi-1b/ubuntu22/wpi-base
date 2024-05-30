@@ -9,6 +9,7 @@ conf-qtenv
 enable-ssh-root  
 disable-wifi-random
 
+set-emmc
 set-device  
 set-language  
 set-lcd
@@ -24,5 +25,6 @@ service-h616-mac-detect
 service-resize-part
 service-aw859-bluetooth
 service-h616-conf-thermal-trip
+service-w1b-dis-mmc2
 
 # walnutpi1b-base 

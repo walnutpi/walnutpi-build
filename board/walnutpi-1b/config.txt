@@ -1,6 +1,7 @@
 bootlogo=false
 overlay_prefix=sun50i-h616
 fdtfile=sun50i-h616-walnutpi-1b
+fdtfile_emmc=sun50i-h616-walnutpi-1b-emmc
 
 ##  enable the console with screen
 console_display=enable

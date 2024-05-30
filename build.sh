@@ -17,6 +17,9 @@ FILE_APT_DESKTOP_BOARD=""
 
 DIR_BOARD=""
 
+FLAG_DIR="${PATH_TMP}/FLAGS"
+FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
+
 START_DATE=$(date)
 
 create_dir $PATH_SOURCE
@@ -47,6 +50,10 @@ unset options
 echo $DIR_BOARD
 [[ -z $DIR_BOARD ]] && exit
 
+PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${DIR_BOARD##*/}
+echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
+create_dir $PATH_OUTPUT_BOARD
+
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
@@ -76,33 +83,34 @@ source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
 
 case "$BUILD_OPT" in
-    "pack_rootfs")
+    "pack_rootfs" | "pack_image" | "rootfs" | "image")
         choose_rootfs
-    ;;
-    "rootfs")
-        choose_rootfs
-    ;;
-    "image")
-        choose_rootfs
-    ;;
-    "pack_image")
-        choose_rootfs
-        
 esac
+if [ "$BUILD_OPT" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
+    titlestr="recompile the u-boot ?"
+    options+=("no"    "no")
+    options+=("yes"    "yes")
+    OPT_UBOOT_REBUILD=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo ${OPT_UBOOT_REBUILD}
+    [[ -z ${OPT_UBOOT_REBUILD} ]] && exit
+fi
 
-
-if [ $DEBUG_MODE -eq 0 ]; then
+if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
     apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
     exit_if_last_error
+    mkdir -p ${FLAG_DIR_NO_FIRST}
 fi
 
 if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
     wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
     run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
 fi
-
 
 
 exec 3>&1 4>&2
@@ -121,7 +129,9 @@ case "$BUILD_OPT" in
         pack_rootfs
     ;;
     "image")
-        compile_uboot
+        if [ -z ${OPT_UBOOT_REBUILD} ] || [ ${OPT_UBOOT_REBUILD} == "yes" ] ; then
+            compile_uboot
+        fi
         compile_kernel
         generate_tmp_rootfs
         pack_rootfs
