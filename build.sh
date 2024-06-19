@@ -74,7 +74,6 @@ echo $BUILD_OPT
 
 source $DIR_BOARD/board.conf
 
-FILE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
 
 
 
@@ -107,9 +106,19 @@ if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     mkdir -p ${FLAG_DIR_NO_FIRST}
 fi
 
-if [ ! -f "${FILE_CROSS_COMPILE}gcc" ]; then
-    wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
-    run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
+if [ ! -z $TOOLCHAIN_DOWN_URL ];then
+    
+    USE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
+    if [ ! -f "${USE_CROSS_COMPILE}gcc" ] ; then
+        wget -P ${PATH_TOOLCHAIN}  $TOOLCHAIN_DOWN_URL
+        run_status "unzip toolchain" tar -xvf  ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
+    fi
+else
+    if [ ! -f /usr/bin/${CROSS_COMPILE}gcc ]; then
+        apt install ${TOOLCHAIN_NAME_IN_APT}
+    fi
+    USE_CROSS_COMPILE="${CROSS_COMPILE}"
+    
 fi
 
 

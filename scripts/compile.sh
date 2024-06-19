@@ -16,7 +16,7 @@ COMPILE_ATF() {
     dirname="${PATH_SOURCE}/$(basename "$ATF_GIT" .git)"
     cd $dirname
     git checkout $ATF_BRANCH
-    run_as_user make PLAT=$ATF_PLAT  DEBUG=1 bl31 CROSS_COMPILE=$FILE_CROSS_COMPILE
+    run_as_user make PLAT=$ATF_PLAT  DEBUG=1 bl31 CROSS_COMPILE=$USE_CROSS_COMPILE
     exit_if_last_error
 }
 
@@ -33,7 +33,7 @@ compile_uboot() {
     
     run_as_user make $UBOOT_CONFIG
     run_as_user make BL31=../arm-trusted-firmware/build/$ATF_PLAT/debug/bl31.bin \
-    CROSS_COMPILE=$FILE_CROSS_COMPILE
+    CROSS_COMPILE=$USE_CROSS_COMPILE
     exit_if_last_error
     cp $UBOOT_BIN_NAME $PATH_OUTPUT_BOARD
     
@@ -197,8 +197,8 @@ compile_kernel() {
     
     
     thread_count=$(grep -c ^processor /proc/cpuinfo)
-    run_as_user make $LINUX_CONFIG CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
-    run_as_user make -j$thread_count CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     
     exit_if_last_error
     
@@ -245,7 +245,7 @@ compile_kernel() {
     
     # 导出linux-headers文件
     cd $PATH_KERNEL_CLEAN
-    run_as_user make clean CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make clean CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     generate_kernel_headers $TMP_KERNEL_DEB $CHIP_ARCH
     
     # 如果用apt更新，会在为vfat分区内的文件创建备份时报错，所以本包的文件都不存在/boot路径下
