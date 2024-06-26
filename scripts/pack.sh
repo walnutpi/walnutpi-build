@@ -115,7 +115,7 @@ do_pack() {
 
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${MOUNT_DISK1}/config.txt
-    echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
+    echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
