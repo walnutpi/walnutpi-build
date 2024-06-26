@@ -50,6 +50,8 @@ unset options
 echo $DIR_BOARD
 [[ -z $DIR_BOARD ]] && exit
 
+source $DIR_BOARD/board.conf
+
 PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${DIR_BOARD##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
@@ -57,7 +59,7 @@ create_dir $PATH_OUTPUT_BOARD
 
 titlestr="Choose an option"
 options+=("image"	 "Full OS image for flashing")
-options+=("u-boot"	 "generate U-boot .bin")
+options+=("bootloader"	 "generate $BOOTLOADER_NAME .bin")
 options+=("kernel"	 "generate Kernel .deb")
 options+=("rootfs"	 "generate Rootfs .tar")
 options+=("pack_rootfs"	 "pack the tmp Rootfs files")
@@ -69,12 +71,6 @@ BUILD_OPT=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
 unset options
 echo $BUILD_OPT
 [[ -z $BUILD_OPT ]] && exit
-
-
-
-source $DIR_BOARD/board.conf
-
-
 
 
 source "${PATH_PWD}"/scripts/compile.sh
@@ -125,8 +121,8 @@ fi
 exec 3>&1 4>&2
 exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
 case "$BUILD_OPT" in
-    "u-boot")
-        compile_uboot
+    "bootloader" )
+        compile_bootloader
     ;;
     "kernel")
         compile_kernel
@@ -139,7 +135,7 @@ case "$BUILD_OPT" in
     ;;
     "image")
         if [ -z ${OPT_UBOOT_REBUILD} ] || [ ${OPT_UBOOT_REBUILD} == "yes" ] ; then
-            compile_uboot
+            compile_bootloader
         fi
         compile_kernel
         generate_tmp_rootfs

@@ -38,6 +38,31 @@ compile_uboot() {
     cp $UBOOT_BIN_NAME $PATH_OUTPUT_BOARD
     
 }
+compile_syterkit() {
+    cd $PATH_SOURCE
+    local dirname="${PATH_SOURCE}/$(basename "$SYTERKIT_GIT" .git)-$SYTERKIT_BRANCH"
+    clone_branch $SYTERKIT_GIT $SYTERKIT_BRANCH $dirname
+    cd $dirname
+    local workspace_name="compile_syterkit"
+    create_dir $workspace_name
+    cd $workspace_name
+    run_as_user cmake -DCMAKE_BOARD_FILE=$SYTERKIT_BOARD_FILE ..
+    exit_if_last_error
+    run_as_user make
+    exit_if_last_error
+    cp $SYTERKIT_OUT_BIN $PATH_OUTPUT_BOARD
+    
+}
+compile_bootloader()
+{
+    if [ -n "$UBOOT_CONFIG" ];then
+        compile_uboot
+    fi
+    if [ -n "$SYTERKIT_BOARD_FILE" ];then
+        compile_syterkit
+    fi
+}
+
 
 get_linux_version() {
     # $1 是传入的 Linux 源码项目的位置

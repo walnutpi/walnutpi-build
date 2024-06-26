@@ -3,9 +3,16 @@
 FILE_AFTER_PACK="after_pack.sh"
 FILE_BOARD_AFTER_PACK="${DIR_BOARD}/${FILE_AFTER_PACK}"
 
+DIR_SAVE_BOOT_FILE="${DIR_BOARD}/boot"
 
 FILE_ROOTFS=""
-FILE_UBOOT="${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME}"
+FILE_BOOT_BIN=""
+if [ -n "$UBOOT_CONFIG" ];then
+    FILE_BOOT_BIN="${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME}"
+fi
+if [ -n "$SYTERKIT_BOARD_FILE" ];then
+    FILE_BOOT_BIN="${PATH_OUTPUT_BOARD}/$(basename $SYTERKIT_OUT_BIN)"
+fi
 
 MOUNT_DISK1="${PATH_TMP}/PART1"
 MOUNT_DISK2="${PATH_TMP}/PART2"
@@ -15,16 +22,17 @@ PART1_SIZE=150
 PART2_SIZE=0
 
 
+exit_if_file_no_exsit() {
+    if [ ! -f "$1" ]; then
+        echo  $1 "no exist"
+        exit 1
+    fi
+}
+
 # 检查所需文件是不是都生成了
 check_resource() {
-    local dirs=("$FILE_ROOTFS" "$FILE_UBOOT")
-    for dir in "${dirs[@]}"; do
-        echo $dir
-        if [ ! -f "$dir" ]; then
-            echo "no exist"
-            exit 1
-        fi
-    done
+    exit_if_file_no_exsit $FILE_ROOTFS
+    exit_if_file_no_exsit $FILE_BOOT_BIN
     
 }
 
@@ -88,7 +96,7 @@ do_pack() {
     
     
     # echo "装载文件到img"
-    run_status "add uboot" dd if=$FILE_UBOOT of=$IMG_FILE bs=1K seek=8 conv=notrunc
+    run_status "add $BOOTLOADER_NAME" dd if=$FILE_BOOT_BIN of=$IMG_FILE bs=1K seek=8 conv=notrunc
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK1
     mount $MAPPER_DEVICE2 $MOUNT_DISK2
@@ -96,7 +104,15 @@ do_pack() {
     # echo "output之前生成的文件"
     run_status "add rootfs" tar xf  $FILE_ROOTFS -C $MOUNT_DISK2  -I 'xz -T0'
     run_status "move part2/boot to part1" mv $MOUNT_DISK2/boot/*  $MOUNT_DISK1
-    
+
+    # 装入本项目保存的bin文件
+    echo "DIR_SAVE_BOOT_FILE=$DIR_SAVE_BOOT_FILE"
+    ls $DIR_SAVE_BOOT_FILE
+    if [ -d $DIR_SAVE_BOOT_FILE ]; then
+        run_status "add files to part1" cp -r $DIR_SAVE_BOOT_FILE/* $MOUNT_DISK1
+    fi
+
+
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${MOUNT_DISK1}/config.txt
     echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${MOUNT_DISK2}/etc/fstab
@@ -123,7 +139,7 @@ do_pack() {
     kpartx -dv $LOOP_DEVICE
     losetup -d $LOOP_DEVICE
     
-    echo -e "\noutputfile:\n\n\t\033[32m${IMG_FILE}\033[0m\n\n"
+    echo -e "\noutputfile:\n\n\t\033[32m$(du -h ${IMG_FILE})\033[0m\n\n"
     
 }
 
