@@ -107,7 +107,6 @@ do_pack() {
 
     # 装入本项目保存的bin文件
     echo "DIR_SAVE_BOOT_FILE=$DIR_SAVE_BOOT_FILE"
-    ls $DIR_SAVE_BOOT_FILE
     if [ -d $DIR_SAVE_BOOT_FILE ]; then
         run_status "add files to part1" cp -r $DIR_SAVE_BOOT_FILE/* $MOUNT_DISK1
     fi
