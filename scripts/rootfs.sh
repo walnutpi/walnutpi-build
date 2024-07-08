@@ -288,7 +288,7 @@ generate_tmp_rootfs() {
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
     # 插入walnutpi的apt源
-    echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list
+    echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
@@ -304,7 +304,8 @@ generate_tmp_rootfs() {
     
     # 去除残余
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-    sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
+    # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
+    rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi
     
     # 某些操作会导致出现一个跟本机用户同名的文件夹，删掉他吧
     original_user=$(who am i | awk '{print $1}')
