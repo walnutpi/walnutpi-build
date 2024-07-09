@@ -15,7 +15,7 @@ FILE_APT_DESKTOP=""
 FILE_APT_BASE_BOARD=""
 FILE_APT_DESKTOP_BOARD=""
 
-DIR_BOARD=""
+OPT_BOARD_NAME=""
 
 FLAG_DIR="${PATH_TMP}/FLAGS"
 FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
@@ -42,17 +42,17 @@ for dir in $dirs; do
 done
 
 titlestr="Choose Board"
-DIR_BOARD=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+OPT_BOARD_NAME=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
 3>&1 1>&2 2>&3)
 unset options
-echo $DIR_BOARD
-[[ -z $DIR_BOARD ]] && exit
+echo $OPT_BOARD_NAME
+[[ -z $OPT_BOARD_NAME ]] && exit
 
-source $DIR_BOARD/board.conf
+source $OPT_BOARD_NAME/board.conf
 
-PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${DIR_BOARD##*/}
+PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_BOARD_NAME##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
 
@@ -64,34 +64,47 @@ options+=("kernel"	 "generate Kernel .deb")
 options+=("rootfs"	 "generate Rootfs .tar")
 options+=("pack_rootfs"	 "pack the tmp Rootfs files")
 options+=("pack_image"	 "pack the tmp files to generate image")
-BUILD_OPT=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+OPT_BUILD_MODULE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
 3>&1 1>&2 2>&3)
 unset options
-echo $BUILD_OPT
-[[ -z $BUILD_OPT ]] && exit
+echo $OPT_BUILD_MODULE
+[[ -z $OPT_BUILD_MODULE ]] && exit
 
 
 source "${PATH_PWD}"/scripts/compile.sh
 source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
 
-case "$BUILD_OPT" in
+case "$OPT_BUILD_MODULE" in
     "pack_rootfs" | "pack_image" | "rootfs" | "image")
         choose_rootfs
 esac
-if [ "$BUILD_OPT" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
+if [ "$OPT_BUILD_MODULE" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
     titlestr="recompile the u-boot ?"
     options+=("no"    "no")
     options+=("yes"    "yes")
-    OPT_UBOOT_REBUILD=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+    OPT_UBOOT_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
         --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
         --cancel-button Exit --ok-button Select "${options[@]}" \
     3>&1 1>&2 2>&3)
     unset options
-    echo ${OPT_UBOOT_REBUILD}
-    [[ -z ${OPT_UBOOT_REBUILD} ]] && exit
+    echo ${OPT_UBOOT_REBUILD_FLAG}
+    [[ -z ${OPT_UBOOT_REBUILD_FLAG} ]] && exit
+fi
+
+if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_KERNEL_PACKAGE} ]; then
+    titlestr="recompile the KERNEL ?"
+    options+=("no"    "no")
+    options+=("yes"    "yes")
+    OPT_KERNEL_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo ${OPT_KERNEL_REBUILD_FLAG}
+    [[ -z ${OPT_KERNEL_REBUILD_FLAG} ]] && exit
 fi
 
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
@@ -120,7 +133,7 @@ fi
 
 exec 3>&1 4>&2
 exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
-case "$BUILD_OPT" in
+case "$OPT_BUILD_MODULE" in
     "bootloader" )
         compile_bootloader
     ;;
@@ -134,10 +147,12 @@ case "$BUILD_OPT" in
         pack_rootfs
     ;;
     "image")
-        if [ -z ${OPT_UBOOT_REBUILD} ] || [ ${OPT_UBOOT_REBUILD} == "yes" ] ; then
+        if [ -z ${OPT_UBOOT_REBUILD_FLAG} ] || [ ${OPT_UBOOT_REBUILD_FLAG} == "yes" ] ; then
             compile_bootloader
         fi
-        compile_kernel
+        if [ -z ${OPT_KERNEL_REBUILD_FLAG} ] || [ ${OPT_KERNEL_REBUILD_FLAG} == "yes" ] ; then
+            compile_kernel
+        fi
         generate_tmp_rootfs
         pack_rootfs
         do_pack

@@ -256,10 +256,10 @@ compile_kernel() {
         fi
     done
     
-    run_status "boot.scr" mkimage -C none -A arm -T script -d ${DIR_BOARD}/boot.cmd ${DIR_BOARD}/boot.scr
-    cp ${DIR_BOARD}/boot.cmd $TMP_KERNEL_DEB/boot/
-    cp ${DIR_BOARD}/boot.scr $TMP_KERNEL_DEB/boot/
-    cp ${DIR_BOARD}/config.txt $TMP_KERNEL_DEB/boot/
+    run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_BOARD_NAME}/boot.cmd ${OPT_BOARD_NAME}/boot.scr
+    cp ${OPT_BOARD_NAME}/boot.cmd $TMP_KERNEL_DEB/boot/
+    cp ${OPT_BOARD_NAME}/boot.scr $TMP_KERNEL_DEB/boot/
+    cp ${OPT_BOARD_NAME}/config.txt $TMP_KERNEL_DEB/boot/
     
     create_dir $TMP_KERNEL_DEB/DEBIAN
     
