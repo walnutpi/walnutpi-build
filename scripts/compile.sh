@@ -43,7 +43,7 @@ compile_syterkit() {
     local dirname="${PATH_SOURCE}/$(basename "$SYTERKIT_GIT" .git)-$SYTERKIT_BRANCH"
     clone_branch $SYTERKIT_GIT $SYTERKIT_BRANCH $dirname
     cd $dirname
-    local workspace_name="compile_syterkit"
+    local workspace_name="build"
     create_dir $workspace_name
     cd $workspace_name
     run_as_user cmake -DCMAKE_BOARD_FILE=$SYTERKIT_BOARD_FILE ..
