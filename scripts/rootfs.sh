@@ -5,37 +5,40 @@ FILE_BEFOR_ROOTFS="befor_rootfs.sh"
 FILE_BOARD_BEFOR_ROOTFS="${OPT_BOARD_NAME}/${FILE_BEFOR_ROOTFS}"
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 
-OPT_OS_VER=""
-OPT_ROOTFS_TYPE=""
+# OPT_OS_VER=""
+# OPT_ROOTFS_TYPE=""
 PATH_ROOTFS=""
 FILE_ROOTFS_TAR=""
 
 choose_rootfs() {
     # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
-    titlestr="Choose an version"
-    options+=(${FLAG_DEBIAN12_BOOKWORM}    "debian 12(bookworm)")
-    options+=(${FLAG_UBUNTU22_JAMMY}    "ubuntu 22.04(Jammy)")
-    OPT_OS_VER=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo ${OPT_OS_VER}
-    [[ -z ${OPT_OS_VER} ]] && exit
-    
-    
+    if [ -z $OPT_OS_VER ]; then
+        titlestr="Choose an version"
+        options+=(${FLAG_DEBIAN12_BOOKWORM}    "debian 12(bookworm)")
+        options+=(${FLAG_UBUNTU22_JAMMY}    "ubuntu 22.04(Jammy)")
+        OPT_OS_VER=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+            --cancel-button Exit --ok-button Select "${options[@]}" \
+        3>&1 1>&2 2>&3)
+        unset options
+        echo ${OPT_OS_VER}
+        [[ -z ${OPT_OS_VER} ]] && exit
+        
+    fi
     # OPT_OS_VER=${FLAG_DEBIAN12_BOOKWORM}
     
-    titlestr="Server or Graphics"
-    options+=("server"    "server")
-    options+=("desktop"    "desktop")
-    OPT_ROOTFS_TYPE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo $OPT_ROOTFS_TYPE
-    [[ -z $OPT_ROOTFS_TYPE ]] && exit
+    if [ -z $OPT_ROOTFS_TYPE ]; then
+        titlestr="Server or Graphics"
+        options+=("server"    "server")
+        options+=("desktop"    "desktop")
+        OPT_ROOTFS_TYPE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+            --cancel-button Exit --ok-button Select "${options[@]}" \
+        3>&1 1>&2 2>&3)
+        unset options
+        echo $OPT_ROOTFS_TYPE
+        [[ -z $OPT_ROOTFS_TYPE ]] && exit
+    fi
     
     FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
     PATH_ROOTFS=${PATH_TMP}/${BOARD_NAME_SMALL}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
@@ -45,7 +48,6 @@ choose_rootfs() {
     FILE_APT_BASE_BOARD="${OPT_BOARD_NAME}/${OPT_OS_VER}/wpi-base"
     FILE_APT_DESKTOP_BOARD="${OPT_BOARD_NAME}/${OPT_OS_VER}/wpi-desktop"
     
-
     # titlestr="Choose  Language"
     # options+=("cn"    "Chinese")
     # options+=("en"    "English")
@@ -126,7 +128,7 @@ generate_tmp_rootfs() {
                 esac
                 cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
                 chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
-
+                
                 # base默认没写dns服务器
                 # sudo echo "nameserver 8.8.8.8"  > ${PATH_ROOTFS}/etc/resolv.conf
                 FILE="${PATH_ROOTFS}/etc/resolv.conf"
@@ -264,7 +266,7 @@ generate_tmp_rootfs() {
     fi
     
     # wpi-update
-
+    
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
@@ -312,8 +314,8 @@ generate_tmp_rootfs() {
     if [ -d $PATH_ROOTFS/home/$original_user ]; then
         rm -r $PATH_ROOTFS/home/$original_user
     fi
-
-
+    
+    
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
     if [ -f "$FILE_ROOTFS_TAR" ]; then

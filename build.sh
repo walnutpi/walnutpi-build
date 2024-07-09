@@ -15,10 +15,10 @@ FILE_APT_DESKTOP=""
 FILE_APT_BASE_BOARD=""
 FILE_APT_DESKTOP_BOARD=""
 
-OPT_BOARD_NAME=""
 
 FLAG_DIR="${PATH_TMP}/FLAGS"
 FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
+
 
 START_DATE=$(date)
 
@@ -29,50 +29,110 @@ create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
 
 
-TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
-TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
-backtitle="Walnut Pi building script"
-menustr=""
-
-# 获取 board 文件夹下所有的文件夹
-dirs=$(find ${PATH_PWD}/board -mindepth 1 -maxdepth 1 -type d)
-for dir in $dirs; do
-    dirname=$(basename "$dir")
-    options+=("$dir" "$dirname")
+BUILD_ARGS=$@
+para_desc () {
+    echo -e "  -b : choose board"
+    echo -e "\t-b walnutpi-1b"
+    echo ""
+    echo -e "  -p : choose which part to compile"
+    echo -e "\t-p image"
+    echo -e "\t-p bootloader"
+    echo -e "\t-p kernel"
+    echo ""
+    echo -e "  -v : choose the rootfs version"
+    echo -e "\t-v debian12"
+    echo -e "\t-v ubuntu22"
+    echo ""
+    echo -e "  -t : choose the rootfs type"
+    echo -e "\t-t server"
+    echo -e "\t-t desktop"
+    echo ""
+    echo -e "  -s--boot : Skip compilation boot when compiling an image"
+    echo -e "  -s--kernel : Skip compilation kernel when compiling an image"
+}
+while [ "x$#" != "x0" ];
+do
+    if [ "x$1" == "x" ]; then
+        shift
+        elif [ "x$1" == "x-h" ] || [ "x$1" == "x-help" ]; then
+        para_desc
+        
+        elif [ "x$1" == "x-b" ]; then
+        OPT_BOARD_NAME="${PATH_PWD}/board/$2"
+        shift
+        shift
+        elif [ "x$1" == "x-p" ]; then
+        OPT_BUILD_MODULE="$2"
+        shift
+        shift
+        elif [ "x$1" == "x-v" ]; then
+        OPT_OS_VER="$2"
+        shift
+        shift
+        elif [ "x$1" == "x-t" ]; then
+        OPT_ROOTFS_TYPE="$2"
+        shift
+        shift
+        elif [ "x$1" == "x-s--boot" ]; then
+        OPT_UBOOT_REBUILD_FLAG="no"
+        shift
+        elif [ "x$1" == "x-s--kernel" ]; then
+        OPT_KERNEL_REBUILD_FLAG="no"
+        shift
+        
+    else
+        para_desc
+        exit
+        
+    fi
 done
 
-titlestr="Choose Board"
-OPT_BOARD_NAME=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-    --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-    --cancel-button Exit --ok-button Select "${options[@]}" \
-3>&1 1>&2 2>&3)
-unset options
-echo $OPT_BOARD_NAME
-[[ -z $OPT_BOARD_NAME ]] && exit
+menustr=""
+TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
+TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
 
+
+if [ -z $OPT_BOARD_NAME ] || [ ! -d "$OPT_BOARD_NAME" ] ; then
+    backtitle="Walnut Pi building script"
+    
+    # 获取 board 文件夹下所有的文件夹，作为选项
+    dirs=$(find ${PATH_PWD}/board -mindepth 1 -maxdepth 1 -type d)
+    for dir in $dirs; do
+        dirname=$(basename "$dir")
+        options+=("$dir" "$dirname")
+    done
+    
+    titlestr="Choose Board"
+    OPT_BOARD_NAME=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo $OPT_BOARD_NAME
+    [[ -z $OPT_BOARD_NAME ]] && exit
+fi
 source $OPT_BOARD_NAME/board.conf
-
 PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_BOARD_NAME##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
 
-
-titlestr="Choose an option"
-options+=("image"	 "Full OS image for flashing")
-options+=("bootloader"	 "generate $BOOTLOADER_NAME .bin")
-options+=("kernel"	 "generate Kernel .deb")
-options+=("rootfs"	 "generate Rootfs .tar")
-options+=("pack_rootfs"	 "pack the tmp Rootfs files")
-options+=("pack_image"	 "pack the tmp files to generate image")
-OPT_BUILD_MODULE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-    --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-    --cancel-button Exit --ok-button Select "${options[@]}" \
-3>&1 1>&2 2>&3)
-unset options
-echo $OPT_BUILD_MODULE
-[[ -z $OPT_BUILD_MODULE ]] && exit
-
-
+if [ -z $OPT_BUILD_MODULE ] ; then
+    titlestr="Choose an option"
+    options+=("image"	 "Full OS image for flashing")
+    options+=("bootloader"	 "generate $BOOTLOADER_NAME .bin")
+    options+=("kernel"	 "generate Kernel .deb")
+    options+=("rootfs"	 "generate Rootfs .tar")
+    options+=("pack_rootfs"	 "pack the tmp Rootfs files")
+    options+=("pack_image"	 "pack the tmp files to generate image")
+    OPT_BUILD_MODULE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+        --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3)
+    unset options
+    echo $OPT_BUILD_MODULE
+    [[ -z $OPT_BUILD_MODULE ]] && exit
+    
+fi
 source "${PATH_PWD}"/scripts/compile.sh
 source "${PATH_PWD}"/scripts/rootfs.sh
 source "${PATH_PWD}"/scripts/pack.sh
@@ -82,29 +142,33 @@ case "$OPT_BUILD_MODULE" in
         choose_rootfs
 esac
 if [ "$OPT_BUILD_MODULE" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
-    titlestr="recompile the u-boot ?"
-    options+=("no"    "no")
-    options+=("yes"    "yes")
-    OPT_UBOOT_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo ${OPT_UBOOT_REBUILD_FLAG}
-    [[ -z ${OPT_UBOOT_REBUILD_FLAG} ]] && exit
+    if [ -z $OPT_UBOOT_REBUILD_FLAG ]; then
+        titlestr="recompile the u-boot ?"
+        options+=("no"    "no")
+        options+=("yes"    "yes")
+        OPT_UBOOT_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+            --cancel-button Exit --ok-button Select "${options[@]}" \
+        3>&1 1>&2 2>&3)
+        unset options
+        echo ${OPT_UBOOT_REBUILD_FLAG}
+        [[ -z ${OPT_UBOOT_REBUILD_FLAG} ]] && exit
+    fi
 fi
 
 if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_KERNEL_PACKAGE} ]; then
-    titlestr="recompile the KERNEL ?"
-    options+=("no"    "no")
-    options+=("yes"    "yes")
-    OPT_KERNEL_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo ${OPT_KERNEL_REBUILD_FLAG}
-    [[ -z ${OPT_KERNEL_REBUILD_FLAG} ]] && exit
+    if [ -z $OPT_KERNEL_REBUILD_FLAG ]; then
+        titlestr="recompile the KERNEL ?"
+        options+=("no"    "no")
+        options+=("yes"    "yes")
+        OPT_KERNEL_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
+            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
+            --cancel-button Exit --ok-button Select "${options[@]}" \
+        3>&1 1>&2 2>&3)
+        unset options
+        echo ${OPT_KERNEL_REBUILD_FLAG}
+        [[ -z ${OPT_KERNEL_REBUILD_FLAG} ]] && exit
+    fi
 fi
 
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
