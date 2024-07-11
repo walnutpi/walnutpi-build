@@ -290,7 +290,7 @@ generate_tmp_rootfs() {
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
     # 插入walnutpi的apt源
-    echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi
+    echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
