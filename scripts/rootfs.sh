@@ -307,7 +307,7 @@ generate_tmp_rootfs() {
     # 去除残余
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
-    rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi
+    rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     
     # 某些操作会导致出现一个跟本机用户同名的文件夹，删掉他吧
     original_user=$(who am i | awk '{print $1}')
