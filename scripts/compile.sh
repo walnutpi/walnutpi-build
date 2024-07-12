@@ -175,7 +175,7 @@ function replace_or_append() {
 replace_or_append "kernel_git" "kernel_git=$LINUX_GIT"
 replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
 replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
-replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME"
+replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME$TOOLCHAIN_NAME_IN_APT"
 
 update-initramfs -uv -k $version
 
