@@ -16,7 +16,7 @@ COMPILE_ATF() {
     dirname="${PATH_SOURCE}/$(basename "$ATF_GIT" .git)"
     cd $dirname
     git checkout $ATF_BRANCH
-    run_as_user make PLAT=$ATF_PLAT  DEBUG=1 bl31 CROSS_COMPILE=$FILE_CROSS_COMPILE
+    run_as_user make PLAT=$ATF_PLAT  DEBUG=1 bl31 CROSS_COMPILE=$USE_CROSS_COMPILE
     exit_if_last_error
 }
 
@@ -33,11 +33,36 @@ compile_uboot() {
     
     run_as_user make $UBOOT_CONFIG
     run_as_user make BL31=../arm-trusted-firmware/build/$ATF_PLAT/debug/bl31.bin \
-    CROSS_COMPILE=$FILE_CROSS_COMPILE
+    CROSS_COMPILE=$USE_CROSS_COMPILE
     exit_if_last_error
     cp $UBOOT_BIN_NAME $PATH_OUTPUT_BOARD
     
 }
+compile_syterkit() {
+    cd $PATH_SOURCE
+    local dirname="${PATH_SOURCE}/$(basename "$SYTERKIT_GIT" .git)-$SYTERKIT_BRANCH"
+    clone_branch $SYTERKIT_GIT $SYTERKIT_BRANCH $dirname
+    cd $dirname
+    local workspace_name="build"
+    create_dir $workspace_name
+    cd $workspace_name
+    run_as_user cmake -DCMAKE_BOARD_FILE=$SYTERKIT_BOARD_FILE ..
+    exit_if_last_error
+    run_as_user make
+    exit_if_last_error
+    cp $SYTERKIT_OUT_BIN $PATH_OUTPUT_BOARD
+    
+}
+compile_bootloader()
+{
+    if [ -n "$UBOOT_CONFIG" ];then
+        compile_uboot
+    fi
+    if [ -n "$SYTERKIT_BOARD_FILE" ];then
+        compile_syterkit
+    fi
+}
+
 
 get_linux_version() {
     # $1 是传入的 Linux 源码项目的位置
@@ -150,7 +175,7 @@ function replace_or_append() {
 replace_or_append "kernel_git" "kernel_git=$LINUX_GIT"
 replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
 replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
-replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME"
+replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME$TOOLCHAIN_NAME_IN_APT"
 
 update-initramfs -uv -k $version
 
@@ -197,8 +222,8 @@ compile_kernel() {
     
     
     thread_count=$(grep -c ^processor /proc/cpuinfo)
-    run_as_user make $LINUX_CONFIG CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
-    run_as_user make -j$thread_count CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     
     exit_if_last_error
     
@@ -231,10 +256,10 @@ compile_kernel() {
         fi
     done
     
-    run_status "boot.scr" mkimage -C none -A arm -T script -d ${DIR_BOARD}/boot.cmd ${DIR_BOARD}/boot.scr
-    cp ${DIR_BOARD}/boot.cmd $TMP_KERNEL_DEB/boot/
-    cp ${DIR_BOARD}/boot.scr $TMP_KERNEL_DEB/boot/
-    cp ${DIR_BOARD}/config.txt $TMP_KERNEL_DEB/boot/
+    run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_BOARD_NAME}/boot.cmd ${OPT_BOARD_NAME}/boot.scr
+    cp ${OPT_BOARD_NAME}/boot.cmd $TMP_KERNEL_DEB/boot/
+    cp ${OPT_BOARD_NAME}/boot.scr $TMP_KERNEL_DEB/boot/
+    cp ${OPT_BOARD_NAME}/config.txt $TMP_KERNEL_DEB/boot/
     
     create_dir $TMP_KERNEL_DEB/DEBIAN
     
@@ -245,7 +270,7 @@ compile_kernel() {
     
     # 导出linux-headers文件
     cd $PATH_KERNEL_CLEAN
-    run_as_user make clean CROSS_COMPILE=$FILE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    run_as_user make clean CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     generate_kernel_headers $TMP_KERNEL_DEB $CHIP_ARCH
     
     # 如果用apt更新，会在为vfat分区内的文件创建备份时报错，所以本包的文件都不存在/boot路径下
