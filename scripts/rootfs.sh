@@ -63,8 +63,7 @@ choose_rootfs() {
 
 generate_tmp_rootfs() {
     # set -e
-    PATH_SAVE_ROOTFS=${PATH_SOURCE}/${OPT_OS_VER}_${CHIP_ARCH}_${OPT_ROOTFS_TYPE}
-    FILE_SAVE_ROOTFS=${PATH_SAVE_ROOTFS}.tar
+    FILE_SAVE_ROOTFS=${PATH_ROOTFS}_base_software.tar
     if [[ -d $PATH_ROOTFS ]]; then
         run_as_silent umount_chroot $PATH_ROOTFS
         rm -r ${PATH_ROOTFS}
@@ -74,7 +73,6 @@ generate_tmp_rootfs() {
     echo -e "\n\n------\t build rootfs \t------"
     
     # 为节省编译时间，第一次编译时会构建一个基本rootfs，并安装base的软件
-    PATH_SAVE_ROOTFS=${PATH_SOURCE}/${OPT_OS_VER}_${CHIP_ARCH}_${OPT_ROOTFS_TYPE}
     if [[ -f $FILE_SAVE_ROOTFS ]]; then
         run_status "unzip last rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
     else
@@ -202,7 +200,6 @@ generate_tmp_rootfs() {
     done
     
     umount_chroot $PATH_ROOTFS
-    # rsync -a $PATH_ROOTFS/ $PATH_SAVE_ROOTFS
     # 如果本次对保存的rootfs的apt软件有增删，则重设压缩包
     if [ ${#packages_install[@]} -gt 0 ] || [ ${#packages_remove[@]} -gt 0 ]; then
         rm -r $FILE_SAVE_ROOTFS
