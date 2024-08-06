@@ -4,7 +4,7 @@ FLAG_UBUNTU22_JAMMY="ubuntu22"
 FILE_BEFOR_ROOTFS="befor_rootfs.sh"
 FILE_BOARD_BEFOR_ROOTFS="${OPT_BOARD_NAME}/${FILE_BEFOR_ROOTFS}"
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
-
+APT_DOMAIN="apt.walnutpi.com"
 # OPT_OS_VER=""
 # OPT_ROOTFS_TYPE=""
 PATH_ROOTFS=""
@@ -283,7 +283,12 @@ generate_tmp_rootfs() {
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
     
-    
+    # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
+    if grep -q "$APT_DOMAIN" /etc/hosts; then
+        LINE=$(grep "$APT_DOMAIN" /etc/hosts)
+        echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
+    fi
+
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
     # 插入walnutpi的apt源
@@ -300,7 +305,12 @@ generate_tmp_rootfs() {
         package=${packages[$i]}
         run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
     done
-    
+
+    # 删除插入hosts文件的内容
+    if grep -q "$APT_DOMAIN" "$PATH_ROOTFS/etc/hosts"; then
+        sed -i "/$APT_DOMAIN/d" "$PATH_ROOTFS/etc/hosts"
+    fi
+
     # 去除残余
     run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
