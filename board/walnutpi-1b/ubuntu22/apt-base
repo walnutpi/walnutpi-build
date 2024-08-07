@@ -64,3 +64,5 @@ device-tree-compiler
 netplan.io
 inetutils-ping
 plymouth-themes
+
+language-pack-zh-hans
