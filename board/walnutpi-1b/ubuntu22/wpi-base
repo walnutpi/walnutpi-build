@@ -28,3 +28,4 @@ service-h616-conf-thermal-trip
 service-w1b-dis-mmc2
 
 # walnutpi1b-base 
+fix-ubuntu-networkd-wait
