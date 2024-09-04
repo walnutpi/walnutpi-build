@@ -1,0 +1,31 @@
+wpi-user
+wpi-host-name
+wpi-welcome-info
+# wpi-lightdm
+# walnutpi-lib
+# conf-h616-audio
+conf-w2-eth
+conf-qtenv   
+enable-ssh-root  
+disable-wifi-random
+
+set-emmc
+set-device  
+set-language  
+set-lcd
+pyuic       
+python3-sudo
+
+bluez 
+initramfs-tools-hook
+plymouth-themes-walnutpi
+
+service-disable-fbcon
+# service-h616-mac-detect
+service-resize-part
+service-aw859-bluetooth
+# service-h616-conf-thermal-trip
+# service-w1b-dis-mmc2
+
+# walnutpi1b-base 
+fix-ubuntu-networkd-wait
