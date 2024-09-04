@@ -88,27 +88,35 @@ clone_url() {
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
         run_as_user git config --global --add safe.directory $(pwd)
-        echo "pull : $git_url" 
+        echo "pull : $git_url"
         run_as_user git pull
     else
-        echo "clone : $git_url" 
+        echo "clone : $git_url"
         run_as_user git clone $git_url
     fi
 }
 clone_branch() {
     local git_url="$1"
     local branch="$2"
-
+    
     local dir_name=$(basename "$git_url" .git)
     [[ -n $3 ]] && dir_name=$3
     
     if [ -d "$dir_name" ]; then
         cd "$dir_name"
         run_as_user git config --global --add safe.directory $(pwd)
-        echo "pull : $git_url" 
+        echo "pull : $git_url"
         run_as_user git pull
     else
-        echo "clone : $git_url" 
+        echo "clone : $git_url"
         run_as_user git clone -b $branch  $git_url $dir_name
+    fi
+}
+
+cp_file_if_exsit() {
+    local file_path_source=$1
+    local file_path_desc=$2
+    if [ -f $file_path_source ];then
+        cp $file_path_source $file_path_desc
     fi
 }
