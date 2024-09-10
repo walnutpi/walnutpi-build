@@ -4,7 +4,7 @@ wpi-welcome-info
 wpi-lightdm
 # walnutpi-lib
 
-# conf-h616-audio
+conf-t527-audio
 conf-qtenv   
 enable-ssh-root  
 disable-wifi-random
