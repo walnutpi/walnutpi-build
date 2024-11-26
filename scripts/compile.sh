@@ -264,9 +264,10 @@ compile_kernel() {
     create_dir $TMP_KERNEL_DEB/DEBIAN
     
     PATH_KERNEL_CLEAN="${PATH_KERNEL}-clean"
-    if [ ! -d $PATH_KERNEL_CLEAN ]; then
-        run_as_user cp -r $PATH_KERNEL $PATH_KERNEL_CLEAN
+    if [ -d $PATH_KERNEL_CLEAN ]; then
+        rm -r $PATH_KERNEL_CLEAN
     fi
+    run_as_user cp -r $PATH_KERNEL $PATH_KERNEL_CLEAN
     
     # 导出linux-headers文件
     cd $PATH_KERNEL_CLEAN
