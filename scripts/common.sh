@@ -36,16 +36,23 @@ create_dir() {
 run_status() {
     local message=$1
     shift
-    # set +e
+    local max_retries=5
+    local retry_delay=5
+    local retries=0
     local start_time=$(date +%s)
-    while true; do
-        echo -e  -n "...\t$message"
-        local output=$("$@" 2>&1)
+
+    while [ $retries -lt $max_retries ]; do
+        echo -e -n "...\t$message"
+        local output
+        output=$("$@" 2>&1)
         local exit_status=$?
         if [ $exit_status -ne 0 ]; then
             echo -e "\r\033[31m[error]\033[0m"
-            echo -e $output
-            sleep 3
+            echo -e "$output"
+            echo -e "Retrying in $retry_delay seconds..."
+            sleep $retry_delay
+            retry_delay=$((retry_delay + 5))
+            ((retries++))
         else
             local end_time=$(date +%s)
             local duration=$((end_time - start_time))
@@ -53,7 +60,11 @@ run_status() {
             break
         fi
     done
-    # set -e
+
+    if [ $retries -eq $max_retries ]; then
+        echo -e "\r\033[31m[error]\033[0m\t$message - Maximum retries reached."
+        return $exit_status
+    fi
 }
 
 
