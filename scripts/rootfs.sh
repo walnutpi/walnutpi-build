@@ -41,7 +41,7 @@ choose_rootfs() {
     fi
     
     FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
-    PATH_ROOTFS=${PATH_TMP}/${BOARD_NAME_SMALL}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
+    PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
     FILE_APT_BASE="${OPT_BOARD_NAME}/${OPT_OS_VER}/apt-base"
     FILE_APT_DESKTOP="${OPT_BOARD_NAME}/${OPT_OS_VER}/apt-desktop"
@@ -219,6 +219,8 @@ generate_tmp_rootfs() {
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cd ${PATH_SOURCE}/wpi-update
     # run_status "get wpi-update version"
+    touch ${PATH_ROOTFS}/etc/model
+    echo "$BOARD_MODEL" > ${PATH_ROOTFS}/etc/model
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
     # 创建release文件
@@ -263,9 +265,7 @@ generate_tmp_rootfs() {
     fi
     
     # wpi-update
-    
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
-    
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
     
     # 安装kernel产生的的deb包
@@ -282,6 +282,8 @@ generate_tmp_rootfs() {
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
+     
+
     
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
     if grep -q "$APT_DOMAIN" /etc/hosts; then
