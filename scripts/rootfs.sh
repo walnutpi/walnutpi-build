@@ -105,7 +105,7 @@ generate_tmp_rootfs() {
                 mount_chroot $PATH_ROOTFS
                 LC_ALL=C LANGUAGE=C LANG=C chroot ${PATH_ROOTFS} /debootstrap/debootstrap --second-stage –verbose
                 exit_if_last_error
-                run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+                run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
                 umount_chroot $PATH_ROOTFS
                 
                 tar -czf $FILE_SAVE_ROOTFS ./
@@ -188,7 +188,7 @@ generate_tmp_rootfs() {
         package=${packages_remove[$i]}
         run_status "apt remove [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get remove -y  ${package}"
     done
-    run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     # 将安装过的软件名称，都写进文件内
     if [[  -f $SF_LIST ]]; then
@@ -314,7 +314,7 @@ generate_tmp_rootfs() {
     fi
 
     # 去除残余
-    run_client_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     

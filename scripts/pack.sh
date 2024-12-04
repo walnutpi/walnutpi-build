@@ -121,7 +121,7 @@ do_pack() {
     
     PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
     kernel_version=$(get_linux_version $PATH_KERNEL)
-    run_status "generate initramfs" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
+    run_status_no_retry "generate initramfs" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
     
     
     # 运行板子自带的脚本

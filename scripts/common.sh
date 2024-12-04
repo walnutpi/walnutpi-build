@@ -17,9 +17,11 @@ run_as_silent() {
 }
 
 
-run_client_when_successfuly() {
-    local output=$("$@" 2>&1)
-    if [ $? -ne 0 ]; then
+run_slient_when_successfuly() {
+    local output
+    output=$("$@" 2>&1)
+    local exit_status=$?
+    if [ $exit_status -ne 0 ]; then
         echo "$output"
     fi
 }
@@ -40,7 +42,7 @@ run_status() {
     local retry_delay=5
     local retries=0
     local start_time=$(date +%s)
-
+    
     while [ $retries -lt $max_retries ]; do
         echo -e -n "...\t$message"
         local output
@@ -60,13 +62,33 @@ run_status() {
             break
         fi
     done
-
+    
     if [ $retries -eq $max_retries ]; then
         echo -e "\r\033[31m[error]\033[0m\t$message - Maximum retries reached."
         return $exit_status
     fi
 }
 
+run_status_no_retry() {
+    local message=$1
+    shift
+    local start_time=$(date +%s)
+    
+    echo -e -n "...\t$message"
+    local output
+    output=$("$@" 2>&1)
+    local exit_status=$?
+    if [ $exit_status -ne 0 ]; then
+        echo -e "\r\033[31m[error]\033[0m"
+        echo -e "$output"
+    else
+        local end_time=$(date +%s)
+        local duration=$((end_time - start_time))
+        echo -e "\r\033[32m[ok]\033[0m\t${message}\t${duration}s"
+        break
+    fi
+    
+}
 
 mount_chroot()
 {
