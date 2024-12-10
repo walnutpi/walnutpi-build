@@ -50,7 +50,9 @@ do_pack() {
     # run_status "get wpi-update version"
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
-    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}.img"
+
+
+    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}"
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
     fi
@@ -138,7 +140,15 @@ do_pack() {
     kpartx -dv $LOOP_DEVICE
     losetup -d $LOOP_DEVICE
     
-    echo -e "\noutputfile:\n\n\t\033[32m$(du -h ${IMG_FILE})\033[0m\n\n"
+    current_hour=$(date +"%H")
+    current_minute=$(date +"%M")
+    formatted_hour=$(printf "%02d" "$current_hour")
+    formatted_minute=$(printf "%02d" "$current_minute")
+
+    NEW_IMG_FILE_NAME="${IMG_FILE}--${formatted_hour}_${formatted_minute}.img"
+    mv $IMG_FILE $NEW_IMG_FILE_NAME
+
+    echo -e "\noutputfile:\n\n\t\033[32m$(du -h ${NEW_IMG_FILE_NAME})\033[0m\n\n"
     
 }
 
