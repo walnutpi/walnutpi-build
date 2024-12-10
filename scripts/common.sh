@@ -65,7 +65,7 @@ run_status() {
     
     if [ $retries -eq $max_retries ]; then
         echo -e "\r\033[31m[error]\033[0m\t$message - Maximum retries reached."
-        return $exit_status
+        exit $exit_status
     fi
 }
 
@@ -85,7 +85,6 @@ run_status_no_retry() {
         local end_time=$(date +%s)
         local duration=$((end_time - start_time))
         echo -e "\r\033[32m[ok]\033[0m\t${message}\t${duration}s"
-        break
     fi
     
 }

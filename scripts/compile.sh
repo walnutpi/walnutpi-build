@@ -256,7 +256,9 @@ compile_kernel() {
         fi
     done
     
-    run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_BOARD_NAME}/boot.cmd ${OPT_BOARD_NAME}/boot.scr
+    if [ -f ${OPT_BOARD_NAME}/boot.cmd ]; then
+        run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_BOARD_NAME}/boot.cmd ${OPT_BOARD_NAME}/boot.scr
+    fi
     cp_file_if_exsit ${OPT_BOARD_NAME}/boot.cmd $TMP_KERNEL_DEB/boot/
     cp_file_if_exsit ${OPT_BOARD_NAME}/boot.scr $TMP_KERNEL_DEB/boot/
     cp_file_if_exsit ${OPT_BOARD_NAME}/config.txt $TMP_KERNEL_DEB/boot/
