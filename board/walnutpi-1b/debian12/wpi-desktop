@@ -2,7 +2,7 @@ wpi-xfce4
 
 wpi-chromium 
 conf-google-pinyin
-conf-thonny
+# conf-thonny
 
 realvnc-vnc-viewer
 set-vnc
