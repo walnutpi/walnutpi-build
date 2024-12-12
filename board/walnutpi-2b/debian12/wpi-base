@@ -2,7 +2,9 @@ wpi-user
 wpi-host-name
 wpi-welcome-info
 wpi-lightdm
-# walnutpi-lib
+gpioc
+blinka
+
 
 conf-t527-audio
 conf-qtenv   
@@ -13,7 +15,8 @@ set-emmc
 set-device  
 set-language  
 set-lcd
-# pyuic       
+set-flash
+pyuic
 # python3-sudo
 
 bluez 

@@ -2,6 +2,8 @@ wpi-user
 wpi-host-name
 wpi-welcome-info
 # wpi-lightdm
+gpioc
+blinka
 # walnutpi-lib
 conf-t527-audio
 conf-w2-eth
@@ -13,6 +15,7 @@ set-emmc
 set-device  
 set-language  
 set-lcd
+set-flash
 pyuic       
 python3-sudo
 

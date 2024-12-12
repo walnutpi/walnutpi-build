@@ -1,4 +1,5 @@
 wpi-xfce4
+t527-fbdev
 
 wpi-chromium 
 conf-google-pinyin
@@ -6,5 +7,3 @@ conf-google-pinyin
 
 # realvnc-vnc-viewer
 set-vnc
-
-# walnutpi1b-desktop

@@ -24,6 +24,7 @@ wget
 curl
 fdisk
 tree
+btop
 
 fbterm
 locales 
@@ -46,7 +47,9 @@ nfs-common
 fbset
 libts-bin
 alsa-utils
-
+mtd-utils
+pciutils
+dosfstools
 
 u-boot-tools
 initramfs-tools
