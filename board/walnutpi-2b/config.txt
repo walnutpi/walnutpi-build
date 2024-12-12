@@ -14,9 +14,9 @@ printk_level=3
 
 overlay_prefix=sun55i-t527
 
-#spi : spidev0_0 spidev1_0 spidev1_1 spidev1_2
+#spi : spidev1_0 spidev1_1
 #i2c : i2c1 i2c2 i2c4
-#uart : uart2 uart4
+#uart : uart2 uart4 uart5 uart6 uart7 uart8
 overlays= 
 
 
