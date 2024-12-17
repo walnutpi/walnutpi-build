@@ -20,13 +20,14 @@ pyuic
 python3-sudo
 
 bluez 
+hcitools
 initramfs-tools-hook
 plymouth-themes-walnutpi
 
 service-disable-fbcon
 # service-h616-mac-detect
 service-resize-part
-service-aw859-bluetooth
+service-aw869-bluetooth
 # service-h616-conf-thermal-trip
 # service-w1b-dis-mmc2
 

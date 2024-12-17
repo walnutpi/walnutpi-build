@@ -17,6 +17,7 @@ pyuic
 python3-sudo
 
 bluez 
+hcitools
 initramfs-tools-hook
 plymouth-themes-walnutpi
 
