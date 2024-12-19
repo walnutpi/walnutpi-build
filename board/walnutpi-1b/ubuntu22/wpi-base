@@ -14,7 +14,7 @@ set-device
 set-language  
 set-lcd
 pyuic       
-python3-sudo
+# python3-sudo
 
 bluez 
 hcitools
