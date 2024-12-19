@@ -2,6 +2,7 @@
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 source "${PATH_PWD}"/scripts/common.sh
 
+PATH_BOARD="${PATH_PWD}/board"
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
@@ -32,7 +33,10 @@ create_dir $PATH_TOOLCHAIN
 BUILD_ARGS=$@
 para_desc () {
     echo -e "  -b : choose board"
-    echo -e "\t-b walnutpi-1b"
+    for dir in $(ls -d $PATH_BOARD/*/ 2>/dev/null); do
+        local dirname=$(basename "$dir")
+        echo -e "\t-b $dirname"
+    done
     echo ""
     echo -e "  -p : choose which part to compile"
     echo -e "\t-p image"
@@ -50,18 +54,23 @@ para_desc () {
     echo -e "  -s--boot : Skip compilation boot when compiling an image"
     echo -e "  -s--kernel : Skip compilation kernel when compiling an image"
 }
+
 while [ "x$#" != "x0" ];
 do
     if [ "x$1" == "x" ]; then
         shift
         elif [ "x$1" == "x-h" ] || [ "x$1" == "x-help" ]; then
         para_desc
+        exit
         
         elif [ "x$1" == "x-b" ]; then
-        OPT_BOARD_NAME="${PATH_PWD}/board/$2"
+        OPT_BOARD_NAME="${PATH_BOARD}/$2"
         shift
         shift
         elif [ "x$1" == "x-p" ]; then
+        
+        if [ -z $OPT_UBOOT_REBUILD_FLAG ] ;then OPT_UBOOT_REBUILD_FLAG="yes"; fi
+        if [ -z $OPT_KERNEL_REBUILD_FLAG ] ;then OPT_KERNEL_REBUILD_FLAG="yes"; fi
         OPT_BUILD_MODULE="$2"
         shift
         shift
@@ -96,7 +105,7 @@ if [ -z $OPT_BOARD_NAME ] || [ ! -d "$OPT_BOARD_NAME" ] ; then
     backtitle="Walnut Pi building script"
     
     # 获取 board 文件夹下所有的文件夹，作为选项
-    dirs=$(find ${PATH_PWD}/board -mindepth 1 -maxdepth 1 -type d)
+    dirs=$(find ${PATH_BOARD} -mindepth 1 -maxdepth 1 -type d)
     for dir in $dirs; do
         dirname=$(basename "$dir")
         options+=("$dir" "$dirname")

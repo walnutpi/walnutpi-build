@@ -3,7 +3,11 @@
 # 获取sudo运行脚本前是什么用户，然后以那个用户的权限执行指令
 run_as_user() {
     local original_user=$(who am i | awk '{print $1}')
-    sudo -u $original_user bash -c "$*"
+    if [  -z $original_user ]; then
+        bash -c "$*"
+    else
+        sudo -u $original_user bash -c "$*"
+    fi
 }
 exit_if_last_error() {
     if [[ $? -ne 0 ]]; then
