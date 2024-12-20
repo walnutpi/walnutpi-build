@@ -219,8 +219,10 @@ generate_tmp_rootfs() {
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cd ${PATH_SOURCE}/wpi-update
     # run_status "get wpi-update version"
-    touch ${PATH_ROOTFS}/etc/model
-    echo "$BOARD_MODEL" > ${PATH_ROOTFS}/etc/model
+    touch /tmp/walnutpi-board_model
+    touch ${PATH_ROOTFS}/tmp/walnutpi-board_model
+    echo -n "$BOARD_MODEL" > /tmp/walnutpi-board_model
+    echo -n "$BOARD_MODEL" > ${PATH_ROOTFS}/tmp/walnutpi-board_model
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
     # 创建release文件
