@@ -42,6 +42,7 @@ para_desc () {
     echo -e "\t-p image"
     echo -e "\t-p bootloader"
     echo -e "\t-p kernel"
+    echo -e "\t-p rootfs"
     echo ""
     echo -e "  -v : choose the rootfs version"
     echo -e "\t-v debian12"
