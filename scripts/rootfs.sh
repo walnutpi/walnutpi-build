@@ -80,11 +80,12 @@ generate_tmp_rootfs() {
         run_as_silent mkdir ${PATH_ROOTFS} -p
         case "${OPT_OS_VER}" in
             ${FLAG_DEBIAN12_BOOKWORM})
-                if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
-                    debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-                else
-                    debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
-                fi
+                debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+                # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
+                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+                # else
+                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+                # fi
                 
                 exit_if_last_error
                 
