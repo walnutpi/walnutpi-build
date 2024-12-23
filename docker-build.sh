@@ -4,7 +4,6 @@ DOCKER_IMAGE_NAME=walnutpi-build-ubuntu22:1.0
 CONTAINER_NAME="walnutpi-build-$(date +%s)"
 RUN_COMMOND="./build.sh $@"
 
-
 echo_red() {
     echo -e -n "\r\033[31m$1\033[0m"
 }
@@ -32,6 +31,7 @@ docker run --name "$CONTAINER_NAME" \
 --network host \
 -v /etc/hosts:/etc/hosts:ro \
 -v /etc/resolv.conf:/etc/resolv.conf:ro \
+-v /etc/localtime:/etc/localtime:ro \
 -v "$(pwd):$(pwd)" \
 -w "$(pwd)" \
 -it --rm "$DOCKER_IMAGE_NAME" bash -c "$RUN_COMMOND"
