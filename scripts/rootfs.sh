@@ -285,15 +285,15 @@ generate_tmp_rootfs() {
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
-     
-
+    
+    
     
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
     if grep -q "$APT_DOMAIN" /etc/hosts; then
         LINE=$(grep "$APT_DOMAIN" /etc/hosts)
         echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
     fi
-
+    
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
     # 插入walnutpi的apt源
@@ -310,33 +310,35 @@ generate_tmp_rootfs() {
         package=${packages[$i]}
         run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
     done
-
+    
     # 删除插入hosts文件的内容
     if grep -q "$APT_DOMAIN" "$PATH_ROOTFS/etc/hosts"; then
         sed -i "/$APT_DOMAIN/d" "$PATH_ROOTFS/etc/hosts"
     fi
-
+    
     # 去除残余
     run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     
-    # 某些操作会导致出现一个跟本机用户同名的文件夹，删掉他吧
+    # 如果home路径下的用户文件夹数量大于1，则可能是某些操作导致出现一个跟本机用户同名的文件夹，就删掉他吧
     original_user=$(who am i | awk '{print $1}')
-    if [ -d $PATH_ROOTFS/home/$original_user ]; then
-        rm -r $PATH_ROOTFS/home/$original_user
+    home_dir="$PATH_ROOTFS/home"
+    user_dirs=($(ls -d "$home_dir"/*/ 2>/dev/null | xargs -n 1 basename))
+    if [ ${#user_dirs[@]} -gt 1 ]; then
+        if [ -d "$home_dir/$original_user" ]; then
+            rm -r "$home_dir/$original_user"
+        fi
     fi
-    
-    
+        
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
-    if [ -f "$FILE_ROOTFS_TAR" ]; then
-        rm $FILE_ROOTFS_TAR
-    fi
-    
 }
 
 pack_rootfs() {
     cd ${PATH_ROOTFS}
+    if [ -f "$FILE_ROOTFS_TAR" ]; then
+        rm $FILE_ROOTFS_TAR
+    fi
     run_status "create tar" tar -c -I 'xz -T0' -f $FILE_ROOTFS_TAR ./
 }
