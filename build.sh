@@ -184,7 +184,7 @@ fi
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
-    apt install debian-archive-keyring qemu-user-static curl debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
+    apt install -y debian-archive-keyring qemu-user-static curl debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev parted dosfstools
     exit_if_last_error
     mkdir -p ${FLAG_DIR_NO_FIRST}
 fi

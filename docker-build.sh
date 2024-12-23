@@ -34,4 +34,4 @@ docker run --name "$CONTAINER_NAME" \
 -v /etc/resolv.conf:/etc/resolv.conf:ro \
 -v "$(pwd):$(pwd)" \
 -w "$(pwd)" \
--it --rm "$DOCKER_IMAGE_NAME" bash -c "$RUN_COMMOND"
+-it --rm --user pi "$DOCKER_IMAGE_NAME" bash -c "sudo $RUN_COMMOND"
