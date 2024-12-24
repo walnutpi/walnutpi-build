@@ -266,7 +266,14 @@ generate_tmp_rootfs() {
         fi
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
-    
+
+    # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
+    if grep -q "$APT_DOMAIN" /etc/hosts; then
+        LINE=$(grep "$APT_DOMAIN" /etc/hosts)
+        echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
+    fi
+    # run_status "change hosts" chroot $PATH_ROOTFS /bin/bash -c "service network-manager restart"
+
     # wpi-update
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
@@ -288,11 +295,7 @@ generate_tmp_rootfs() {
     
     
     
-    # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
-    if grep -q "$APT_DOMAIN" /etc/hosts; then
-        LINE=$(grep "$APT_DOMAIN" /etc/hosts)
-        echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
-    fi
+
     
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
@@ -315,7 +318,7 @@ generate_tmp_rootfs() {
     if grep -q "$APT_DOMAIN" "$PATH_ROOTFS/etc/hosts"; then
         sed -i "/$APT_DOMAIN/d" "$PATH_ROOTFS/etc/hosts"
     fi
-    
+
     # 去除残余
     run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
