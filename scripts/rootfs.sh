@@ -324,15 +324,7 @@ generate_tmp_rootfs() {
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     
-    # 如果home路径下的用户文件夹数量大于1，则可能是某些操作导致出现一个跟本机用户同名的文件夹，就删掉他吧
-    original_user=$(who am i | awk '{print $1}')
-    home_dir="$PATH_ROOTFS/home"
-    user_dirs=($(ls -d "$home_dir"/*/ 2>/dev/null | xargs -n 1 basename))
-    if [ ${#user_dirs[@]} -gt 1 ]; then
-        if [ -d "$home_dir/$original_user" ]; then
-            rm -r "$home_dir/$original_user"
-        fi
-    fi
+
         
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
