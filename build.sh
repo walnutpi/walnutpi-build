@@ -3,6 +3,8 @@ PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 source "${PATH_PWD}"/scripts/common.sh
 
 PATH_BOARD="${PATH_PWD}/board"
+PATH_SCRIPT="${PATH_PWD}/scripts"
+PATH_DEB_RESOURCES="${PATH_PWD}/scripts/deb-resources"
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"
@@ -143,9 +145,10 @@ if [ -z $OPT_BUILD_MODULE ] ; then
     [[ -z $OPT_BUILD_MODULE ]] && exit
     
 fi
-source "${PATH_PWD}"/scripts/compile.sh
-source "${PATH_PWD}"/scripts/rootfs.sh
-source "${PATH_PWD}"/scripts/pack.sh
+source "${PATH_SCRIPT}"/compile.sh
+source "${PATH_SCRIPT}"/rootfs.sh
+source "${PATH_SCRIPT}"/pack.sh
+source "${PATH_SCRIPT}"/build_kernel.sh
 
 case "$OPT_BUILD_MODULE" in
     "pack_rootfs" | "pack_image" | "rootfs" | "image")
@@ -166,7 +169,7 @@ if [ "$OPT_BUILD_MODULE" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_N
     fi
 fi
 
-if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_KERNEL_PACKAGE} ]; then
+if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_OUTPUT_KERNEL_PACKAGE} ]; then
     if [ -z $OPT_KERNEL_REBUILD_FLAG ]; then
         titlestr="recompile the KERNEL ?"
         options+=("no"    "no")
@@ -212,7 +215,7 @@ case "$OPT_BUILD_MODULE" in
         compile_bootloader
     ;;
     "kernel")
-        compile_kernel
+        build_kernel
     ;;
     "rootfs")
         generate_tmp_rootfs
@@ -225,7 +228,7 @@ case "$OPT_BUILD_MODULE" in
             compile_bootloader
         fi
         if [ -z ${OPT_KERNEL_REBUILD_FLAG} ] || [ ${OPT_KERNEL_REBUILD_FLAG} == "yes" ] ; then
-            compile_kernel
+            build_kernel
         fi
         generate_tmp_rootfs
         pack_rootfs

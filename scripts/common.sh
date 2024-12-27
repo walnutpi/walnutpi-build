@@ -156,3 +156,17 @@ cp_file_if_exsit() {
         cp $file_path_source $file_path_desc
     fi
 }
+replace_in_file() {
+    local file_path=$1
+    local search_string=$2
+    local replace_string=$3
+
+    if [ ! -f "$file_path" ]; then
+        echo "文件 $file_path 不存在。"
+        return 1
+    fi
+
+    # 使用sed进行替换
+    sed -i "s/$search_string/$replace_string/g" "$file_path"
+    exit_if_last_error "替换字符串失败: $search_string -> $replace_string 在文件 $file_path"
+}

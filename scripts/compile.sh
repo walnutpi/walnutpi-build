@@ -4,8 +4,8 @@ PACKAGE_IMAGE_NAME=linux-image-${BOARD_MODEL}-${LINUX_BRANCH}
 DEB_IMAGE_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 
 
-PATH_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel-${BOARD_NAME}
-create_dir $PATH_KERNEL_PACKAGE
+PATH_OUTPUT_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel-${BOARD_NAME}
+create_dir $PATH_OUTPUT_KERNEL_PACKAGE
 
 
 
@@ -288,8 +288,8 @@ EOF
     chmod +x $TMP_KERNEL_DEB/DEBIAN/postinst
     
     
-    [[ -d ${PATH_KERNEL_PACKAGE}/  ]] && rm -r ${PATH_KERNEL_PACKAGE}/
-    create_dir ${PATH_KERNEL_PACKAGE}
+    [[ -d ${PATH_OUTPUT_KERNEL_PACKAGE}/  ]] && rm -r ${PATH_OUTPUT_KERNEL_PACKAGE}/
+    create_dir ${PATH_OUTPUT_KERNEL_PACKAGE}
     
     # 计算准备写进deb包的控制信息
     
@@ -323,7 +323,7 @@ Installed-Size: ${size}
 Architecture: ${CHIP_ARCH}
 EOF
     
-    run_status "创建deb包 ${DEB_IMAGE_NAME} " dpkg -b "$TMP_KERNEL_DEB" "${PATH_KERNEL_PACKAGE}/${DEB_IMAGE_NAME}"
+    run_status "创建deb包 ${DEB_IMAGE_NAME} " dpkg -b "$TMP_KERNEL_DEB" "${PATH_OUTPUT_KERNEL_PACKAGE}/${DEB_IMAGE_NAME}"
     
 }
 

@@ -279,7 +279,7 @@ generate_tmp_rootfs() {
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
     
     # 安装kernel产生的的deb包
-    cp ${PATH_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
+    cp ${PATH_OUTPUT_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
     cd ${PATH_ROOTFS}/opt/
     deb_packages=(*.deb)
     
