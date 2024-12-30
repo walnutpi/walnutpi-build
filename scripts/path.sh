@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-PATH_BOARD="${PATH_PWD}/board"
+PATH_board="${PATH_PWD}/board"
 PATH_SOURCE="${PATH_PWD}/source"
 PATH_OUTPUT="${PATH_PWD}/output"
 PATH_TMP="${PATH_PWD}/.tmp"

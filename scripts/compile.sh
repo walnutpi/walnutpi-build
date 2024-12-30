@@ -256,12 +256,12 @@ compile_kernel() {
         fi
     done
     
-    if [ -f ${OPT_BOARD_NAME}/boot.cmd ]; then
-        run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_BOARD_NAME}/boot.cmd ${OPT_BOARD_NAME}/boot.scr
+    if [ -f ${OPT_board_name}/boot.cmd ]; then
+        run_status "boot.scr" mkimage -C none -A arm -T script -d ${OPT_board_name}/boot.cmd ${OPT_board_name}/boot.scr
     fi
-    cp_file_if_exsit ${OPT_BOARD_NAME}/boot.cmd $TMP_KERNEL_DEB/boot/
-    cp_file_if_exsit ${OPT_BOARD_NAME}/boot.scr $TMP_KERNEL_DEB/boot/
-    cp_file_if_exsit ${OPT_BOARD_NAME}/config.txt $TMP_KERNEL_DEB/boot/
+    cp_file_if_exsit ${OPT_board_name}/boot.cmd $TMP_KERNEL_DEB/boot/
+    cp_file_if_exsit ${OPT_board_name}/boot.scr $TMP_KERNEL_DEB/boot/
+    cp_file_if_exsit ${OPT_board_name}/config.txt $TMP_KERNEL_DEB/boot/
     
     create_dir $TMP_KERNEL_DEB/DEBIAN
     

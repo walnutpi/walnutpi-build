@@ -2,7 +2,7 @@
 FLAG_DEBIAN12_BOOKWORM="debian12"
 FLAG_UBUNTU22_JAMMY="ubuntu22"
 FILE_BEFOR_ROOTFS="befor_rootfs.sh"
-FILE_BOARD_BEFOR_ROOTFS="${OPT_BOARD_NAME}/${FILE_BEFOR_ROOTFS}"
+FILE_BOARD_BEFOR_ROOTFS="${OPT_board_name}/${FILE_BEFOR_ROOTFS}"
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 APT_DOMAIN="apt.walnutpi.com"
 # OPT_OS_VER=""
@@ -43,10 +43,10 @@ choose_rootfs() {
     FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
     PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
     
-    FILE_APT_BASE="${OPT_BOARD_NAME}/${OPT_OS_VER}/apt-base"
-    FILE_APT_DESKTOP="${OPT_BOARD_NAME}/${OPT_OS_VER}/apt-desktop"
-    FILE_APT_BASE_BOARD="${OPT_BOARD_NAME}/${OPT_OS_VER}/wpi-base"
-    FILE_APT_DESKTOP_BOARD="${OPT_BOARD_NAME}/${OPT_OS_VER}/wpi-desktop"
+    FILE_APT_BASE="${OPT_board_name}/${OPT_OS_VER}/apt-base"
+    FILE_APT_DESKTOP="${OPT_board_name}/${OPT_OS_VER}/apt-desktop"
+    FILE_APT_BASE_BOARD="${OPT_board_name}/${OPT_OS_VER}/wpi-base"
+    FILE_APT_DESKTOP_BOARD="${OPT_board_name}/${OPT_OS_VER}/wpi-desktop"
     
     # titlestr="Choose  Language"
     # options+=("cn"    "Chinese")

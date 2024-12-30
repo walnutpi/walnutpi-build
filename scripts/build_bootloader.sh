@@ -48,7 +48,7 @@ compile_syterkit() {
     
 }
 get_config_txt_version() {
-    source ${OPT_BOARD_NAME}/config.txt
+    source ${OPT_board_name}/config.txt
     echo "$version"
 }
 
@@ -66,7 +66,7 @@ _pack_as_boot_deb(){
     fi
     
     
-    source ${OPT_BOARD_NAME}/config.txt
+    source ${OPT_board_name}/config.txt
     deb_version="$version"
     
     cd $path_package
@@ -89,7 +89,7 @@ EOF
 }
 
 pack_config_txt() {
-    local path_tmp_package_configtxt="${PATH_TMP}/boot-configtxt-$(basename ${OPT_BOARD_NAME})"
+    local path_tmp_package_configtxt="${PATH_TMP}/boot-configtxt-$(basename ${OPT_board_name})"
     if [ -d $path_tmp_package_configtxt ]; then
         rm -r $path_tmp_package_configtxt
     fi
@@ -97,13 +97,13 @@ pack_config_txt() {
     local path_board_tmp_boot="/tmp-boot/boot"
     local path_tmp_boot=${path_tmp_package_configtxt}${path_board_tmp_boot}
     create_dir  $path_tmp_boot
-    cp ${OPT_BOARD_NAME}/config.txt $path_tmp_boot
+    cp ${OPT_board_name}/config.txt $path_tmp_boot
     _gen_postinst_cp_file $path_tmp_package_configtxt $path_board_tmp_boot /boot/
     _pack_as_boot_deb $path_tmp_package_configtxt "configtxt" "config.txt for boot"
 }
 
 pack_boot_bin() {
-    local path_tmp_package_configtxt="${PATH_TMP}/boot-bin-$(basename ${OPT_BOARD_NAME})"
+    local path_tmp_package_configtxt="${PATH_TMP}/boot-bin-$(basename ${OPT_board_name})"
     if [ -d $path_tmp_package_configtxt ]; then
         rm -r $path_tmp_package_configtxt
     fi
@@ -114,8 +114,8 @@ pack_boot_bin() {
     create_dir  $path_tmp_boot
 
     
-    cp_file_if_exsit ${OPT_BOARD_NAME}/boot.cmd $path_tmp_boot
-    cp_file_if_exsit ${OPT_BOARD_NAME}/boot.scr $path_tmp_boot
+    cp_file_if_exsit ${OPT_board_name}/boot.cmd $path_tmp_boot
+    cp_file_if_exsit ${OPT_board_name}/boot.scr $path_tmp_boot
     cp_file_if_exsit ${PATH_OUTPUT_BOOT_BIN} $path_tmp_boot
 
     

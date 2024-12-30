@@ -2,12 +2,17 @@
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PATH_SCRIPT="${PATH_PWD}/scripts"
 source "${PATH_SCRIPT}/common.sh"
+source "${PATH_SCRIPT}/menu.sh"
+source "${PATH_SCRIPT}/path.sh"
 
 reload_env() {
     source "${PATH_SCRIPT}/path.sh"
 }
-reload_env
 
+OPT_board_name=$FLAG_menu_no_choose
+OPT_build_parts=$FLAG_menu_no_choose
+OPT_boot_rebuild_flag=$FLAG_menu_no_choose
+OPT_kernel_rebuild_flag=$FLAG_menu_no_choose
 
 
 START_DATE=$(date)
@@ -17,7 +22,7 @@ START_DATE=$(date)
 BUILD_ARGS=$@
 para_desc () {
     echo -e "  -b : choose board"
-    for dir in $(ls -d $PATH_BOARD/*/ 2>/dev/null); do
+    for dir in $(ls -d $PATH_board/*/ 2>/dev/null); do
         local dirname=$(basename "$dir")
         echo -e "\t-b $dirname"
     done
@@ -49,14 +54,14 @@ do
         exit
         
         elif [ "x$1" == "x-b" ]; then
-        OPT_BOARD_NAME="${PATH_BOARD}/$2"
+        OPT_board_name="${PATH_board}/$2"
         shift
         shift
         elif [ "x$1" == "x-p" ]; then
         
-        if [ -z $OPT_UBOOT_REBUILD_FLAG ] ;then OPT_UBOOT_REBUILD_FLAG="yes"; fi
-        if [ -z $OPT_KERNEL_REBUILD_FLAG ] ;then OPT_KERNEL_REBUILD_FLAG="yes"; fi
-        OPT_BUILD_MODULE="$2"
+        if [ -z $OPT_boot_rebuild_flag ] ;then OPT_boot_rebuild_flag="yes"; fi
+        if [ -z $OPT_kernel_rebuild_flag ] ;then OPT_kernel_rebuild_flag="yes"; fi
+        OPT_build_parts="$2"
         shift
         shift
         elif [ "x$1" == "x-v" ]; then
@@ -68,10 +73,10 @@ do
         shift
         shift
         elif [ "x$1" == "x-s--boot" ]; then
-        OPT_UBOOT_REBUILD_FLAG="no"
+        OPT_boot_rebuild_flag="no"
         shift
         elif [ "x$1" == "x-s--kernel" ]; then
-        OPT_KERNEL_REBUILD_FLAG="no"
+        OPT_kernel_rebuild_flag="no"
         shift
         
     else
@@ -81,91 +86,42 @@ do
     fi
 done
 
-menustr=""
-TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
-TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
 
-if [ -z $OPT_BOARD_NAME ] || [ ! -d "$OPT_BOARD_NAME" ] ; then
-    backtitle="Walnut Pi building script"
-    
-    # 获取 board 文件夹下所有的文件夹，作为选项
-    dirs=$(find ${PATH_BOARD} -mindepth 1 -maxdepth 1 -type d)
-    for dir in $dirs; do
-        dirname=$(basename "$dir")
-        options+=("$dir" "$dirname")
-    done
-    
-    titlestr="Choose Board"
-    OPT_BOARD_NAME=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo $OPT_BOARD_NAME
-    [[ -z $OPT_BOARD_NAME ]] && exit
+if [ $OPT_board_name == $FLAG_menu_no_choose ]; then
+    OPT_board_name=$(MENU_choose_board $PATH_board)
 fi
-source $OPT_BOARD_NAME/board.conf
-PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_BOARD_NAME##*/}
+
+
+source $OPT_board_name/board.conf
+PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_board_name##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
 
-if [ -z $OPT_BUILD_MODULE ] ; then
-    titlestr="Choose an option"
-    options+=("image"	 "Full OS image for flashing")
-    options+=("bootloader"	 "generate $BOOTLOADER_NAME .bin")
-    options+=("kernel"	 "generate Kernel .deb")
-    options+=("rootfs"	 "generate Rootfs .tar")
-    options+=("pack_rootfs"	 "pack the tmp Rootfs files")
-    options+=("pack_image"	 "pack the tmp files to generate image")
-    OPT_BUILD_MODULE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo $OPT_BUILD_MODULE
-    [[ -z $OPT_BUILD_MODULE ]] && exit
-    
+if [ $OPT_build_parts == $FLAG_menu_no_choose ]; then
+    OPT_build_parts=$(MENU_choose_parts)
 fi
+
 source "${PATH_SCRIPT}"/compile.sh
 source "${PATH_SCRIPT}"/rootfs.sh
 source "${PATH_SCRIPT}"/pack.sh
 source "${PATH_SCRIPT}"/build_kernel.sh
 source "${PATH_SCRIPT}"/build_bootloader.sh
 
-case "$OPT_BUILD_MODULE" in
-    "pack_rootfs" | "pack_image" | "rootfs" | "image")
+case "$OPT_build_parts" in
+    "$FLAG_OPT_part_pack_rootfs" | "$FLAG_OPT_part_pack_image" | "$FLAG_OPT_part_rootfs" | "$FLAG_OPT_part_image")
         choose_rootfs
 esac
-if [ "$OPT_BUILD_MODULE" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
-    if [ -z $OPT_UBOOT_REBUILD_FLAG ]; then
-        titlestr="recompile the u-boot ?"
-        options+=("no"    "no")
-        options+=("yes"    "yes")
-        OPT_UBOOT_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo ${OPT_UBOOT_REBUILD_FLAG}
-        [[ -z ${OPT_UBOOT_REBUILD_FLAG} ]] && exit
+
+if [ "$OPT_build_parts" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
+    if [ -z "$OPT_boot_rebuild_flag" ]; then
+        OPT_boot_rebuild_flag=$(MENU_sikp_boot)
     fi
 fi
-
-if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_OUTPUT_KERNEL_PACKAGE} ]; then
-    if [ -z $OPT_KERNEL_REBUILD_FLAG ]; then
-        titlestr="recompile the KERNEL ?"
-        options+=("no"    "no")
-        options+=("yes"    "yes")
-        OPT_KERNEL_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo ${OPT_KERNEL_REBUILD_FLAG}
-        [[ -z ${OPT_KERNEL_REBUILD_FLAG} ]] && exit
+if [ "$OPT_build_parts" == "image" ] && [ -d ${PATH_OUTPUT_KERNEL_PACKAGE} ]; then
+    if [ -z "$OPT_kernel_rebuild_flag" ]; then
+        OPT_kernel_rebuild_flag=$(MENU_sikp_kernel)
     fi
 fi
-
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
@@ -192,33 +148,33 @@ fi
 
 exec 3>&1 4>&2
 exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
-case "$OPT_BUILD_MODULE" in
-    "bootloader" )
+case "$OPT_build_parts" in
+    "$FLAG_OPT_part_bootloader" )
         # compile_bootloader
         build_bootloader
     ;;
-    "kernel")
+    "$FLAG_OPT_part_kernel")
         build_kernel
     ;;
-    "rootfs")
+    "$FLAG_OPT_part_rootfs")
         generate_tmp_rootfs
     ;;
-    "pack_rootfs")
+    "$FLAG_OPT_part_pack_rootfs")
         pack_rootfs
     ;;
-    "image")
-        if [ -z ${OPT_UBOOT_REBUILD_FLAG} ] || [ ${OPT_UBOOT_REBUILD_FLAG} == "yes" ] ; then
+    "$FLAG_OPT_part_pack_image")
+        do_pack
+    ;;
+    "$FLAG_OPT_part_image")
+        if [ -z ${OPT_boot_rebuild_flag} ] || [ ${OPT_boot_rebuild_flag} == "$FLAG_OPT_YES" ] ; then
             # compile_bootloader
             build_bootloader
         fi
-        if [ -z ${OPT_KERNEL_REBUILD_FLAG} ] || [ ${OPT_KERNEL_REBUILD_FLAG} == "yes" ] ; then
+        if [ -z ${OPT_kernel_rebuild_flag} ] || [ ${OPT_kernel_rebuild_flag} == "$FLAG_OPT_YES" ] ; then
             build_kernel
         fi
         generate_tmp_rootfs
         pack_rootfs
-        do_pack
-    ;;
-    "pack_image")
         do_pack
     ;;
 esac
