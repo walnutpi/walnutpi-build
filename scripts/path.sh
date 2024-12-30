@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+PATH_BOARD="${PATH_PWD}/board"
+PATH_SOURCE="${PATH_PWD}/source"
+PATH_OUTPUT="${PATH_PWD}/output"
+PATH_TMP="${PATH_PWD}/.tmp"
+PATH_LOG="${PATH_PWD}/log"
+PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
+create_dir $PATH_SOURCE
+create_dir $PATH_OUTPUT
+create_dir $PATH_TMP
+create_dir $PATH_LOG
+create_dir $PATH_TOOLCHAIN
+
+PATH_SF_LIST="${PATH_PWD}/software-list"
+FILE_PIP_LIST="${PATH_SF_LIST}/pip"
+FILE_APT_BASE=""
+FILE_APT_DESKTOP=""
+FILE_APT_BASE_BOARD=""
+FILE_APT_DESKTOP_BOARD=""
+
+
+FLAG_DIR="${PATH_TMP}/FLAGS"
+FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
+
+# 内核编译相关
+PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
+PATH_OUTPUT_BOOT_BIN=PATH_OUTPUT_BOOT_BIN=$PATH_OUTPUT_BOARD/boot.bin
+PATH_OUTPUT_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel-${BOARD_NAME}
+
+
+

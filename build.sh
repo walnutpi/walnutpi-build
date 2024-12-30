@@ -1,35 +1,17 @@
 #!/bin/bash
 PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source "${PATH_PWD}"/scripts/common.sh
-
-PATH_BOARD="${PATH_PWD}/board"
 PATH_SCRIPT="${PATH_PWD}/scripts"
-PATH_DEB_RESOURCES="${PATH_PWD}/scripts/deb-resources"
-PATH_SOURCE="${PATH_PWD}/source"
-PATH_OUTPUT="${PATH_PWD}/output"
-PATH_TMP="${PATH_PWD}/.tmp"
-PATH_LOG="${PATH_PWD}/log"
-PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-PATH_SF_LIST="${PATH_PWD}/software-list"
+source "${PATH_SCRIPT}/common.sh"
 
-FILE_PIP_LIST="${PATH_SF_LIST}/pip"
-FILE_APT_BASE=""
-FILE_APT_DESKTOP=""
-FILE_APT_BASE_BOARD=""
-FILE_APT_DESKTOP_BOARD=""
+reload_env() {
+source "${PATH_SCRIPT}/path.sh"
+}
+reload_env
 
-
-FLAG_DIR="${PATH_TMP}/FLAGS"
-FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
 
 
 START_DATE=$(date)
 
-create_dir $PATH_SOURCE
-create_dir $PATH_OUTPUT
-create_dir $PATH_TMP
-create_dir $PATH_LOG
-create_dir $PATH_TOOLCHAIN
 
 
 BUILD_ARGS=$@
@@ -102,7 +84,6 @@ done
 menustr=""
 TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
 TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
-
 
 if [ -z $OPT_BOARD_NAME ] || [ ! -d "$OPT_BOARD_NAME" ] ; then
     backtitle="Walnut Pi building script"
