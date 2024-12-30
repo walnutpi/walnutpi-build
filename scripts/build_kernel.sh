@@ -39,7 +39,7 @@ is_enabled() {
 
 compile_kernel() {
     
-    cd $PATH_KERNEL
+    cd $SOURCE_kernel
     if [ ! -f .scmversion ]; then
         run_as_user touch .scmversion
     fi
@@ -82,7 +82,7 @@ _pack_as_kernel_deb(){
     cd $PATH_PWD
     git config --global --add safe.directory $PATH_PWD
     build_commit_time=$(git log --reverse --pretty=format:"%ad" --date=format:'%Y-%m-%d' | head -n 1)
-    cd $PATH_KERNEL
+    cd $SOURCE_kernel
     git_log=$(git log --since="$build_commit_time"  --oneline)
     commit_count=$(echo "$git_log" | wc -l)
     deb_version="1.$commit_count.0"
@@ -102,7 +102,7 @@ Installed-Size: ${size}
 Architecture: ${CHIP_ARCH}
 EOF
     DEB_IMAGE_NAME="${package_name}_${deb_version}_${CHIP_ARCH}.deb"
-    run_status "创建deb包 ${DEB_IMAGE_NAME} " dpkg -b "$path_package" "${PATH_OUTPUT_KERNEL_PACKAGE}/${DEB_IMAGE_NAME}"
+    run_status "创建deb包 ${DEB_IMAGE_NAME} " dpkg -b "$path_package" "${OUTDIR_kernel_package}/${DEB_IMAGE_NAME}"
     
 }
 
@@ -114,9 +114,9 @@ pack_kernel_Image() {
     local path_tmp_boot=${TMP_KERNEL_DEB}${path_board_tmp_boot}
     create_dir  $path_tmp_boot
     
-    cp ${PATH_KERNEL}/.config $path_tmp_boot/config-$(get_linux_version ./)
-    cd $PATH_KERNEL
-    run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $path_tmp_boot
+    cp ${SOURCE_kernel}/.config $path_tmp_boot/config-$(get_linux_version ./)
+    cd $SOURCE_kernel
+    run_status "export Image" cp ${SOURCE_kernel}/arch/${CHIP_ARCH}/boot/Image $path_tmp_boot
     
     _gen_postinst_cp_file $TMP_KERNEL_DEB $path_board_tmp_boot /boot/
     _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel image file"
@@ -130,7 +130,7 @@ pack_kernel_dtb() {
     local path_tmp_boot=${TMP_KERNEL_DEB}${path_board_tmp_boot}
     create_dir  $path_tmp_boot
     
-    cd $PATH_KERNEL
+    cd $SOURCE_kernel
     run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$path_tmp_boot" ARCH=${CHIP_ARCH}
     
     # 设备树导出后，会产生一个类似allwinner/.dtb的路径，把里面的dtb提取到外面
@@ -147,7 +147,7 @@ pack_kernel_modules() {
     part_name="kernel-modules"
     local TMP_KERNEL_DEB=$(_gen_tmp_package_dir $part_name)
     
-    cd $PATH_KERNEL
+    cd $SOURCE_kernel
     run_status "export modules" make  modules_install INSTALL_MOD_PATH="$TMP_KERNEL_DEB" ARCH=${CHIP_ARCH}
     
     for dir in $TMP_KERNEL_DEB/lib/modules/*/
@@ -303,22 +303,22 @@ pack_kernel_headers() {
     
     local TMP_KERNEL_DEB=$(_gen_tmp_package_dir $part_name)
     
-    PATH_KERNEL_CLEAN="${PATH_KERNEL}-clean"
-    if [ -d $PATH_KERNEL_CLEAN ]; then
-        rm -r $PATH_KERNEL_CLEAN
+    SOURCE_kernel_CLEAN="${SOURCE_kernel}-clean"
+    if [ -d $SOURCE_kernel_CLEAN ]; then
+        rm -r $SOURCE_kernel_CLEAN
     fi
-    run_status "copy kernel" run_as_user cp -r $PATH_KERNEL $PATH_KERNEL_CLEAN
+    run_status "copy kernel" run_as_user cp -r $SOURCE_kernel $SOURCE_kernel_CLEAN
     
-    cd $PATH_KERNEL_CLEAN
+    cd $SOURCE_kernel_CLEAN
     run_status "make the kernel clean" run_as_user make clean CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     
-    cd $PATH_KERNEL_CLEAN
+    cd $SOURCE_kernel_CLEAN
     local version=$(get_linux_version ./)
     local destdir=$TMP_KERNEL_DEB/usr/src/linux-headers-$version
     create_dir $destdir
     create_dir debian
     
-    cd $PATH_KERNEL_CLEAN
+    cd $SOURCE_kernel_CLEAN
     make clean CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     generate_kernel_headers $TMP_KERNEL_DEB $CHIP_ARCH
     
@@ -328,14 +328,14 @@ pack_kernel_headers() {
 
 build_kernel() {
     cd $PATH_SOURCE
-    clone_branch $LINUX_GIT $LINUX_BRANCH $PATH_KERNEL
-    git config --global --add safe.directory $PATH_KERNEL
+    clone_branch $LINUX_GIT $LINUX_BRANCH $SOURCE_kernel
+    git config --global --add safe.directory $SOURCE_kernel
     
     compile_kernel
-    if [ -d $PATH_OUTPUT_KERNEL_PACKAGE ]; then
-        rm -r $PATH_OUTPUT_KERNEL_PACKAGE
+    if [ -d $OUTDIR_kernel_package ]; then
+        rm -r $OUTDIR_kernel_package
     fi
-    create_dir $PATH_OUTPUT_KERNEL_PACKAGE
+    create_dir $OUTDIR_kernel_package
     
     pack_kernel_Image
     pack_kernel_dtb

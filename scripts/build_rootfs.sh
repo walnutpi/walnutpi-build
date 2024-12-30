@@ -1,8 +1,6 @@
 #!/bin/bash
-FLAG_DEBIAN12_BOOKWORM="debian12"
-FLAG_UBUNTU22_JAMMY="ubuntu22"
-FILE_BEFOR_ROOTFS="befor_rootfs.sh"
-FILE_BOARD_BEFOR_ROOTFS="${OPT_board_name}/${FILE_BEFOR_ROOTFS}"
+
+
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 APT_DOMAIN="apt.walnutpi.com"
 
@@ -24,8 +22,8 @@ generate_tmp_rootfs() {
     else
         
         run_as_silent mkdir ${PATH_ROOTFS} -p
-        case "${OPT_os_ver}" in
-            ${FLAG_DEBIAN12_BOOKWORM})
+        case "${ENTER_os_ver}" in
+            ${OPT_os_debian12})
                 debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
                 # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
                 #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
@@ -58,7 +56,7 @@ generate_tmp_rootfs() {
                 tar -czf $FILE_SAVE_ROOTFS ./
             ;;
             
-            ${FLAG_UBUNTU22_JAMMY} )
+            ${OPT_os_ubuntu22} )
                 wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_SAVE_ROOTFS
                 run_status "unzip rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
                 
@@ -100,9 +98,9 @@ generate_tmp_rootfs() {
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     # 获取要本脚本的软件安装列表
-    mapfile -t packages_build < <(grep -vE '^#|^$' ${FILE_APT_BASE})
-    if [[ ${OPT_rootfs_type} == "desktop" ]]; then
-        mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP})
+    mapfile -t packages_build < <(grep -vE '^#|^$' ${FILE_apt_base})
+    if [[ ${ENTER_rootfs_type} == "desktop" ]]; then
+        mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_apt_desktop})
         packages_build=("${packages_build[@]}" "${desktop_packages[@]}")
     fi
     
@@ -155,13 +153,7 @@ generate_tmp_rootfs() {
     fi
     
     
-    # 运行板子自带的脚本
-    if [ -f $FILE_BOARD_BEFOR_ROOTFS ]; then
-        cp $FILE_BOARD_BEFOR_ROOTFS  ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
-        run_status "run ${FILE_BEFOR_ROOTFS}" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  bash /opt/${FILE_BEFOR_ROOTFS}"
-        rm ${PATH_ROOTFS}/opt/${FILE_BEFOR_ROOTFS}
-    fi
-    
+
     cd ${PATH_SOURCE}
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cd ${PATH_SOURCE}/wpi-update
@@ -177,7 +169,7 @@ generate_tmp_rootfs() {
     touch $relseas_file
     echo "version=${VERSION_APT}" >> $relseas_file
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
-    echo "os_type=${OPT_rootfs_type}"  >> $relseas_file
+    echo "os_type=${ENTER_rootfs_type}"  >> $relseas_file
     echo ""   >> $relseas_file
     
     # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
@@ -193,7 +185,7 @@ generate_tmp_rootfs() {
     LIB_DIR="${PATH_ROOTFS}/usr/lib"
     FILE_NAME="EXTERNALLY-MANAGED"
     find $LIB_DIR -type f -name "$FILE_NAME"  -delete
-    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_PIP_LIST})
+    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_pip_list})
     total=${#packages[@]}
     for (( i=0; i<${total}; i++ )); do
         package=${packages[$i]}
@@ -225,7 +217,7 @@ generate_tmp_rootfs() {
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
     
     # 安装kernel产生的的deb包
-    cp ${PATH_OUTPUT_KERNEL_PACKAGE}/*.deb  ${PATH_ROOTFS}/opt/
+    cp ${OUTDIR_kernel_package}/*.deb  ${PATH_ROOTFS}/opt/
     cd ${PATH_ROOTFS}/opt/
     deb_packages=(*.deb)
     
@@ -249,9 +241,9 @@ generate_tmp_rootfs() {
     echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
-    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
-    if [[ ${OPT_rootfs_type} == "desktop" ]]; then
-        mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP_BOARD})
+    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_base_board})
+    if [[ ${ENTER_rootfs_type} == "desktop" ]]; then
+        mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_apt_desktop_board})
         packages=("${packages[@]}" "${desktop_packages[@]}")
     fi
     total=${#packages[@]}
@@ -278,8 +270,8 @@ generate_tmp_rootfs() {
 
 pack_rootfs() {
     cd ${PATH_ROOTFS}
-    if [ -f "$FILE_ROOTFS_TAR" ]; then
-        rm $FILE_ROOTFS_TAR
+    if [ -f "$OUTFILE_rootfs_tar" ]; then
+        rm $OUTFILE_rootfs_tar
     fi
-    run_status "create tar" tar -c -I 'xz -T0' -f $FILE_ROOTFS_TAR ./
+    run_status "create tar" tar -c -I 'xz -T0' -f $OUTFILE_rootfs_tar ./
 }

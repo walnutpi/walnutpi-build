@@ -14,7 +14,6 @@ create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
 
 PATH_SF_LIST="${PATH_PWD}/software-list"
-FILE_PIP_LIST="${PATH_SF_LIST}/pip"
 
 
 
@@ -22,18 +21,18 @@ FLAG_DIR="${PATH_TMP}/FLAGS"
 FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
 
 # 内核编译相关
-PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
-PATH_OUTPUT_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel
+SOURCE_kernel="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
+OUTDIR_kernel_package=${PATH_OUTPUT_BOARD}/kernel
 
 # 编译bootloader相关
-PATH_OUTPUT_BOOT_PACKAGE=${PATH_OUTPUT_BOARD}/boot
-PATH_OUTPUT_BOOT_BIN=${PATH_OUTPUT_BOOT_PACKAGE}/boot.bin
+OUTDIR_boot_package=${PATH_OUTPUT_BOARD}/boot
+OUTFILE_boot_bin=${OUTDIR_boot_package}/boot.bin
 
 # 生成rootfs相关
-FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_os_ver}_${OPT_rootfs_type}.tar.gz"
-PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${OPT_os_ver}_${OPT_rootfs_type}
-
-FILE_APT_BASE="${OPT_board_name}/${OPT_os_ver}/apt-base"
-FILE_APT_DESKTOP="${OPT_board_name}/${OPT_os_ver}/apt-desktop"
-FILE_APT_BASE_BOARD="${OPT_board_name}/${OPT_os_ver}/wpi-base"
-FILE_APT_DESKTOP_BOARD="${OPT_board_name}/${OPT_os_ver}/wpi-desktop"
+OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
+PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
+FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
+FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
+FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
+FILE_pip_list="${PATH_SF_LIST}/pip"

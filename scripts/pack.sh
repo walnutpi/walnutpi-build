@@ -1,9 +1,9 @@
 #!/bin/bash
 
 FILE_AFTER_PACK="after_pack.sh"
-FILE_BOARD_AFTER_PACK="${OPT_board_name}/${FILE_AFTER_PACK}"
+FILE_BOARD_AFTER_PACK="${ENTER_board_name}/${FILE_AFTER_PACK}"
 
-DIR_SAVE_BOOT_FILE="${OPT_board_name}/boot"
+DIR_SAVE_BOOT_FILE="${ENTER_board_name}/boot"
 
 FILE_ROOTFS=""
 FILE_BOOT_BIN=""
@@ -44,7 +44,7 @@ do_pack() {
     [[ ! -d $MOUNT_DISK2 ]] && mkdir -p $MOUNT_DISK2
     # mkdir -p $MOUNT_DISK1
     # mkdir -p $MOUNT_DISK2
-    FILE_ROOTFS="$FILE_ROOTFS_TAR"
+    FILE_ROOTFS="$OUTFILE_rootfs_tar"
     cd ${PATH_SOURCE}/wpi-update
     VERSION_APT=""
     # run_status "get wpi-update version"
@@ -52,7 +52,7 @@ do_pack() {
     
 
 
-    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_os_ver}"
+    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
     fi
@@ -121,8 +121,8 @@ do_pack() {
     
     mount $MAPPER_DEVICE1 $MOUNT_DISK2/boot
     
-    PATH_KERNEL="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
-    kernel_version=$(get_linux_version $PATH_KERNEL)
+    SOURCE_kernel="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
+    kernel_version=$(get_linux_version $SOURCE_kernel)
     run_status_no_retry "generate initramfs" chroot $MOUNT_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
     
     

@@ -28,7 +28,7 @@ compile_uboot() {
     run_as_user make BL31=../arm-trusted-firmware/build/$ATF_PLAT/debug/bl31.bin \
     CROSS_COMPILE=$USE_CROSS_COMPILE
     exit_if_last_error
-    cp $UBOOT_BIN_NAME $PATH_OUTPUT_BOOT_BIN
+    cp $UBOOT_BIN_NAME $OUTFILE_boot_bin
     
 }
 compile_syterkit() {
@@ -44,11 +44,11 @@ compile_syterkit() {
     run_as_user make
     exit_if_last_error
     echo "SYTERKIT_OUT_BIN=$SYTERKIT_OUT_BIN"
-    cp $SYTERKIT_OUT_BIN $PATH_OUTPUT_BOOT_BIN
+    cp $SYTERKIT_OUT_BIN $OUTFILE_boot_bin
     
 }
 get_config_txt_version() {
-    source ${OPT_board_name}/config.txt
+    source ${ENTER_board_name}/config.txt
     echo "$version"
 }
 
@@ -66,7 +66,7 @@ _pack_as_boot_deb(){
     fi
     
     
-    source ${OPT_board_name}/config.txt
+    source ${ENTER_board_name}/config.txt
     deb_version="$version"
     
     cd $path_package
@@ -84,12 +84,12 @@ Installed-Size: ${size}
 Architecture: ${CHIP_ARCH}
 EOF
     DEB_PACKAGE_NAME="${package_name}_${deb_version}_${CHIP_ARCH}.deb"
-    run_status "创建deb包 ${DEB_PACKAGE_NAME} " dpkg -b "$path_package" "${PATH_OUTPUT_BOOT_PACKAGE}/${DEB_PACKAGE_NAME}"
+    run_status "创建deb包 ${DEB_PACKAGE_NAME} " dpkg -b "$path_package" "${OUTDIR_boot_package}/${DEB_PACKAGE_NAME}"
     
 }
 
 pack_config_txt() {
-    local path_tmp_package_configtxt="${PATH_TMP}/boot-configtxt-$(basename ${OPT_board_name})"
+    local path_tmp_package_configtxt="${PATH_TMP}/boot-configtxt-$(basename ${ENTER_board_name})"
     if [ -d $path_tmp_package_configtxt ]; then
         rm -r $path_tmp_package_configtxt
     fi
@@ -97,13 +97,13 @@ pack_config_txt() {
     local path_board_tmp_boot="/tmp-boot/boot"
     local path_tmp_boot=${path_tmp_package_configtxt}${path_board_tmp_boot}
     create_dir  $path_tmp_boot
-    cp ${OPT_board_name}/config.txt $path_tmp_boot
+    cp ${ENTER_board_name}/config.txt $path_tmp_boot
     _gen_postinst_cp_file $path_tmp_package_configtxt $path_board_tmp_boot /boot/
     _pack_as_boot_deb $path_tmp_package_configtxt "configtxt" "config.txt for boot"
 }
 
 pack_boot_bin() {
-    local path_tmp_package_configtxt="${PATH_TMP}/boot-bin-$(basename ${OPT_board_name})"
+    local path_tmp_package_configtxt="${PATH_TMP}/boot-bin-$(basename ${ENTER_board_name})"
     if [ -d $path_tmp_package_configtxt ]; then
         rm -r $path_tmp_package_configtxt
     fi
@@ -114,9 +114,9 @@ pack_boot_bin() {
     create_dir  $path_tmp_boot
 
     
-    cp_file_if_exsit ${OPT_board_name}/boot.cmd $path_tmp_boot
-    cp_file_if_exsit ${OPT_board_name}/boot.scr $path_tmp_boot
-    cp_file_if_exsit ${PATH_OUTPUT_BOOT_BIN} $path_tmp_boot
+    cp_file_if_exsit ${ENTER_board_name}/boot.cmd $path_tmp_boot
+    cp_file_if_exsit ${ENTER_board_name}/boot.scr $path_tmp_boot
+    cp_file_if_exsit ${OUTFILE_boot_bin} $path_tmp_boot
 
     
     _gen_postinst_cp_file $path_tmp_package_configtxt $path_board_tmp_boot /boot/
@@ -125,10 +125,10 @@ pack_boot_bin() {
 
 build_bootloader()
 {
-    if [ -d $PATH_OUTPUT_BOOT_PACKAGE ]; then
-        rm -r $PATH_OUTPUT_BOOT_PACKAGE
+    if [ -d $OUTDIR_boot_package ]; then
+        rm -r $OUTDIR_boot_package
     fi
-    create_dir $PATH_OUTPUT_BOOT_PACKAGE
+    create_dir $OUTDIR_boot_package
     if [ -n "$UBOOT_CONFIG" ];then
         compile_uboot
     fi
