@@ -1,6 +1,6 @@
 #!/bin/bash
-PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-PATH_SCRIPT="${PATH_PWD}/scripts"
+PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+PATH_SCRIPT="${PATH_PROJECT_DIR}/scripts"
 source "${PATH_SCRIPT}/common.sh"
 source "${PATH_SCRIPT}/option.sh"
 source "${PATH_SCRIPT}/menu.sh"

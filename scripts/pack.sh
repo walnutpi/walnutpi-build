@@ -59,7 +59,7 @@ do_pack() {
     # echo "开始打包"
     check_resource
     
-    ROOTFS_SIZE=$(du -sm $PATH_ROOTFS | cut -f1)
+    ROOTFS_SIZE=$(du -sm $TMP_rootfs_build | cut -f1)
     PART2_SIZE=$((ROOTFS_SIZE + 500))
     
     echo "PART1_SIZE=${PART1_SIZE}MB"

@@ -7,28 +7,27 @@ APT_DOMAIN="apt.walnutpi.com"
 
 generate_tmp_rootfs() {
     # set -e
-    FILE_SAVE_ROOTFS=${PATH_ROOTFS}_base_software.tar
-    if [[ -d $PATH_ROOTFS ]]; then
-        run_as_silent umount_chroot $PATH_ROOTFS
-        rm -r ${PATH_ROOTFS}
+    if [[ -d $TMP_rootfs_build ]]; then
+        run_as_silent umount_chroot $TMP_rootfs_build
+        rm -r ${TMP_rootfs_build}
     fi
-    mkdir ${PATH_ROOTFS}
+    mkdir ${TMP_rootfs_build}
     
     echo -e "\n\n------\t build rootfs \t------"
     
-    # 为节省编译时间，第一次编译时会构建一个基本rootfs，并安装base的软件
-    if [[ -f $FILE_SAVE_ROOTFS ]]; then
-        run_status "unzip last rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
+    # 为节省编译时间，第一次编译时会构建一个基本rootfs，并安装base的软件，后续不再从头构建，直接从压缩包中解压出rootfs
+    if [[ -f $FILE_base_rootfs ]]; then
+        run_status "unzip last rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
     else
         
-        run_as_silent mkdir ${PATH_ROOTFS} -p
+        run_as_silent mkdir ${TMP_rootfs_build} -p
         case "${ENTER_os_ver}" in
             ${OPT_os_debian12})
-                debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+                debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
                 # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
-                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
+                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
                 # else
-                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://ftp.cn.debian.org/debian/
+                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://ftp.cn.debian.org/debian/
                 # fi
                 
                 exit_if_last_error
@@ -42,23 +41,23 @@ generate_tmp_rootfs() {
                         qemu_arch="arm"
                     ;;
                 esac
-                cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
-                chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
+                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
+                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
                 
                 # 完成rootfs的初始化
-                cd ${PATH_ROOTFS}
-                mount_chroot $PATH_ROOTFS
-                LC_ALL=C LANGUAGE=C LANG=C chroot ${PATH_ROOTFS} /debootstrap/debootstrap --second-stage –verbose
+                cd ${TMP_rootfs_build}
+                mount_chroot $TMP_rootfs_build
+                LC_ALL=C LANGUAGE=C LANG=C chroot ${TMP_rootfs_build} /debootstrap/debootstrap --second-stage –verbose
                 exit_if_last_error
-                run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-                umount_chroot $PATH_ROOTFS
+                run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+                umount_chroot $TMP_rootfs_build
                 
-                tar -czf $FILE_SAVE_ROOTFS ./
+                tar -czf $FILE_base_rootfs ./
             ;;
             
             ${OPT_os_ubuntu22} )
-                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_SAVE_ROOTFS
-                run_status "unzip rootfs"  tar -xvf $FILE_SAVE_ROOTFS -C  $PATH_ROOTFS
+                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_base_rootfs
+                run_status "unzip rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
                 
                 qemu_arch=""
                 case "${CHIP_ARCH}" in
@@ -69,12 +68,12 @@ generate_tmp_rootfs() {
                         qemu_arch="arm"
                     ;;
                 esac
-                cp /usr/bin/qemu-${qemu_arch}-static ${PATH_ROOTFS}/usr/bin/
-                chmod +x ${PATH_ROOTFS}/usr/bin/qemu-${qemu_arch}-static
+                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
+                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
                 
                 # base默认没写dns服务器
-                # sudo echo "nameserver 8.8.8.8"  > ${PATH_ROOTFS}/etc/resolv.conf
-                FILE="${PATH_ROOTFS}/etc/resolv.conf"
+                # sudo echo "nameserver 8.8.8.8"  > ${TMP_rootfs_build}/etc/resolv.conf
+                FILE="${TMP_rootfs_build}/etc/resolv.conf"
                 LINE="nameserver 8.8.8.8"
                 grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
                 
@@ -85,17 +84,16 @@ generate_tmp_rootfs() {
     fi
     
     # 用这个文件作为安装过的软件的列表，在重复构建时节省时间
-    SF_LIST="${PATH_ROOTFS}/etc/release-apt"
-    if [[ ! -f $SF_LIST ]]; then
-        touch $SF_LIST
+    if [[ ! -f $PLACE_sf_list ]]; then
+        touch $PLACE_sf_list
     fi
     
     
     # apt安装通用软件
-    # cd $PATH_ROOTFS
-    mount_chroot $PATH_ROOTFS
+    # cd $TMP_rootfs_build
+    mount_chroot $TMP_rootfs_build
     
-    run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
+    run_status "apt update" chroot ${TMP_rootfs_build} /bin/bash -c "apt-get update"
     
     # 获取要本脚本的软件安装列表
     mapfile -t packages_build < <(grep -vE '^#|^$' ${FILE_apt_base})
@@ -105,7 +103,7 @@ generate_tmp_rootfs() {
     fi
     
     # 获取rootfs内的软件安装列表
-    mapfile -t packages_rootfs < <(grep -vE '^#|^$' ${SF_LIST})
+    mapfile -t packages_rootfs < <(grep -vE '^#|^$' ${PLACE_sf_list})
     # echo ${packages_build[@]}
     packages_install=()
     packages_remove=()
@@ -126,30 +124,30 @@ generate_tmp_rootfs() {
     total=${#packages_install[@]}
     for (( i=0; i<${total}; i++ )); do
         package=${packages_install[$i]}
-        run_status "apt install [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y  ${package}"
+        run_status "apt install [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get install -y  ${package}"
     done
     total=${#packages_remove[@]}
     for (( i=0; i<${total}; i++ )); do
         package=${packages_remove[$i]}
-        run_status "apt remove [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get remove -y  ${package}"
+        run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get remove -y  ${package}"
     done
-    run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     
     # 将安装过的软件名称，都写进文件内
-    if [[  -f $SF_LIST ]]; then
-        rm $SF_LIST
+    if [[  -f $PLACE_sf_list ]]; then
+        rm $PLACE_sf_list
     fi
-    touch $SF_LIST
+    touch $PLACE_sf_list
     for package in "${packages_build[@]}"; do
-        echo "$package" >> $SF_LIST
+        echo "$package" >> $PLACE_sf_list
     done
     
-    umount_chroot $PATH_ROOTFS
+    umount_chroot $TMP_rootfs_build
     # 如果本次对保存的rootfs的apt软件有增删，则重设压缩包
     if [ ${#packages_install[@]} -gt 0 ] || [ ${#packages_remove[@]} -gt 0 ]; then
-        rm -r $FILE_SAVE_ROOTFS
-        cd ${PATH_ROOTFS}
-        run_status "create the tar to save now rootfs" tar -czf $FILE_SAVE_ROOTFS ./
+        rm -r $FILE_base_rootfs
+        cd ${TMP_rootfs_build}
+        run_status "create the tar to save now rootfs" tar -czf $FILE_base_rootfs ./
     fi
     
     
@@ -159,13 +157,13 @@ generate_tmp_rootfs() {
     cd ${PATH_SOURCE}/wpi-update
     # run_status "get wpi-update version"
     touch /tmp/walnutpi-board_model
-    touch ${PATH_ROOTFS}/tmp/walnutpi-board_model
+    touch ${TMP_rootfs_build}/tmp/walnutpi-board_model
     echo -n "$BOARD_MODEL" > /tmp/walnutpi-board_model
-    echo -n "$BOARD_MODEL" > ${PATH_ROOTFS}/tmp/walnutpi-board_model
+    echo -n "$BOARD_MODEL" > ${TMP_rootfs_build}/tmp/walnutpi-board_model
     VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
     # 创建release文件
-    relseas_file="${PATH_ROOTFS}/etc/WalnutPi-release"
+    relseas_file="${TMP_rootfs_build}/etc/WalnutPi-release"
     touch $relseas_file
     echo "version=${VERSION_APT}" >> $relseas_file
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
@@ -182,7 +180,7 @@ generate_tmp_rootfs() {
     
     # pip 安装指定软件
     # 删除一个用于禁止pip安装的文件 如在debian12中是/usr/lib/python3.11/EXTERNALLY-MANAGED
-    LIB_DIR="${PATH_ROOTFS}/usr/lib"
+    LIB_DIR="${TMP_rootfs_build}/usr/lib"
     FILE_NAME="EXTERNALLY-MANAGED"
     find $LIB_DIR -type f -name "$FILE_NAME"  -delete
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_pip_list})
@@ -190,7 +188,7 @@ generate_tmp_rootfs() {
     for (( i=0; i<${total}; i++ )); do
         package=${packages[$i]}
         # echo "pip3 [$((i+1))/${total}] : $package"
-        run_status "pip3 [$((i+1))/${total}] : $package" chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
+        run_status "pip3 [$((i+1))/${total}] : $package" chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
     done
     
     
@@ -202,44 +200,44 @@ generate_tmp_rootfs() {
         if [[ ! -d "firmware" ]]; then
             run_status "download firmware" git clone "${FIRMWARE_GIT}"
         fi
-        cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
+        cp -r ${firm_dir}/* ${TMP_rootfs_build}/lib/firmware
     fi
     
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
     if grep -q "$APT_DOMAIN" /etc/hosts; then
         LINE=$(grep "$APT_DOMAIN" /etc/hosts)
-        echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
+        echo "$LINE" >> "$TMP_rootfs_build/etc/hosts"
     fi
-    # run_status "change hosts" chroot $PATH_ROOTFS /bin/bash -c "service network-manager restart"
+    # run_status "change hosts" chroot $TMP_rootfs_build /bin/bash -c "service network-manager restart"
     
     # wpi-update
-    cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
-    run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
+    cp wpi-update/wpi-update ${TMP_rootfs_build}/usr/bin
+    run_status "run wpi-update" chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
     
     # 安装kernel产生的的deb包
-    cp ${OUTDIR_kernel_package}/*.deb  ${PATH_ROOTFS}/opt/
-    cd ${PATH_ROOTFS}/opt/
+    cp ${OUTDIR_kernel_package}/*.deb  ${TMP_rootfs_build}/opt/
+    cd ${TMP_rootfs_build}/opt/
     deb_packages=(*.deb)
     
     total=${#deb_packages[@]}
     for (( i=0; i<$total; i++ )); do
         deb_package=${deb_packages[$i]}
-        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${PATH_ROOTFS} /bin/bash -c "dpkg -i /opt/${deb_package}"
-        rm ${PATH_ROOTFS}/opt/${deb_package}
+        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_rootfs_build} /bin/bash -c "dpkg -i /opt/${deb_package}"
+        rm ${TMP_rootfs_build}/opt/${deb_package}
     done
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
-    echo "$MODULES_LIST" > ${PATH_ROOTFS}/etc/modules
+    echo "$MODULES_LIST" > ${TMP_rootfs_build}/etc/modules
     
     
     
     
     
     # apt安装各板指定软件
-    mount_chroot $PATH_ROOTFS
+    mount_chroot $TMP_rootfs_build
     # 插入walnutpi的apt源
-    echo $APT_SOURCES_WALNUTPI >> ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
-    run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
+    echo $APT_SOURCES_WALNUTPI >> ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
+    run_status "apt update" chroot ${TMP_rootfs_build} /bin/bash -c "apt-get update"
     
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_base_board})
     if [[ ${ENTER_rootfs_type} == "desktop" ]]; then
@@ -249,27 +247,27 @@ generate_tmp_rootfs() {
     total=${#packages[@]}
     for (( i=0; i<${total}; i++ )); do
         package=${packages[$i]}
-        run_status "apt [$((i+1))/${total}] : $package " chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
+        run_status "apt [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
     done
     
     # 删除插入hosts文件的内容
-    if grep -q "$APT_DOMAIN" "$PATH_ROOTFS/etc/hosts"; then
-        sed -i "/$APT_DOMAIN/d" "$PATH_ROOTFS/etc/hosts"
+    if grep -q "$APT_DOMAIN" "$TMP_rootfs_build/etc/hosts"; then
+        sed -i "/$APT_DOMAIN/d" "$TMP_rootfs_build/etc/hosts"
     fi
     
     # 去除残余
-    run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-    # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
-    rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
+    run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    # sed -i '$ d' ${TMP_rootfs_build}/etc/apt/sources.list
+    rm ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
     
     
     
-    cd $PATH_ROOTFS
-    umount_chroot $PATH_ROOTFS
+    cd $TMP_rootfs_build
+    umount_chroot $TMP_rootfs_build
 }
 
 pack_rootfs() {
-    cd ${PATH_ROOTFS}
+    cd ${TMP_rootfs_build}
     if [ -f "$OUTFILE_rootfs_tar" ]; then
         rm $OUTFILE_rootfs_tar
     fi

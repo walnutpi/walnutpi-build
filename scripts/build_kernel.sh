@@ -79,8 +79,8 @@ _pack_as_kernel_deb(){
     fi
     
     # 从本build项目第一次提交时间起，linux项目共发生了几次提交，将提交数作为deb包的版本号
-    cd $PATH_PWD
-    git config --global --add safe.directory $PATH_PWD
+    cd $PATH_PROJECT_DIR
+    git config --global --add safe.directory $PATH_PROJECT_DIR
     build_commit_time=$(git log --reverse --pretty=format:"%ad" --date=format:'%Y-%m-%d' | head -n 1)
     cd $SOURCE_kernel
     git_log=$(git log --since="$build_commit_time"  --oneline)

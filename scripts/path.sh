@@ -1,20 +1,17 @@
 #!/bin/bash
 
-# PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-PATH_board="${PATH_PWD}/board"
-PATH_SOURCE="${PATH_PWD}/source"
-PATH_OUTPUT="${PATH_PWD}/output"
-PATH_TMP="${PATH_PWD}/.tmp"
-PATH_LOG="${PATH_PWD}/log"
-PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
+# PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+PATH_board="${PATH_PROJECT_DIR}/board"
+PATH_SOURCE="${PATH_PROJECT_DIR}/source"
+PATH_OUTPUT="${PATH_PROJECT_DIR}/output"
+PATH_TMP="${PATH_PROJECT_DIR}/.tmp"
+PATH_LOG="${PATH_PROJECT_DIR}/log"
+PATH_TOOLCHAIN="${PATH_PROJECT_DIR}/toolchain"
 create_dir $PATH_SOURCE
 create_dir $PATH_OUTPUT
 create_dir $PATH_TMP
 create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
-
-PATH_SF_LIST="${PATH_PWD}/software-list"
-
 
 
 FLAG_DIR="${PATH_TMP}/FLAGS"
@@ -30,9 +27,13 @@ OUTFILE_boot_bin=${OUTDIR_boot_package}/boot.bin
 
 # 生成rootfs相关
 OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
-PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+FILE_base_rootfs=${TMP_rootfs_build}_base_software.tar
 FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
 FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
 FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
 FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
+PATH_SF_LIST="${PATH_PROJECT_DIR}/software-list"
 FILE_pip_list="${PATH_SF_LIST}/pip"
+
+PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
