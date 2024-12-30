@@ -56,39 +56,6 @@ compile_kernel() {
 }
 
 
-# 生成deb包需要的postinst文件，功能是在安装时复制指定的文件到指定路径
-_gen_postinst_cp_file(){
-    local path_package=$1
-    local source_path=$2
-    local target_path=$3
-    postinst_file=$path_package/DEBIAN/postinst
-    if [ ! -d $path_package/DEBIAN ];then
-        mkdir $path_package/DEBIAN
-    fi
-   cat << EOF > $postinst_file
-#!/bin/sh
-set -e
-case "\$1" in
-    configure)
-        old_version="\$2"
-        new_version="\$3"
-        echo "Updating from version $old_version to version $new_version"
-
-        cp -r $source_path/* $target_path
-
-        ;;
-    abort-upgrade|abort-remove|abort-deconfigure)
-        # 回滚操作
-        ;;
-    *)
-        exit 1
-        ;;
-esac
-
-exit 0
-EOF
-    chmod 755 $postinst_file
-}
 
 _gen_tmp_package_dir(){
     local name=$1

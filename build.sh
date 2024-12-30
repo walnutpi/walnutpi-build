@@ -4,7 +4,7 @@ PATH_SCRIPT="${PATH_PWD}/scripts"
 source "${PATH_SCRIPT}/common.sh"
 
 reload_env() {
-source "${PATH_SCRIPT}/path.sh"
+    source "${PATH_SCRIPT}/path.sh"
 }
 reload_env
 
@@ -130,6 +130,7 @@ source "${PATH_SCRIPT}"/compile.sh
 source "${PATH_SCRIPT}"/rootfs.sh
 source "${PATH_SCRIPT}"/pack.sh
 source "${PATH_SCRIPT}"/build_kernel.sh
+source "${PATH_SCRIPT}"/build_bootloader.sh
 
 case "$OPT_BUILD_MODULE" in
     "pack_rootfs" | "pack_image" | "rootfs" | "image")
@@ -193,7 +194,8 @@ exec 3>&1 4>&2
 exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
 case "$OPT_BUILD_MODULE" in
     "bootloader" )
-        compile_bootloader
+        # compile_bootloader
+        build_bootloader
     ;;
     "kernel")
         build_kernel
@@ -206,7 +208,8 @@ case "$OPT_BUILD_MODULE" in
     ;;
     "image")
         if [ -z ${OPT_UBOOT_REBUILD_FLAG} ] || [ ${OPT_UBOOT_REBUILD_FLAG} == "yes" ] ; then
-            compile_bootloader
+            # compile_bootloader
+            build_bootloader
         fi
         if [ -z ${OPT_KERNEL_REBUILD_FLAG} ] || [ ${OPT_KERNEL_REBUILD_FLAG} == "yes" ] ; then
             build_kernel
