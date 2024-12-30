@@ -1,6 +1,6 @@
 #!/bin/bash
 
-reload_env
+
 
 
 compile_atf() {

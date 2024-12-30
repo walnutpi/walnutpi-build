@@ -52,7 +52,7 @@ do_pack() {
     
 
 
-    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_ROOTFS_TYPE}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_OS_VER}"
+    IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${OPT_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${OPT_os_ver}"
     if [ -f "$IMG_FILE" ]; then
         rm ${IMG_FILE}
     fi

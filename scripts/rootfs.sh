@@ -5,61 +5,7 @@ FILE_BEFOR_ROOTFS="befor_rootfs.sh"
 FILE_BOARD_BEFOR_ROOTFS="${OPT_board_name}/${FILE_BEFOR_ROOTFS}"
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 APT_DOMAIN="apt.walnutpi.com"
-# OPT_OS_VER=""
-# OPT_ROOTFS_TYPE=""
-PATH_ROOTFS=""
-FILE_ROOTFS_TAR=""
 
-choose_rootfs() {
-    # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
-    if [ -z $OPT_OS_VER ]; then
-        titlestr="Choose an version"
-        options+=(${FLAG_DEBIAN12_BOOKWORM}    "debian 12(bookworm)")
-        options+=(${FLAG_UBUNTU22_JAMMY}    "ubuntu 22.04(Jammy)")
-        OPT_OS_VER=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo ${OPT_OS_VER}
-        [[ -z ${OPT_OS_VER} ]] && exit
-        
-    fi
-    # OPT_OS_VER=${FLAG_DEBIAN12_BOOKWORM}
-    
-    if [ -z $OPT_ROOTFS_TYPE ]; then
-        titlestr="Server or Graphics"
-        options+=("server"    "server")
-        options+=("desktop"    "desktop")
-        OPT_ROOTFS_TYPE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo $OPT_ROOTFS_TYPE
-        [[ -z $OPT_ROOTFS_TYPE ]] && exit
-    fi
-    
-    FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}.tar.gz"
-    PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${OPT_OS_VER}_${OPT_ROOTFS_TYPE}
-    
-    FILE_APT_BASE="${OPT_board_name}/${OPT_OS_VER}/apt-base"
-    FILE_APT_DESKTOP="${OPT_board_name}/${OPT_OS_VER}/apt-desktop"
-    FILE_APT_BASE_BOARD="${OPT_board_name}/${OPT_OS_VER}/wpi-base"
-    FILE_APT_DESKTOP_BOARD="${OPT_board_name}/${OPT_OS_VER}/wpi-desktop"
-    
-    # titlestr="Choose  Language"
-    # options+=("cn"    "Chinese")
-    # options+=("en"    "English")
-    # OPT_LANGUAGE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-    #             --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-    #             --cancel-button Exit --ok-button Select "${options[@]}" \
-    #             3>&1 1>&2 2>&3)
-    # unset options
-    # echo $OPT_LANGUAGE
-    # [[ -z $OPT_LANGUAGE ]] && exit
-    
-}
 
 generate_tmp_rootfs() {
     # set -e
@@ -78,7 +24,7 @@ generate_tmp_rootfs() {
     else
         
         run_as_silent mkdir ${PATH_ROOTFS} -p
-        case "${OPT_OS_VER}" in
+        case "${OPT_os_ver}" in
             ${FLAG_DEBIAN12_BOOKWORM})
                 debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${PATH_ROOTFS}  http://mirrors.tuna.tsinghua.edu.cn/debian/
                 # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
@@ -155,7 +101,7 @@ generate_tmp_rootfs() {
     
     # 获取要本脚本的软件安装列表
     mapfile -t packages_build < <(grep -vE '^#|^$' ${FILE_APT_BASE})
-    if [[ ${OPT_ROOTFS_TYPE} == "desktop" ]]; then
+    if [[ ${OPT_rootfs_type} == "desktop" ]]; then
         mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP})
         packages_build=("${packages_build[@]}" "${desktop_packages[@]}")
     fi
@@ -231,7 +177,7 @@ generate_tmp_rootfs() {
     touch $relseas_file
     echo "version=${VERSION_APT}" >> $relseas_file
     echo "date=$(date "+%Y-%m-%d %H:%M")" >> $relseas_file
-    echo "os_type=${OPT_ROOTFS_TYPE}"  >> $relseas_file
+    echo "os_type=${OPT_rootfs_type}"  >> $relseas_file
     echo ""   >> $relseas_file
     
     # echo "kernel_git=$LINUX_GIT"  >> $relseas_file
@@ -266,14 +212,14 @@ generate_tmp_rootfs() {
         fi
         cp -r ${firm_dir}/* ${PATH_ROOTFS}/lib/firmware
     fi
-
+    
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
     if grep -q "$APT_DOMAIN" /etc/hosts; then
         LINE=$(grep "$APT_DOMAIN" /etc/hosts)
         echo "$LINE" >> "$PATH_ROOTFS/etc/hosts"
     fi
     # run_status "change hosts" chroot $PATH_ROOTFS /bin/bash -c "service network-manager restart"
-
+    
     # wpi-update
     cp wpi-update/wpi-update ${PATH_ROOTFS}/usr/bin
     run_status "run wpi-update" chroot ${PATH_ROOTFS} /bin/bash -c "wpi-update"
@@ -295,7 +241,7 @@ generate_tmp_rootfs() {
     
     
     
-
+    
     
     # apt安装各板指定软件
     mount_chroot $PATH_ROOTFS
@@ -304,7 +250,7 @@ generate_tmp_rootfs() {
     run_status "apt update" chroot ${PATH_ROOTFS} /bin/bash -c "apt-get update"
     
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_APT_BASE_BOARD})
-    if [[ ${OPT_ROOTFS_TYPE} == "desktop" ]]; then
+    if [[ ${OPT_rootfs_type} == "desktop" ]]; then
         mapfile -t desktop_packages  < <(grep -vE '^#|^$' ${FILE_APT_DESKTOP_BOARD})
         packages=("${packages[@]}" "${desktop_packages[@]}")
     fi
@@ -318,14 +264,14 @@ generate_tmp_rootfs() {
     if grep -q "$APT_DOMAIN" "$PATH_ROOTFS/etc/hosts"; then
         sed -i "/$APT_DOMAIN/d" "$PATH_ROOTFS/etc/hosts"
     fi
-
+    
     # 去除残余
     run_slient_when_successfuly chroot $PATH_ROOTFS /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     # sed -i '$ d' ${PATH_ROOTFS}/etc/apt/sources.list
     rm ${PATH_ROOTFS}/etc/apt/sources.list.d/walnutpi.list
     
-
-        
+    
+    
     cd $PATH_ROOTFS
     umount_chroot $PATH_ROOTFS
 }

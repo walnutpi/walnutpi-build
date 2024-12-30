@@ -15,10 +15,7 @@ create_dir $PATH_TOOLCHAIN
 
 PATH_SF_LIST="${PATH_PWD}/software-list"
 FILE_PIP_LIST="${PATH_SF_LIST}/pip"
-FILE_APT_BASE=""
-FILE_APT_DESKTOP=""
-FILE_APT_BASE_BOARD=""
-FILE_APT_DESKTOP_BOARD=""
+
 
 
 FLAG_DIR="${PATH_TMP}/FLAGS"
@@ -32,3 +29,11 @@ PATH_OUTPUT_KERNEL_PACKAGE=${PATH_OUTPUT_BOARD}/kernel
 PATH_OUTPUT_BOOT_PACKAGE=${PATH_OUTPUT_BOARD}/boot
 PATH_OUTPUT_BOOT_BIN=${PATH_OUTPUT_BOOT_PACKAGE}/boot.bin
 
+# 生成rootfs相关
+FILE_ROOTFS_TAR="${PATH_OUTPUT_BOARD}/rootfs_${OPT_os_ver}_${OPT_rootfs_type}.tar.gz"
+PATH_ROOTFS=${PATH_TMP}/${BOARD_MODEL}_${OPT_os_ver}_${OPT_rootfs_type}
+
+FILE_APT_BASE="${OPT_board_name}/${OPT_os_ver}/apt-base"
+FILE_APT_DESKTOP="${OPT_board_name}/${OPT_os_ver}/apt-desktop"
+FILE_APT_BASE_BOARD="${OPT_board_name}/${OPT_os_ver}/wpi-base"
+FILE_APT_DESKTOP_BOARD="${OPT_board_name}/${OPT_os_ver}/wpi-desktop"

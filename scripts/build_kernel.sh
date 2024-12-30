@@ -2,7 +2,6 @@
 
 PACKAGE_IMAGE_NAME=linux-image-${BOARD_MODEL}-${LINUX_BRANCH}
 DEB_IMAGE_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
-reload_env
 
 
 

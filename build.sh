@@ -5,15 +5,23 @@ source "${PATH_SCRIPT}/common.sh"
 source "${PATH_SCRIPT}/menu.sh"
 source "${PATH_SCRIPT}/path.sh"
 
+source "${PATH_SCRIPT}/compile.sh"
+source "${PATH_SCRIPT}/rootfs.sh"
+source "${PATH_SCRIPT}/pack.sh"
+source "${PATH_SCRIPT}/build_kernel.sh"
+source "${PATH_SCRIPT}/build_bootloader.sh"
+
 reload_env() {
     source "${PATH_SCRIPT}/path.sh"
 }
+
 
 OPT_board_name=$FLAG_menu_no_choose
 OPT_build_parts=$FLAG_menu_no_choose
 OPT_boot_rebuild_flag=$FLAG_menu_no_choose
 OPT_kernel_rebuild_flag=$FLAG_menu_no_choose
-
+OPT_os_ver=$FLAG_menu_no_choose
+OPT_rootfs_type=$FLAG_menu_no_choose
 
 START_DATE=$(date)
 
@@ -65,11 +73,11 @@ do
         shift
         shift
         elif [ "x$1" == "x-v" ]; then
-        OPT_OS_VER="$2"
+        OPT_os_ver="$2"
         shift
         shift
         elif [ "x$1" == "x-t" ]; then
-        OPT_ROOTFS_TYPE="$2"
+        OPT_rootfs_type="$2"
         shift
         shift
         elif [ "x$1" == "x-s--boot" ]; then
@@ -91,37 +99,39 @@ if [ $OPT_board_name == $FLAG_menu_no_choose ]; then
     OPT_board_name=$(MENU_choose_board $PATH_board)
 fi
 
+if [ $OPT_build_parts == $FLAG_menu_no_choose ]; then
+    OPT_build_parts=$(MENU_choose_parts)
+fi
+
+
+case "$OPT_build_parts" in
+    "$FLAG_OPT_part_pack_rootfs" | "$FLAG_OPT_part_pack_image" | "$FLAG_OPT_part_rootfs" | "$FLAG_OPT_part_image")
+        if [ $OPT_os_ver == $FLAG_menu_no_choose ]; then
+            OPT_os_ver=$(MENU_choose_os)
+        fi
+        if [ $OPT_rootfs_type == $FLAG_menu_no_choose ]; then
+            OPT_rootfs_type=$(MENU_choose_rootfs_type)
+        fi
+esac
+
+if [ "$OPT_build_parts" == "$FLAG_OPT_part_image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
+    if [ -z "$OPT_boot_rebuild_flag" ]; then
+        OPT_boot_rebuild_flag=$(MENU_sikp_boot)
+    fi
+fi
+if [ "$OPT_build_parts" == "$FLAG_OPT_part_image" ] && [ -d ${PATH_OUTPUT_KERNEL_PACKAGE} ]; then
+    if [ -z "$OPT_kernel_rebuild_flag" ]; then
+        OPT_kernel_rebuild_flag=$(MENU_sikp_kernel)
+    fi
+fi
 
 source $OPT_board_name/board.conf
 PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_board_name##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
 
-if [ $OPT_build_parts == $FLAG_menu_no_choose ]; then
-    OPT_build_parts=$(MENU_choose_parts)
-fi
 
-source "${PATH_SCRIPT}"/compile.sh
-source "${PATH_SCRIPT}"/rootfs.sh
-source "${PATH_SCRIPT}"/pack.sh
-source "${PATH_SCRIPT}"/build_kernel.sh
-source "${PATH_SCRIPT}"/build_bootloader.sh
 
-case "$OPT_build_parts" in
-    "$FLAG_OPT_part_pack_rootfs" | "$FLAG_OPT_part_pack_image" | "$FLAG_OPT_part_rootfs" | "$FLAG_OPT_part_image")
-        choose_rootfs
-esac
-
-if [ "$OPT_build_parts" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
-    if [ -z "$OPT_boot_rebuild_flag" ]; then
-        OPT_boot_rebuild_flag=$(MENU_sikp_boot)
-    fi
-fi
-if [ "$OPT_build_parts" == "image" ] && [ -d ${PATH_OUTPUT_KERNEL_PACKAGE} ]; then
-    if [ -z "$OPT_kernel_rebuild_flag" ]; then
-        OPT_kernel_rebuild_flag=$(MENU_sikp_kernel)
-    fi
-fi
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
@@ -148,6 +158,8 @@ fi
 
 exec 3>&1 4>&2
 exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
+reload_env
+
 case "$OPT_build_parts" in
     "$FLAG_OPT_part_bootloader" )
         # compile_bootloader

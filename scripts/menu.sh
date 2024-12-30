@@ -15,6 +15,8 @@ FLAG_OPT_part_kernel="kernel"
 FLAG_OPT_part_rootfs="rootfs"
 FLAG_OPT_part_pack_rootfs="pack_rootfs"
 FLAG_OPT_part_pack_image="pack_image"
+FLAG_OPT_rootfs_server="server"
+FLAG_OPT_rootfs_desktop="desktop"
 
 
 show_menu() {
@@ -67,12 +69,28 @@ MENU_sikp_boot(){
 }
 
 MENU_sikp_kernel(){
-    
     local titlestr="recompile the KERNEL ?"
     local options=(
         "$FLAG_OPT_NO" "no"
         "$FLAG_OPT_YES" "yes"
     )
     echo $(show_menu "${titlestr}" "${options[@]}")
-    
+}
+
+
+MENU_choose_os() {
+    # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
+    titlestr="Choose an os version"
+    local options=(
+        ${FLAG_DEBIAN12_BOOKWORM}    "debian 12(bookworm)"
+        ${FLAG_UBUNTU22_JAMMY}    "ubuntu 22.04(Jammy)"
+    )
+    echo $(show_menu "${titlestr}" "${options[@]}")
+}
+
+MENU_choose_rootfs_type() {
+    titlestr="Server or Graphics"
+    options+=("$FLAG_OPT_rootfs_server"    "server")
+    options+=("$FLAG_OPT_rootfs_desktop"    "desktop")
+    echo $(show_menu "${titlestr}" "${options[@]}")
 }
