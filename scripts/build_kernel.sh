@@ -4,10 +4,7 @@ PACKAGE_IMAGE_NAME=linux-image-${BOARD_MODEL}-${LINUX_BRANCH}
 DEB_IMAGE_NAME=${PACKAGE_IMAGE_NAME}_1.0.0_all.deb
 reload_env
 
-if [ -d $PATH_OUTPUT_KERNEL_PACKAGE ]; then
-    rm -r $PATH_OUTPUT_KERNEL_PACKAGE
-fi
-create_dir $PATH_OUTPUT_KERNEL_PACKAGE
+
 
 # 获取linux版本号，如5.15.147 6.1.9
 get_linux_version() {
@@ -103,7 +100,7 @@ _gen_tmp_package_dir(){
 }
 
 # 填写control文件,生成deb包到输出路径
-_pack_as_deb(){
+_pack_as_kernel_deb(){
     local path_package=$1
     local part_name=$2
     local package_desc=$3
@@ -156,7 +153,7 @@ pack_kernel_Image() {
     run_status "export Image" cp ${PATH_KERNEL}/arch/${CHIP_ARCH}/boot/Image $path_tmp_boot
     
     _gen_postinst_cp_file $TMP_KERNEL_DEB $path_board_tmp_boot /boot/
-    _pack_as_deb $TMP_KERNEL_DEB $part_name "linux kernel image file"
+    _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel image file"
     
 }
 pack_kernel_dtb() {
@@ -176,7 +173,7 @@ pack_kernel_dtb() {
     rm -r $folder_name
     
     _gen_postinst_cp_file $TMP_KERNEL_DEB $path_board_tmp_boot /boot/
-    _pack_as_deb $TMP_KERNEL_DEB $part_name "linux kernel dtb files"
+    _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel dtb files"
 }
 
 
@@ -199,7 +196,7 @@ pack_kernel_modules() {
         fi
     done
     
-    _pack_as_deb $TMP_KERNEL_DEB $part_name "linux kernel modules"
+    _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel modules"
     
 }
 
@@ -359,7 +356,7 @@ pack_kernel_headers() {
     make clean CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     generate_kernel_headers $TMP_KERNEL_DEB $CHIP_ARCH
     
-    _pack_as_deb $TMP_KERNEL_DEB $part_name "linux kernel header files"
+    _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel header files"
     
 }
 
@@ -369,9 +366,14 @@ build_kernel() {
     git config --global --add safe.directory $PATH_KERNEL
     
     compile_kernel
+    if [ -d $PATH_OUTPUT_KERNEL_PACKAGE ]; then
+        rm -r $PATH_OUTPUT_KERNEL_PACKAGE
+    fi
+    create_dir $PATH_OUTPUT_KERNEL_PACKAGE
+    
     pack_kernel_Image
     pack_kernel_dtb
     pack_kernel_modules
     pack_kernel_headers
-
+    
 }
