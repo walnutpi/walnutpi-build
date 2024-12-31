@@ -6,10 +6,10 @@ source "${PATH_SCRIPT}/option.sh"
 source "${PATH_SCRIPT}/menu.sh"
 source "${PATH_SCRIPT}/path.sh"
 
-source "${PATH_SCRIPT}/pack.sh"
 source "${PATH_SCRIPT}/build_bootloader.sh"
 source "${PATH_SCRIPT}/build_kernel.sh"
 source "${PATH_SCRIPT}/build_rootfs.sh"
+source "${PATH_SCRIPT}/build_image.sh"
 
 reload_env() {
     source "${PATH_SCRIPT}/path.sh"
@@ -40,6 +40,8 @@ para_desc () {
     echo -e "\t-p $OPT_part_bootloader"
     echo -e "\t-p $OPT_part_kernel"
     echo -e "\t-p $OPT_part_rootfs"
+    echo -e "\t-p $OPT_part_pack_rootfs"
+    echo -e "\t-p $OPT_part_pack_image"
     echo ""
     echo -e "  -v : choose the rootfs version"
     echo -e "\t-v $OPT_os_debian12"
@@ -65,24 +67,28 @@ do
         ENTER_board_name="${PATH_board}/$2"
         shift
         shift
+
         elif [ "x$1" == "x-p" ]; then
-        
-        if [ $ENTER_boot_rebuild_flag == $OPT_user_no_choose ] ;then ENTER_boot_rebuild_flag="yes"; fi
-        if [ $ENTER_kernel_rebuild_flag == $OPT_user_no_choose] ;then ENTER_kernel_rebuild_flag="yes"; fi
+        if [ $ENTER_boot_rebuild_flag == $OPT_user_no_choose ];then ENTER_boot_rebuild_flag="$OPT_YES"; fi
+        if [ $ENTER_kernel_rebuild_flag == $OPT_user_no_choose ];then ENTER_kernel_rebuild_flag="$OPT_YES"; fi
         ENTER_build_parts="$2"
         shift
         shift
+
         elif [ "x$1" == "x-v" ]; then
         ENTER_os_ver="$2"
         shift
         shift
+
         elif [ "x$1" == "x-t" ]; then
         ENTER_rootfs_type="$2"
         shift
         shift
+        
         elif [ "x$1" == "x$OPT_skip_boot" ]; then
         ENTER_boot_rebuild_flag=$OPT_NO
         shift
+
         elif [ "x$1" == "x$OPT_skip_kernel" ]; then
         ENTER_kernel_rebuild_flag=$OPT_NO
         shift
@@ -138,11 +144,6 @@ if [ "$ENTER_build_parts" == "$OPT_part_image" ] && [ -d ${OUTDIR_kernel_package
 fi
 
 
-
-
-
-
-
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
@@ -173,7 +174,6 @@ reload_env
 
 case "$ENTER_build_parts" in
     "$OPT_part_bootloader" )
-        # compile_bootloader
         build_bootloader
     ;;
     "$OPT_part_kernel")
@@ -186,11 +186,10 @@ case "$ENTER_build_parts" in
         pack_rootfs
     ;;
     "$OPT_part_pack_image")
-        do_pack
+        build_image
     ;;
     "$OPT_part_image")
         if [ -z ${ENTER_boot_rebuild_flag} ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
-            # compile_bootloader
             build_bootloader
         fi
         if [ -z ${ENTER_kernel_rebuild_flag} ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
@@ -198,7 +197,7 @@ case "$ENTER_build_parts" in
         fi
         generate_tmp_rootfs
         pack_rootfs
-        do_pack
+        build_image
     ;;
 esac
 

@@ -38,7 +38,7 @@ MENU_choose_parts(){
         $OPT_part_kernel  "generate Kernel .deb"
         $OPT_part_rootfs "generate Rootfs .tar"
         $OPT_part_pack_rootfs "pack the tmp Rootfs files"
-        $OPT_part_pack_image  "pack the tmp files to generate image"
+        $OPT_part_pack_image  "Package the output file as an image"
     )
     echo $(show_menu "${titlestr}" "${options[@]}")
 }

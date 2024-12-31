@@ -214,17 +214,7 @@ generate_tmp_rootfs() {
     cp wpi-update/wpi-update ${TMP_rootfs_build}/usr/bin
     run_status "run wpi-update" chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
     
-    # 安装kernel产生的的deb包
-    cp ${OUTDIR_kernel_package}/*.deb  ${TMP_rootfs_build}/opt/
-    cd ${TMP_rootfs_build}/opt/
-    deb_packages=(*.deb)
-    
-    total=${#deb_packages[@]}
-    for (( i=0; i<$total; i++ )); do
-        deb_package=${deb_packages[$i]}
-        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_rootfs_build} /bin/bash -c "dpkg -i /opt/${deb_package}"
-        rm ${TMP_rootfs_build}/opt/${deb_package}
-    done
+
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${TMP_rootfs_build}/etc/modules
