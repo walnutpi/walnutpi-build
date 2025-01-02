@@ -24,6 +24,7 @@ ENTER_os_ver=$OPT_user_no_choose
 ENTER_rootfs_type=$OPT_user_no_choose
 
 START_DATE=$(date)
+LOG_START_TIME=$(date +%m-%d_%H:%M)
 
 
 
@@ -169,7 +170,7 @@ fi
 
 
 exec 3>&1 4>&2
-exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
+exec > >(tee -a ${LOG_FILE}) 2>&1
 reload_env
 
 case "$ENTER_build_parts" in

@@ -13,7 +13,10 @@ create_dir $PATH_TMP
 create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
 
-
+# LOG_START_TIME=$(date +%m-%d_%H:%M) #在build.sh内定义
+LOG_MONTH_DIR="${PATH_LOG}/$(date +%Y-%m)"
+LOG_FILE="${LOG_MONTH_DIR}/${LOG_START_TIME}.log"
+create_dir $LOG_MONTH_DIR
 FLAG_DIR="${PATH_TMP}/FLAGS"
 FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
 
