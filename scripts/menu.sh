@@ -4,17 +4,22 @@ menustr="walnutpi-build"
 backtitle="Walnut Pi building script"
 TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
 TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
+TTY_Y_WINDOW=$((TTY_Y - 8))
+if [ "$TTY_X" -le 0 ] || [ "$TTY_Y" -le 0 ] || [ "$TTY_Y_WINDOW" -le 0 ]; then
+    echo -e "Error: Your terminal is too small \n"
+    exit 1
+fi
 
-
+# 继续你的脚本逻辑
 show_menu() {
     local title="$1"
     shift
     local options=("$@")
-    local result=$(whiptail --title "${title}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    echo $result
+    whiptail --title "${title}" --backtitle "${backtitle}" --notags \
+    --menu "${menustr}" "${TTY_Y}" "${TTY_X}" ${TTY_Y_WINDOW}  \
+    --cancel-button Exit --ok-button Select "${options[@]}" \
+    3>&1 1>&2 2>&3
+    
 }
 
 MENU_choose_board() {
@@ -27,7 +32,7 @@ MENU_choose_board() {
         options+=("$dir" "$dirname")
     done
     local titlestr="Choose Board"
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
 
 MENU_choose_parts(){
@@ -40,7 +45,7 @@ MENU_choose_parts(){
         $OPT_part_pack_rootfs "pack the tmp Rootfs files"
         $OPT_part_pack_image  "Package the output file as an image"
     )
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
 
 MENU_sikp_boot(){
@@ -49,7 +54,7 @@ MENU_sikp_boot(){
         "$OPT_NO" "no"
         "$OPT_YES" "yes"
     )
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
 
 MENU_sikp_kernel(){
@@ -58,7 +63,7 @@ MENU_sikp_kernel(){
         "$OPT_NO" "no"
         "$OPT_YES" "yes"
     )
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
 
 
@@ -69,12 +74,12 @@ MENU_choose_os() {
         ${OPT_os_debian12}    "debian 12(bookworm)"
         ${OPT_os_ubuntu22}    "ubuntu 22.04(Jammy)"
     )
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
 
 MENU_choose_rootfs_type() {
     titlestr="Server or Graphics"
     options+=("$OPT_rootfs_server"    "server")
     options+=("$OPT_rootfs_desktop"    "desktop")
-    echo $(show_menu "${titlestr}" "${options[@]}")
+    show_menu "${titlestr}" "${options[@]}"
 }
