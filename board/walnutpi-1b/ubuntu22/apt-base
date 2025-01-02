@@ -25,6 +25,7 @@ curl
 fdisk
 tree
 btop
+bc
 
 fbterm
 locales 
