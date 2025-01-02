@@ -37,7 +37,11 @@ create_dir() {
     fi
 }
 
-
+# 需要定义一个LOG_FILE变量指向log文件
+log_record() {
+    # echo "$(date +%Y-%m-%d_%H:%M:%S) $*" >> $LOG_FILE
+    echo -e "[$(date +%M:%S)]$@" >> $LOG_FILE
+}
 
 run_status() {
     local message=$1
@@ -52,6 +56,7 @@ run_status() {
         local output
         output=$("$@" 2>&1)
         local exit_status=$?
+        log_record $output
         if [ $exit_status -ne 0 ]; then
             echo -e "\r\033[31m[error]\033[0m"
             echo -e "$output"
@@ -59,10 +64,12 @@ run_status() {
             sleep $retry_delay
             retry_delay=$((retry_delay + 5))
             ((retries++))
+            log_record "[error]\t${message}"
         else
             local end_time=$(date +%s)
             local duration=$((end_time - start_time))
             echo -e "\r\033[32m[ok]\033[0m\t${message}\t${duration}s"
+            log_record "[ok]\t${message}\t${duration}s"
             break
         fi
     done

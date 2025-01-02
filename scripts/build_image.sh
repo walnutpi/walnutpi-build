@@ -32,18 +32,57 @@ check_resource() {
 
 
 build_image() {
+    cleanup() {
+        echo "Cleaning up..."
+        
+        if mountpoint -q "$TMP_mount_disk2/boot"; then
+            echo "Unmounting $TMP_mount_disk2/boot"
+            umount "$TMP_mount_disk2/boot"
+        fi
+        
+        # 检查并卸载 $TMP_mount_disk1
+        if mountpoint -q "$TMP_mount_disk1"; then
+            echo "Unmounting $TMP_mount_disk1"
+            umount "$TMP_mount_disk1"
+        fi
+        
+        # 检查并卸载 $TMP_mount_disk2
+        if mountpoint -q "$TMP_mount_disk2"; then
+            echo "Unmounting $TMP_mount_disk2"
+            umount "$TMP_mount_disk2"
+        fi
+        
+        # 检查并删除 kpartx 设备
+        if kpartx -l | grep -q "$LOOP_DEVICE"; then
+            echo "Deleting kpartx devices for $LOOP_DEVICE"
+            kpartx -dv "$LOOP_DEVICE"
+        else
+            echo "No kpartx devices found for $LOOP_DEVICE"
+        fi
+        
+        # 检查并释放 loop 设备
+        if losetup -l | grep -q "$LOOP_DEVICE"; then
+            echo "Releasing loop device $LOOP_DEVICE"
+            losetup -d "$LOOP_DEVICE"
+        else
+            echo "Loop device $LOOP_DEVICE is not in use"
+        fi
+        
+        exit 1
+    }
+    trap cleanup SIGINT
     check_resource
     if [  -d $TMP_mount_disk1 ]; then
         umount $TMP_mount_disk1
         rm -r $TMP_mount_disk1
     fi
-    if [ -d $TMP_mount_disk2 ]; then 
+    if [ -d $TMP_mount_disk2 ]; then
         umount $TMP_mount_disk2
         rm -r $TMP_mount_disk2
     fi
     mkdir -p $TMP_mount_disk1
     mkdir -p $TMP_mount_disk2
-
+    
     cd ${PATH_SOURCE}/wpi-update
     local VERSION_APT=$(echo $(./wpi-update -s | tail -n 1 ))
     
@@ -112,7 +151,7 @@ build_image() {
         #  chroot ${TMP_mount_disk2} /bin/bash -c "dpkg -i /opt/${deb_package}"
         rm ${TMP_mount_disk2}/opt/${deb_package}
     done
-
+    
     # 安装kernel产生的的deb包
     cp ${OUTDIR_kernel_package}/*.deb  ${TMP_mount_disk2}/opt/
     cd ${TMP_mount_disk2}/opt/
@@ -124,7 +163,7 @@ build_image() {
         run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_mount_disk2} /bin/bash -c "dpkg -i /opt/${deb_package}"
         rm ${TMP_mount_disk2}/opt/${deb_package}
     done
-
+    
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${TMP_mount_disk1}/config.txt
     echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
@@ -143,6 +182,7 @@ build_image() {
     umount $TMP_mount_disk2
     kpartx -dv $LOOP_DEVICE
     losetup -d $LOOP_DEVICE
+    trap - SIGINT EXIT
     
     current_hour=$(date +"%H")
     current_minute=$(date +"%M")

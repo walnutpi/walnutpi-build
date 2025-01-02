@@ -169,8 +169,8 @@ else
 fi
 
 
-exec 3>&1 4>&2
-exec > >(tee -a ${LOG_FILE}) 2>&1
+# exec 3>&1 4>&2
+# exec > >(tee -a ${LOG_FILE}) 2>&1
 reload_env
 
 case "$ENTER_build_parts" in
@@ -202,11 +202,11 @@ case "$ENTER_build_parts" in
     ;;
 esac
 
-exec 1>&3 2>&4
-exec 3>&- 4>&-
+# exec 1>&3 2>&4
+# exec 3>&- 4>&-
 
 cd $PATH_LOG
-sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_LOG}/*.log
+# sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_LOG}/*.log
 
 
 echo -e "开始时间\t${START_DATE}"

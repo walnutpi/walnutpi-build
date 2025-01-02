@@ -6,6 +6,14 @@ APT_DOMAIN="apt.walnutpi.com"
 
 
 generate_tmp_rootfs() {
+    cleanup() {
+        echo "Cleaning up..."
+        if [[ -d $TMP_rootfs_build ]]; then
+            run_status "umount $TMP_rootfs_build" umount_chroot $TMP_rootfs_build
+        fi
+        exit 1
+    }
+    trap cleanup SIGINT
     # set -e
     if [[ -d $TMP_rootfs_build ]]; then
         run_as_silent umount_chroot $TMP_rootfs_build
@@ -150,8 +158,6 @@ generate_tmp_rootfs() {
         run_status "create the tar to save now rootfs" tar -czf $FILE_base_rootfs ./
     fi
     
-    
-
     cd ${PATH_SOURCE}
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
     cd ${PATH_SOURCE}/wpi-update
@@ -214,13 +220,9 @@ generate_tmp_rootfs() {
     cp wpi-update/wpi-update ${TMP_rootfs_build}/usr/bin
     run_status "run wpi-update" chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
     
-
     
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
     echo "$MODULES_LIST" > ${TMP_rootfs_build}/etc/modules
-    
-    
-    
     
     
     # apt安装各板指定软件
@@ -250,10 +252,9 @@ generate_tmp_rootfs() {
     # sed -i '$ d' ${TMP_rootfs_build}/etc/apt/sources.list
     rm ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
     
-    
-    
     cd $TMP_rootfs_build
     umount_chroot $TMP_rootfs_build
+    trap - SIGINT EXIT
 }
 
 pack_rootfs() {
