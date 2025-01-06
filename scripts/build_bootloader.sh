@@ -57,7 +57,7 @@ _pack_as_boot_deb(){
     local part_name=$2
     local package_desc=$3
     
-    local package_name="$part_name-${BOARD_NAME}-${LINUX_BRANCH}"
+    local package_name="$part_name-${BOARD_NAME}-${SYTERKIT_BRANCH}${UBOOT_BRANCH}"
     control_file=$path_package/DEBIAN/control
     
     if [ ! -d $path_package/DEBIAN ];then
