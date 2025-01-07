@@ -151,11 +151,11 @@ build_image() {
         rm ${TMP_mount_disk2}/opt/${deb_package}
     done
     
-    # 安装kernel产生的的deb包
+    # 安装kernel产生的的deb包，先安装生成时间早的
+    cd ${OUTDIR_kernel_package}/
+    deb_packages=($(ls -t *.deb | tac))
     cp ${OUTDIR_kernel_package}/*.deb  ${TMP_mount_disk2}/opt/
     cd ${TMP_mount_disk2}/opt/
-    deb_packages=(*.deb)
-    
     total=${#deb_packages[@]}
     for (( i=0; i<$total; i++ )); do
         deb_package=${deb_packages[$i]}

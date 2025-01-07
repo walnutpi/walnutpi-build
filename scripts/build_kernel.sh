@@ -161,6 +161,25 @@ pack_kernel_modules() {
             rm -rf "${dir}source"
         fi
     done
+    local postinst_file="$TMP_KERNEL_DEB/DEBIAN/postinst"
+    if [ ! -d $TMP_KERNEL_DEB/DEBIAN ];then
+        mkdir $TMP_KERNEL_DEB/DEBIAN
+    fi
+   cat << EOF > $postinst_file
+#!/bin/sh
+case "\$1" in
+    configure)
+        echo "update modules"
+        depmod
+        ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+        # 回滚操作
+        ;;
+
+esac
+exit 0
+EOF
+    chmod 755 $postinst_file
     
     _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel modules"
     
@@ -267,7 +286,7 @@ replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
 replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
 replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME$TOOLCHAIN_NAME_IN_APT"
 
-# update-initramfs -uv -k $version
+update-initramfs -uv -k $version
 
 EOF
     chmod +x $tmpdir/DEBIAN/postinst
