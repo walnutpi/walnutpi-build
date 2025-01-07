@@ -2,19 +2,20 @@
 
 menustr="walnutpi-build"
 backtitle="Walnut Pi building script"
-TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
-TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
-TTY_Y_WINDOW=$((TTY_Y - 8))
-if [ "$TTY_X" -le 0 ] || [ "$TTY_Y" -le 0 ] || [ "$TTY_Y_WINDOW" -le 0 ]; then
-    echo -e "Error: Your terminal is too small \n"
-    exit 1
-fi
+
 
 # 继续你的脚本逻辑
 show_menu() {
     local title="$1"
     shift
     local options=("$@")
+    TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
+    TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
+    TTY_Y_WINDOW=$((TTY_Y - 8))
+    if [ "$TTY_X" -le 0 ] || [ "$TTY_Y" -le 0 ] || [ "$TTY_Y_WINDOW" -le 0 ]; then
+        echo -e "Error: Your terminal is too small \n"
+        exit 1
+    fi
     whiptail --title "${title}" --backtitle "${backtitle}" --notags \
     --menu "${menustr}" "${TTY_Y}" "${TTY_X}" ${TTY_Y_WINDOW}  \
     --cancel-button Exit --ok-button Select "${options[@]}" \
