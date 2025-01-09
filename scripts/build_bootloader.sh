@@ -93,7 +93,7 @@ pack_config_txt() {
         rm -r $path_tmp_package_configtxt
     fi
     create_dir $path_tmp_package_configtxt
-    local path_board_tmp_boot="/tmp-boot/boot"
+    local path_board_tmp_boot="/tmp-boot/boot-configtxt"
     local path_tmp_boot=${path_tmp_package_configtxt}${path_board_tmp_boot}
     create_dir  $path_tmp_boot
     cp ${ENTER_board_name}/config.txt $path_tmp_boot
