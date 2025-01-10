@@ -114,7 +114,7 @@ case "\$1" in
 
         cp -r $path_board_tmp_boot/* /boot/
 
-        BLOCK_DEVICE=\$(findmnt "/boot" -o SOURCE -n)
+        BLOCK_DEVICE=\$(findmnt "/" -o SOURCE -n)
         ROOTFS_PARTUUID=\$(blkid -s PARTUUID -o value \$BLOCK_DEVICE)
         if [ -z "\$ROOTFS_PARTUUID" ]; then
             echo "无法解析出uuid"
