@@ -22,15 +22,12 @@ pyuic
 
 bluez 
 hcitools
-# initramfs-tools-hook
-# plymouth-themes-walnutpi
+initramfs-tools-hook
+plymouth-themes-walnutpi
 
-# service-disable-fbcon
-# service-h616-mac-detect
+service-disable-fbcon
 service-resize-part
 service-aw869-bluetooth
-# service-boot-script
-# service-h616-conf-thermal-trip
-# service-w1b-dis-mmc2
+service-boot-script
 
-# walnutpi1b-base 
+map-device

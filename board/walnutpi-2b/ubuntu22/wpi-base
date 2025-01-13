@@ -25,11 +25,9 @@ initramfs-tools-hook
 plymouth-themes-walnutpi
 
 service-disable-fbcon
-# service-h616-mac-detect
 service-resize-part
 service-aw869-bluetooth
-# service-h616-conf-thermal-trip
-# service-w1b-dis-mmc2
 
-# walnutpi1b-base 
+
 fix-ubuntu-networkd-wait
+map-device
