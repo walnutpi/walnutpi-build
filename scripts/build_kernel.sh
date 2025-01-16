@@ -139,6 +139,8 @@ pack_kernel_dtb() {
     rm -r $folder_name
     
     _gen_postinst_cp_file $TMP_KERNEL_DEB $path_board_tmp_boot /boot/
+    echo "set-device" >> $TMP_KERNEL_DEB/DEBIAN/postinst
+    echo "echo \"ok\"" >> $TMP_KERNEL_DEB/DEBIAN/postinst
     _pack_as_kernel_deb $TMP_KERNEL_DEB $part_name "linux kernel dtb files"
 }
 

@@ -208,7 +208,6 @@ case "\$1" in
         ;;
 esac
 
-exit 0
 EOF
     chmod 755 $postinst_file
 }
