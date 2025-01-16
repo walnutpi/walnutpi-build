@@ -29,5 +29,6 @@ service-disable-fbcon
 service-resize-part
 service-aw869-bluetooth
 service-boot-script
+service-aw-eth-mac
 
 map-device
