@@ -17,6 +17,7 @@ set-device
 set-language  
 set-lcd
 set-flash
+set-nvme
 pyuic
 # python3-sudo
 
