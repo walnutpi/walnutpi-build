@@ -152,7 +152,7 @@ clone_branch() {
         run_as_user git pull
     else
         echo "clone : $git_url"
-        run_as_user git clone -b $branch  $git_url $dir_name
+        run_as_user git clone -b $branch --depth 1 $git_url $dir_name
     fi
 }
 
