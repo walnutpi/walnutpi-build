@@ -68,19 +68,19 @@ do
         ENTER_board_name="${PATH_board}/$2"
         shift
         shift
-
+        
         elif [ "x$1" == "x-p" ]; then
         if [ $ENTER_boot_rebuild_flag == $OPT_user_no_choose ];then ENTER_boot_rebuild_flag="$OPT_YES"; fi
         if [ $ENTER_kernel_rebuild_flag == $OPT_user_no_choose ];then ENTER_kernel_rebuild_flag="$OPT_YES"; fi
         ENTER_build_parts="$2"
         shift
         shift
-
+        
         elif [ "x$1" == "x-v" ]; then
         ENTER_os_ver="$2"
         shift
         shift
-
+        
         elif [ "x$1" == "x-t" ]; then
         ENTER_rootfs_type="$2"
         shift
@@ -89,7 +89,7 @@ do
         elif [ "x$1" == "x$OPT_skip_boot" ]; then
         ENTER_boot_rebuild_flag=$OPT_NO
         shift
-
+        
         elif [ "x$1" == "x$OPT_skip_kernel" ]; then
         ENTER_kernel_rebuild_flag=$OPT_NO
         shift
@@ -172,7 +172,6 @@ fi
 # exec 3>&1 4>&2
 # exec > >(tee -a ${LOG_FILE}) 2>&1
 reload_env
-
 case "$ENTER_build_parts" in
     "$OPT_part_bootloader" )
         build_bootloader
@@ -190,10 +189,10 @@ case "$ENTER_build_parts" in
         build_image
     ;;
     "$OPT_part_image")
-        if [ -z ${ENTER_boot_rebuild_flag} ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
+        if [ ${ENTER_boot_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
             build_bootloader
         fi
-        if [ -z ${ENTER_kernel_rebuild_flag} ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
+        if [ ${ENTER_kernel_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
             build_kernel
         fi
         generate_tmp_rootfs
