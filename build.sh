@@ -1,83 +1,97 @@
 #!/bin/bash
-PATH_PWD="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
-source "${PATH_PWD}"/scripts/common.sh
+PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
+PATH_SCRIPT="${PATH_PROJECT_DIR}/scripts"
+source "${PATH_SCRIPT}/common.sh"
+source "${PATH_SCRIPT}/option.sh"
+source "${PATH_SCRIPT}/menu.sh"
+source "${PATH_SCRIPT}/path.sh"
 
-PATH_SOURCE="${PATH_PWD}/source"
-PATH_OUTPUT="${PATH_PWD}/output"
-PATH_TMP="${PATH_PWD}/.tmp"
-PATH_LOG="${PATH_PWD}/log"
-PATH_TOOLCHAIN="${PATH_PWD}/toolchain"
-PATH_SF_LIST="${PATH_PWD}/software-list"
+source "${PATH_SCRIPT}/build_bootloader.sh"
+source "${PATH_SCRIPT}/build_kernel.sh"
+source "${PATH_SCRIPT}/build_rootfs.sh"
+source "${PATH_SCRIPT}/build_image.sh"
 
-FILE_PIP_LIST="${PATH_SF_LIST}/pip"
-FILE_APT_BASE=""
-FILE_APT_DESKTOP=""
-FILE_APT_BASE_BOARD=""
-FILE_APT_DESKTOP_BOARD=""
+reload_env() {
+    source "${PATH_SCRIPT}/path.sh"
+}
 
 
-FLAG_DIR="${PATH_TMP}/FLAGS"
-FLAG_DIR_NO_FIRST="${FLAG_DIR}/not_first"
-
+ENTER_board_name=$OPT_user_no_choose
+ENTER_build_parts=$OPT_user_no_choose
+ENTER_boot_rebuild_flag=$OPT_user_no_choose
+ENTER_kernel_rebuild_flag=$OPT_user_no_choose
+ENTER_os_ver=$OPT_user_no_choose
+ENTER_rootfs_type=$OPT_user_no_choose
 
 START_DATE=$(date)
+LOG_START_TIME=$(date +%m-%d_%H:%M)
 
-create_dir $PATH_SOURCE
-create_dir $PATH_OUTPUT
-create_dir $PATH_TMP
-create_dir $PATH_LOG
-create_dir $PATH_TOOLCHAIN
 
 
 BUILD_ARGS=$@
 para_desc () {
     echo -e "  -b : choose board"
-    echo -e "\t-b walnutpi-1b"
+    for dir in $(ls -d $PATH_board/*/ 2>/dev/null); do
+        local dirname=$(basename "$dir")
+        echo -e "\t-b $dirname"
+    done
     echo ""
     echo -e "  -p : choose which part to compile"
-    echo -e "\t-p image"
-    echo -e "\t-p bootloader"
-    echo -e "\t-p kernel"
+    echo -e "\t-p $OPT_part_image"
+    echo -e "\t-p $OPT_part_bootloader"
+    echo -e "\t-p $OPT_part_kernel"
+    echo -e "\t-p $OPT_part_rootfs"
+    echo -e "\t-p $OPT_part_pack_rootfs"
+    echo -e "\t-p $OPT_part_pack_image"
     echo ""
     echo -e "  -v : choose the rootfs version"
-    echo -e "\t-v debian12"
-    echo -e "\t-v ubuntu22"
+    echo -e "\t-v $OPT_os_debian12"
+    echo -e "\t-v $OPT_os_ubuntu22"
     echo ""
     echo -e "  -t : choose the rootfs type"
-    echo -e "\t-t server"
-    echo -e "\t-t desktop"
+    echo -e "\t-t $OPT_rootfs_server"
+    echo -e "\t-t $OPT_rootfs_desktop"
     echo ""
-    echo -e "  -s--boot : Skip compilation boot when compiling an image"
-    echo -e "  -s--kernel : Skip compilation kernel when compiling an image"
+    echo -e "  $OPT_skip_boot : Skip compilation boot when compiling an image"
+    echo -e "  $OPT_skip_kernel : Skip compilation kernel when compiling an image"
 }
+
 while [ "x$#" != "x0" ];
 do
     if [ "x$1" == "x" ]; then
         shift
         elif [ "x$1" == "x-h" ] || [ "x$1" == "x-help" ]; then
         para_desc
+        exit
         
         elif [ "x$1" == "x-b" ]; then
-        OPT_BOARD_NAME="${PATH_PWD}/board/$2"
+        ENTER_board_name="${PATH_board}/$2"
         shift
         shift
+
         elif [ "x$1" == "x-p" ]; then
-        OPT_BUILD_MODULE="$2"
+        if [ $ENTER_boot_rebuild_flag == $OPT_user_no_choose ];then ENTER_boot_rebuild_flag="$OPT_YES"; fi
+        if [ $ENTER_kernel_rebuild_flag == $OPT_user_no_choose ];then ENTER_kernel_rebuild_flag="$OPT_YES"; fi
+        ENTER_build_parts="$2"
         shift
         shift
+
         elif [ "x$1" == "x-v" ]; then
-        OPT_OS_VER="$2"
+        ENTER_os_ver="$2"
         shift
         shift
+
         elif [ "x$1" == "x-t" ]; then
-        OPT_ROOTFS_TYPE="$2"
+        ENTER_rootfs_type="$2"
         shift
         shift
-        elif [ "x$1" == "x-s--boot" ]; then
-        OPT_UBOOT_REBUILD_FLAG="no"
+        
+        elif [ "x$1" == "x$OPT_skip_boot" ]; then
+        ENTER_boot_rebuild_flag=$OPT_NO
         shift
-        elif [ "x$1" == "x-s--kernel" ]; then
-        OPT_KERNEL_REBUILD_FLAG="no"
+
+        elif [ "x$1" == "x$OPT_skip_kernel" ]; then
+        ENTER_kernel_rebuild_flag=$OPT_NO
         shift
         
     else
@@ -87,94 +101,54 @@ do
     fi
 done
 
-menustr=""
-TTY_X=$(($(stty size | awk '{print $2}')-6)) 			# determine terminal width
-TTY_Y=$(($(stty size | awk '{print $1}')-6)) 			# determine terminal height
-
-
-if [ -z $OPT_BOARD_NAME ] || [ ! -d "$OPT_BOARD_NAME" ] ; then
-    backtitle="Walnut Pi building script"
-    
-    # 获取 board 文件夹下所有的文件夹，作为选项
-    dirs=$(find ${PATH_PWD}/board -mindepth 1 -maxdepth 1 -type d)
-    for dir in $dirs; do
-        dirname=$(basename "$dir")
-        options+=("$dir" "$dirname")
-    done
-    
-    titlestr="Choose Board"
-    OPT_BOARD_NAME=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo $OPT_BOARD_NAME
-    [[ -z $OPT_BOARD_NAME ]] && exit
+# 获取用户输入
+reload_env
+if [ $ENTER_board_name == $OPT_user_no_choose ]; then
+    ENTER_board_name=$(MENU_choose_board $PATH_board)
+    [[ -z ${ENTER_board_name} ]] && exit
 fi
-source $OPT_BOARD_NAME/board.conf
-PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${OPT_BOARD_NAME##*/}
+
+if [ $ENTER_build_parts == $OPT_user_no_choose ]; then
+    ENTER_build_parts=$(MENU_choose_parts)
+    [[ -z ${ENTER_build_parts} ]] && exit
+fi
+
+case "$ENTER_build_parts" in
+    "$OPT_part_pack_rootfs" | "$OPT_part_pack_image" | "$OPT_part_rootfs" | "$OPT_part_image")
+        if [ $ENTER_os_ver == $OPT_user_no_choose ]; then
+            ENTER_os_ver=$(MENU_choose_os)
+            [[ -z ${ENTER_os_ver} ]] && exit
+        fi
+        if [ $ENTER_rootfs_type == $OPT_user_no_choose ]; then
+            ENTER_rootfs_type=$(MENU_choose_rootfs_type)
+            [[ -z ${ENTER_rootfs_type} ]] && exit
+        fi
+esac
+
+source $ENTER_board_name/board.conf
+PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
+reload_env
 
-if [ -z $OPT_BUILD_MODULE ] ; then
-    titlestr="Choose an option"
-    options+=("image"	 "Full OS image for flashing")
-    options+=("bootloader"	 "generate $BOOTLOADER_NAME .bin")
-    options+=("kernel"	 "generate Kernel .deb")
-    options+=("rootfs"	 "generate Rootfs .tar")
-    options+=("pack_rootfs"	 "pack the tmp Rootfs files")
-    options+=("pack_image"	 "pack the tmp files to generate image")
-    OPT_BUILD_MODULE=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-        --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-        --cancel-button Exit --ok-button Select "${options[@]}" \
-    3>&1 1>&2 2>&3)
-    unset options
-    echo $OPT_BUILD_MODULE
-    [[ -z $OPT_BUILD_MODULE ]] && exit
-    
+if [ "$ENTER_build_parts" == "$OPT_part_image" ] && [ -d ${OUTDIR_boot_package} ]; then
+    if [ "$ENTER_boot_rebuild_flag" == $OPT_user_no_choose ]; then
+        ENTER_boot_rebuild_flag=$(MENU_sikp_boot)
+        [[ -z ${ENTER_boot_rebuild_flag} ]] && exit
+    fi
 fi
-source "${PATH_PWD}"/scripts/compile.sh
-source "${PATH_PWD}"/scripts/rootfs.sh
-source "${PATH_PWD}"/scripts/pack.sh
-
-case "$OPT_BUILD_MODULE" in
-    "pack_rootfs" | "pack_image" | "rootfs" | "image")
-        choose_rootfs
-esac
-if [ "$OPT_BUILD_MODULE" == "image" ] && [ -f ${PATH_OUTPUT_BOARD}/${UBOOT_BIN_NAME} ]; then
-    if [ -z $OPT_UBOOT_REBUILD_FLAG ]; then
-        titlestr="recompile the u-boot ?"
-        options+=("no"    "no")
-        options+=("yes"    "yes")
-        OPT_UBOOT_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo ${OPT_UBOOT_REBUILD_FLAG}
-        [[ -z ${OPT_UBOOT_REBUILD_FLAG} ]] && exit
+if [ "$ENTER_build_parts" == "$OPT_part_image" ] && [ -d ${OUTDIR_kernel_package} ]; then
+    if [ "$ENTER_kernel_rebuild_flag" == $OPT_user_no_choose ]; then
+        ENTER_kernel_rebuild_flag=$(MENU_sikp_kernel)
+        [[ -z ${ENTER_kernel_rebuild_flag} ]] && exit
     fi
 fi
 
-if [ "$OPT_BUILD_MODULE" == "image" ] && [ -d ${PATH_KERNEL_PACKAGE} ]; then
-    if [ -z $OPT_KERNEL_REBUILD_FLAG ]; then
-        titlestr="recompile the KERNEL ?"
-        options+=("no"    "no")
-        options+=("yes"    "yes")
-        OPT_KERNEL_REBUILD_FLAG=$(whiptail --title "${titlestr}" --backtitle "${backtitle}" --notags \
-            --menu "${menustr}" "${TTY_Y}" "${TTY_X}" $((TTY_Y - 8))  \
-            --cancel-button Exit --ok-button Select "${options[@]}" \
-        3>&1 1>&2 2>&3)
-        unset options
-        echo ${OPT_KERNEL_REBUILD_FLAG}
-        [[ -z ${OPT_KERNEL_REBUILD_FLAG} ]] && exit
-    fi
-fi
 
 if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     apt update
     exit_if_last_error
-    apt install qemu-user-static debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev -y
+    apt install -y gcc-arm-none-eabi cmake  debian-archive-keyring qemu-user-static curl debootstrap kpartx git bison flex swig libssl-dev device-tree-compiler u-boot-tools make python3 python3-dev parted dosfstools
     exit_if_last_error
     mkdir -p ${FLAG_DIR_NO_FIRST}
 fi
@@ -195,42 +169,44 @@ else
 fi
 
 
-exec 3>&1 4>&2
-exec > >(tee -a ${PATH_LOG}/$(date +%m-%d_%H:%M).log) 2>&1
-case "$OPT_BUILD_MODULE" in
-    "bootloader" )
-        compile_bootloader
+# exec 3>&1 4>&2
+# exec > >(tee -a ${LOG_FILE}) 2>&1
+reload_env
+
+case "$ENTER_build_parts" in
+    "$OPT_part_bootloader" )
+        build_bootloader
     ;;
-    "kernel")
-        compile_kernel
+    "$OPT_part_kernel")
+        build_kernel
     ;;
-    "rootfs")
+    "$OPT_part_rootfs")
         generate_tmp_rootfs
     ;;
-    "pack_rootfs")
+    "$OPT_part_pack_rootfs")
         pack_rootfs
     ;;
-    "image")
-        if [ -z ${OPT_UBOOT_REBUILD_FLAG} ] || [ ${OPT_UBOOT_REBUILD_FLAG} == "yes" ] ; then
-            compile_bootloader
+    "$OPT_part_pack_image")
+        build_image
+    ;;
+    "$OPT_part_image")
+        if [ -z ${ENTER_boot_rebuild_flag} ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
+            build_bootloader
         fi
-        if [ -z ${OPT_KERNEL_REBUILD_FLAG} ] || [ ${OPT_KERNEL_REBUILD_FLAG} == "yes" ] ; then
-            compile_kernel
+        if [ -z ${ENTER_kernel_rebuild_flag} ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
+            build_kernel
         fi
         generate_tmp_rootfs
         pack_rootfs
-        do_pack
-    ;;
-    "pack_image")
-        do_pack
+        build_image
     ;;
 esac
 
-exec 1>&3 2>&4
-exec 3>&- 4>&-
+# exec 1>&3 2>&4
+# exec 3>&- 4>&-
 
 cd $PATH_LOG
-sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_LOG}/*.log
+# sed -i 's/\x1b\[[0-9;]*m//g' ${PATH_LOG}/*.log
 
 
 echo -e "开始时间\t${START_DATE}"

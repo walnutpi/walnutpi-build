@@ -48,7 +48,9 @@ nfs-common
 fbset
 libts-bin
 alsa-utils
-
+mtd-utils
+pciutils
+dosfstools
 
 u-boot-tools
 initramfs-tools
@@ -62,4 +64,4 @@ xserver-xorg-input-synaptics
 xfwm4  
 lightdm
 
-plymouth-themes
+# plymouth-themes

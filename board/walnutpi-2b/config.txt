@@ -1,0 +1,23 @@
+version=1.0
+
+fdtfile=sun55i-t527-walnutpi-2b
+
+##  enable the console with screen
+console_display=enable
+console_uart=uart0
+
+## show the bootinfo to the screen
+display_bootinfo=enable
+
+
+## loglevel
+printk_level=3
+
+overlay_prefix=sun55i-t527
+
+# 开机后运行set-device指令管理overlays
+overlays= i2c1 i2c2 uart2 spidev1_0 spidev1_1
+
+
+#------------------------------------------------#
+rootfstype=ext4

@@ -2,9 +2,11 @@ wpi-user
 wpi-host-name
 wpi-welcome-info
 # wpi-lightdm
-walnutpi-lib
-conf-h616-audio
-conf-h616-eth0
+gpioc
+blinka
+# walnutpi-lib
+conf-t527-audio
+conf-w2-eth
 conf-qtenv   
 enable-ssh-root  
 disable-wifi-random
@@ -13,6 +15,8 @@ set-emmc
 set-device  
 set-language  
 set-lcd
+set-flash
+set-nvme
 pyuic       
 # python3-sudo
 
@@ -22,11 +26,9 @@ initramfs-tools-hook
 plymouth-themes-walnutpi
 
 service-disable-fbcon
-service-h616-mac-detect
 service-resize-part
-service-aw859-bluetooth
-service-h616-conf-thermal-trip
-service-w1b-dis-mmc2
+service-aw869-bluetooth
+
 
 fix-ubuntu-networkd-wait
 map-device

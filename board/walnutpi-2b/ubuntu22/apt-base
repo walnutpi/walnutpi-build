@@ -38,7 +38,7 @@ make
 python3
 python3-pip
 python-dev-is-python3
-python3-pyqt5*
+# python3-pyqt5*
 
 i2c-tools
 usbutils
@@ -48,18 +48,24 @@ nfs-common
 fbset
 libts-bin
 alsa-utils
-
+mtd-utils
+pciutils
+dosfstools
 
 u-boot-tools
 initramfs-tools
 device-tree-compiler
 
-dbus-x11
-xorg
-xserver-xorg-input-evdev
-xinput-calibrator
-xserver-xorg-input-synaptics
-xfwm4  
-lightdm
+# dbus-x11
+# xorg
+# xserver-xorg-input-evdev
+# xinput-calibrator
+# xserver-xorg-input-synaptics
+# xfwm4  
+# lightdm
 
+netplan.io
+inetutils-ping
 plymouth-themes
+
+language-pack-zh-hans
