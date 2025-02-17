@@ -38,8 +38,7 @@ FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
 FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
 FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
 FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
-PATH_SF_LIST="${PATH_PROJECT_DIR}/software-list"
-FILE_pip_list="${PATH_SF_LIST}/pip"
+FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
 PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
 
 # 打包镜像相关

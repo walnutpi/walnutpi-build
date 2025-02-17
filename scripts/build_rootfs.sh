@@ -185,17 +185,20 @@ generate_tmp_rootfs() {
     
     
     # pip 安装指定软件
-    # 删除一个用于禁止pip安装的文件 如在debian12中是/usr/lib/python3.11/EXTERNALLY-MANAGED
-    LIB_DIR="${TMP_rootfs_build}/usr/lib"
-    FILE_NAME="EXTERNALLY-MANAGED"
-    find $LIB_DIR -type f -name "$FILE_NAME"  -delete
-    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_pip_list})
-    total=${#packages[@]}
-    for (( i=0; i<${total}; i++ )); do
-        package=${packages[$i]}
-        # echo "pip3 [$((i+1))/${total}] : $package"
-        run_status "pip3 [$((i+1))/${total}] : $package" chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
-    done
+    if [ -f $FILE_pip_list ]; then
+
+        LIB_DIR="${TMP_rootfs_build}/usr/lib"
+        FILE_NAME="EXTERNALLY-MANAGED"
+        find $LIB_DIR -type f -name "$FILE_NAME"  -delete
+
+        mapfile -t packages < <(grep -vE '^#|^$' ${FILE_pip_list})
+        total=${#packages[@]}
+        for (( i=0; i<${total}; i++ )); do
+            package=${packages[$i]}
+            # echo "pip3 [$((i+1))/${total}] : $package"
+            run_status "pip3 [$((i+1))/${total}] : $package" chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
+        done
+    fi
     
     
     
