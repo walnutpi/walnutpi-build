@@ -30,7 +30,7 @@ generate_tmp_rootfs() {
         
         run_as_silent mkdir ${TMP_rootfs_build} -p
         case "${ENTER_os_ver}" in
-            ${OPT_os_debian12})
+            "${OPT_os_debian12}" | "$OPT_os_debian12_burn")
                 debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
                 # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
                 #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
@@ -63,7 +63,7 @@ generate_tmp_rootfs() {
                 tar -czf $FILE_base_rootfs ./
             ;;
             
-            ${OPT_os_ubuntu22} )
+            "${OPT_os_ubuntu22}" )
                 wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_base_rootfs
                 run_status "unzip rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
                 
@@ -185,12 +185,11 @@ generate_tmp_rootfs() {
     
     
     # pip 安装指定软件
+    LIB_DIR="${TMP_rootfs_build}/usr/lib"
+    FILE_NAME="EXTERNALLY-MANAGED"
+    find $LIB_DIR -type f -name "$FILE_NAME"  -delete
+    
     if [ -f $FILE_pip_list ]; then
-
-        LIB_DIR="${TMP_rootfs_build}/usr/lib"
-        FILE_NAME="EXTERNALLY-MANAGED"
-        find $LIB_DIR -type f -name "$FILE_NAME"  -delete
-
         mapfile -t packages < <(grep -vE '^#|^$' ${FILE_pip_list})
         total=${#packages[@]}
         for (( i=0; i<${total}; i++ )); do
@@ -205,11 +204,16 @@ generate_tmp_rootfs() {
     # firmware
     cd ${PATH_SOURCE}
     firm_dir=$(basename "${FIRMWARE_GIT}" .git)
+    
     if [ -n "${FIRMWARE_GIT}" ]; then
         if [[ ! -d "firmware" ]]; then
             run_status "download firmware" git clone "${FIRMWARE_GIT}"
         fi
-        cp -r ${firm_dir}/* ${TMP_rootfs_build}/lib/firmware
+        FIRMWARE_PATH="${TMP_rootfs_build}/lib/firmware"
+        if [ ! -d $FIRMWARE_PATH ]; then
+            mkdir -p $FIRMWARE_PATH
+        fi
+        cp -r ${firm_dir}/* $FIRMWARE_PATH
     fi
     
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
@@ -255,9 +259,33 @@ generate_tmp_rootfs() {
     # sed -i '$ d' ${TMP_rootfs_build}/etc/apt/sources.list
     rm ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
     
+    
+    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_del})
+    total=${#packages[@]}
+    for (( i=0; i<${total}; i++ )); do
+        package=${packages[$i]}
+        run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
+    done
+    
     cd $TMP_rootfs_build
     umount_chroot $TMP_rootfs_build
     trap - SIGINT EXIT
+}
+add_file_to_tmp_rootfs() {
+    local source_file=$1
+    local dest_path=$2
+    if [[ -f "$source_file" ]]; then
+        if [[ -d "$dest_path" ]]; then
+            rm -r "$dest_path"
+        fi
+        mkdir -p "$dest_path"
+        run_status "copy $(basename $source_file) to $dest_path" cp "$source_file" "$dest_path"
+    fi
+}
+
+add_emmc_burn_file(){
+    local source_file=$1
+    add_file_to_tmp_rootfs ${source_file} "${TMP_rootfs_build}/opt/burn"
 }
 
 pack_rootfs() {

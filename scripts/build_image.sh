@@ -1,5 +1,8 @@
 #!/bin/bash
 
+IMAGE_FLAG_NO_SCREEN_DISPLAY=$OPT_NO
+IMAGE_FLAG_DISK_RAED_ONLY=$OPT_NO
+
 
 PART1_SIZE=150
 PART2_SIZE=0
@@ -32,6 +35,9 @@ check_resource() {
 
 
 build_image() {
+    # 如果$1不为空
+    NEW_IMG_FILE_NAME=$1
+    
     cleanup() {
         local LOOP_DEVICE=$1
         echo "Cleaning up..."
@@ -90,7 +96,7 @@ build_image() {
     fi
     
     local ROOTFS_SIZE=$(du -sm $TMP_rootfs_build | cut -f1)
-    local PART2_SIZE=$((ROOTFS_SIZE + 800))
+    local PART2_SIZE=$((ROOTFS_SIZE + 1000))
     
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
@@ -165,9 +171,20 @@ build_image() {
     
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${TMP_mount_disk1}/config.txt
-    echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
+    if [ $IMAGE_FLAG_NO_SCREEN_DISPLAY == $OPT_NO ];then
+        echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
+    else
+        echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 ro,defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
+
+    fi
     echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
     
+    if [ $IMAGE_FLAG_NO_SCREEN_DISPLAY != $OPT_NO ];then
+    
+        config_file="${TMP_mount_disk1}/config.txt"
+        run_status "config.txt : console_display=disable" sed -i 's/console_display=enable/console_display=disable/g' "$config_file"
+        run_status "config.txt : display_bootinfo=disable" sed -i 's/display_bootinfo=enable/display_bootinfo=disable/g' "$config_file"
+    fi
     
     SOURCE_kernel="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
     kernel_version=$(get_linux_version $SOURCE_kernel)
@@ -183,7 +200,11 @@ build_image() {
     formatted_hour=$(printf "%02d" "$current_hour")
     formatted_minute=$(printf "%02d" "$current_minute")
     
-    NEW_IMG_FILE_NAME="${OUT_IMG_FILE}--${formatted_hour}_${formatted_minute}.img"
+    if [ -z "$NEW_IMG_FILE_NAME" ]; then
+        NEW_IMG_FILE_NAME="${OUT_IMG_FILE}--${formatted_hour}_${formatted_minute}.img"
+    else
+        NEW_IMG_FILE_NAME="${PATH_OUTPUT}/${NEW_IMG_FILE_NAME}--${formatted_hour}_${formatted_minute}.img"
+    fi
     mv $OUT_IMG_FILE $NEW_IMG_FILE_NAME
     
     echo -e "\noutputfile:\n\n\t\033[32m$(du -h ${NEW_IMG_FILE_NAME})\033[0m\n\n"

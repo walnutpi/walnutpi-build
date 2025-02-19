@@ -39,12 +39,15 @@ MENU_choose_board() {
 MENU_choose_parts(){
     local titlestr="Choose an option"
     local options=(
-        $OPT_part_image "Full OS image for flashing"
+        $OPT_part_image "Full OS image"
         $OPT_part_bootloader "generate boot.bin"
         $OPT_part_kernel  "generate Kernel .deb"
         $OPT_part_rootfs "generate Rootfs .tar"
         $OPT_part_pack_rootfs "pack the tmp Rootfs files"
-        $OPT_part_pack_image  "Package the output file as an image"
+        $OPT_part_pack_image  "pack the output files as an image"
+        $OPT_part_emmc_burn_rootfs "generate eMMC-burner Rootfs .tar"
+        $OPT_part_pack_emmc_burn "pack the eMMC-burner image"
+        
     )
     show_menu "${titlestr}" "${options[@]}"
 }
@@ -82,5 +85,24 @@ MENU_choose_rootfs_type() {
     titlestr="Server or Graphics"
     options+=("$OPT_rootfs_server"    "server")
     options+=("$OPT_rootfs_desktop"    "desktop")
+    show_menu "${titlestr}" "${options[@]}"
+}
+
+MENU_choose_img_file() {
+    titlestr="choose an img file"
+    for file in $PATH_OUTPUT/*.img; do
+        local creation_time=$(stat -c %Y "$file")
+        options+=("$creation_time:$file")
+    done
+
+    IFS=$'\n' sorted_options=($(for item in "${options[@]}"; do echo "$item"; done | sort -r | cut -d: -f2))
+    unset IFS
+
+    options=()
+    for file in "${sorted_options[@]}"; do
+        local name=$(basename "$file")
+        options+=("$name" "$name")
+    done
+
     show_menu "${titlestr}" "${options[@]}"
 }

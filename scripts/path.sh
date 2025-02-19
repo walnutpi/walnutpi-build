@@ -35,6 +35,7 @@ OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_t
 TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
 FILE_base_rootfs=${TMP_rootfs_build}_base_software.tar
 FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
+FILE_apt_del="${ENTER_board_name}/${ENTER_os_ver}/apt-del"
 FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
 FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
 FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"

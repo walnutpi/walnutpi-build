@@ -22,6 +22,7 @@ ENTER_boot_rebuild_flag=$OPT_user_no_choose
 ENTER_kernel_rebuild_flag=$OPT_user_no_choose
 ENTER_os_ver=$OPT_user_no_choose
 ENTER_rootfs_type=$OPT_user_no_choose
+ENTER_img_file=$OPT_user_no_choose
 
 START_DATE=$(date)
 LOG_START_TIME=$(date +%m-%d_%H:%M)
@@ -38,6 +39,7 @@ para_desc () {
     echo ""
     echo -e "  -p : choose which part to compile"
     echo -e "\t-p $OPT_part_image"
+    echo -e "\t-p $OPT_part_pack_emmc_burn -f [file name]"
     echo -e "\t-p $OPT_part_bootloader"
     echo -e "\t-p $OPT_part_kernel"
     echo -e "\t-p $OPT_part_rootfs"
@@ -73,6 +75,11 @@ do
         if [ $ENTER_boot_rebuild_flag == $OPT_user_no_choose ];then ENTER_boot_rebuild_flag="$OPT_YES"; fi
         if [ $ENTER_kernel_rebuild_flag == $OPT_user_no_choose ];then ENTER_kernel_rebuild_flag="$OPT_YES"; fi
         ENTER_build_parts="$2"
+        shift
+        shift
+        
+        elif [ "x$1" == "x-f" ]; then
+        ENTER_img_file="$2"
         shift
         shift
         
@@ -123,24 +130,40 @@ case "$ENTER_build_parts" in
             ENTER_rootfs_type=$(MENU_choose_rootfs_type)
             [[ -z ${ENTER_rootfs_type} ]] && exit
         fi
+    ;;
+    "$OPT_part_emmc_burn_rootfs")
+        ENTER_os_ver=$OPT_os_debian12_burn
+        ENTER_rootfs_type=$OPT_rootfs_server
+    ;;
+    "$OPT_part_pack_emmc_burn")
+        ENTER_os_ver=$OPT_os_debian12_burn
+        ENTER_rootfs_type=$OPT_rootfs_server
+        
+        if [ $ENTER_img_file == $OPT_user_no_choose ]; then
+            ENTER_img_file=$(MENU_choose_img_file)
+            [[ -z ${ENTER_img_file} ]] && exit
+        fi
+    ;;
 esac
-
 source $ENTER_board_name/board.conf
 PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
 echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 create_dir $PATH_OUTPUT_BOARD
 reload_env
 
-if [ "$ENTER_build_parts" == "$OPT_part_image" ] && [ -d ${OUTDIR_boot_package} ]; then
-    if [ "$ENTER_boot_rebuild_flag" == $OPT_user_no_choose ]; then
-        ENTER_boot_rebuild_flag=$(MENU_sikp_boot)
-        [[ -z ${ENTER_boot_rebuild_flag} ]] && exit
+if [ "$ENTER_build_parts" == "$OPT_part_image" ] || [ "$ENTER_build_parts" == "$OPT_part_emmc_burn_rootfs" ] ;  then
+    if  [ -d ${OUTDIR_boot_package} ]; then
+        echo "ENTER_boot_rebuild_flag=$ENTER_boot_rebuild_flag"
+        if [ "$ENTER_boot_rebuild_flag" == $OPT_user_no_choose ]; then
+            ENTER_boot_rebuild_flag=$(MENU_sikp_boot)
+            [[ -z ${ENTER_boot_rebuild_flag} ]] && exit
+        fi
     fi
-fi
-if [ "$ENTER_build_parts" == "$OPT_part_image" ] && [ -d ${OUTDIR_kernel_package} ]; then
-    if [ "$ENTER_kernel_rebuild_flag" == $OPT_user_no_choose ]; then
-        ENTER_kernel_rebuild_flag=$(MENU_sikp_kernel)
-        [[ -z ${ENTER_kernel_rebuild_flag} ]] && exit
+    if  [ -d ${OUTDIR_kernel_package} ]; then
+        if [ "$ENTER_kernel_rebuild_flag" == $OPT_user_no_choose ]; then
+            ENTER_kernel_rebuild_flag=$(MENU_sikp_kernel)
+            [[ -z ${ENTER_kernel_rebuild_flag} ]] && exit
+        fi
     fi
 fi
 
@@ -198,6 +221,22 @@ case "$ENTER_build_parts" in
         generate_tmp_rootfs
         pack_rootfs
         build_image
+    ;;
+    "$OPT_part_emmc_burn_rootfs")
+        if [ ${ENTER_boot_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
+            build_bootloader
+        fi
+        if [ ${ENTER_kernel_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
+            build_kernel
+        fi
+        generate_tmp_rootfs
+    ;;
+    "$OPT_part_pack_emmc_burn")
+        add_emmc_burn_file $PATH_OUTPUT/${ENTER_img_file}
+        pack_rootfs
+        IMAGE_FLAG_NO_SCREEN_DISPLAY=$OPT_YES
+        IMAGE_FLAG_DISK_RAED_ONLY=$OPT_YES
+        build_image "eMMC_burner-$(basename "${ENTER_img_file}" .img)"
     ;;
 esac
 
