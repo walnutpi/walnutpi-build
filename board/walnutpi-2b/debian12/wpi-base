@@ -31,5 +31,6 @@ service-resize-part
 service-aw869-bluetooth
 service-boot-script
 service-aw-eth-mac
+service-w2b-dis-eth-led
 
 map-device
