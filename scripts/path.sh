@@ -43,6 +43,6 @@ FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
 PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
 
 # 打包镜像相关
-TMP_mount_disk1="${PATH_TMP}/PART1"
-TMP_mount_disk2="${PATH_TMP}/PART2"
+TMP_mount_disk1="${PATH_TMP}/PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+TMP_mount_disk2="${PATH_TMP}/PART2-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
 OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
