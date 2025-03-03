@@ -26,10 +26,12 @@ RUN apt-get update && \
     make \
     python3 \
     python3-dev \
+    python3-pip \
     sudo \
     libpam-runtime \
     dosfstools \
     parted  \
+    build-essential \
     xz-utils && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -41,3 +43,5 @@ echo "pi:pi" | chpasswd
 RUN mkdir -p /etc/sudoers.d
 RUN echo "pi ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/pi && \
     chmod 0440 /etc/sudoers.d/pi
+
+RUN pip3 install setuptools
