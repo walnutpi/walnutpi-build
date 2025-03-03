@@ -1,5 +1,4 @@
 wpi-xfce4
-t527-fbdev
 service-restart-lightdm
 
 wpi-chromium 
