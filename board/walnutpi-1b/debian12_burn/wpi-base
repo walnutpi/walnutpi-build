@@ -1,0 +1,35 @@
+wpi-user
+wpi-host-name
+wpi-welcome-info
+# wpi-lightdm
+gpioc
+# blinka
+
+
+# conf-qtenv   
+enable-ssh-root  
+# disable-wifi-random
+
+set-emmc
+set-device  
+set-language  
+set-lcd
+# set-flash
+# set-nvme
+# pyuic
+# # python3-sudo
+
+# bluez 
+# hcitools
+# initramfs-tools-hook
+# plymouth-themes-walnutpi
+
+service-disable-fbcon
+# service-resize-part
+# service-aw869-bluetooth
+service-boot-script
+# service-aw-eth-mac
+
+# map-device
+
+emmc-burner

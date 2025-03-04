@@ -1,0 +1,69 @@
+
+libc6-dev
+bison
+flex
+libssl-dev
+
+network-manager
+net-tools
+# iw
+# wireless-tools
+# ir-keytable
+# evtest
+# rfkill
+# bluez
+# ntp
+# ntpdate
+
+ssh
+sudo
+bash-completion
+systemd-timesyncd
+parted
+wget
+curl
+# fdisk
+# tree
+# btop
+bc
+
+# fbterm
+# locales 
+# fonts-wqy-zenhei
+
+# vim
+gcc
+# git
+make
+python3
+python3-pip
+python-dev-is-python3
+# python3-pyqt5*
+
+# i2c-tools
+# usbutils
+
+# toilet
+# nfs-common
+# fbset
+# libts-bin
+# alsa-utils
+# mtd-utils
+# pciutils
+# dosfstools
+
+u-boot-tools
+initramfs-tools
+device-tree-compiler
+
+# dbus-x11
+# xorg
+# xserver-xorg-input-evdev
+# xinput-calibrator
+# xserver-xorg-input-synaptics
+# xfwm4  
+# lightdm
+
+# # plymouth-themes
+
+libfreetype6-dev
