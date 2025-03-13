@@ -1,5 +1,6 @@
-version=1.0
+version=1.1
 
+screen=hdmi
 bootlogo=false
 overlay_prefix=sun50i-h616
 fdtfile=sun50i-h616-walnutpi-1b
