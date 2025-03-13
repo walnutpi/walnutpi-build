@@ -49,6 +49,13 @@ build_image() {
                 sleep 1
             done
         fi
+        if mountpoint -q "$TMP_IMG_DISK2"; then
+            echo "Unmounting $TMP_IMG_DISK2"
+            while mountpoint -q "$TMP_IMG_DISK2"; do
+                umount "$TMP_IMG_DISK2"
+                sleep 1
+            done
+        fi
         if mountpoint -q "$TMP_mount_disk1"; then
             echo "Unmounting $TMP_mount_disk1"
             while mountpoint -q "$TMP_mount_disk1"; do
@@ -78,12 +85,17 @@ build_image() {
     
     trap 'cleanup "$LOOP_DEVICE"; exit' SIGINT
     check_resource
+    if [  -d $TMP_IMG_DISK2 ]; then
+        rm -r $TMP_IMG_DISK2
+    fi
     if [  -d $TMP_mount_disk1 ]; then
         rm -r $TMP_mount_disk1
     fi
     if [ -d $TMP_mount_disk2 ]; then
         rm -r $TMP_mount_disk2
     fi
+    mkdir -p $TMP_IMG_DISK2
+    mkdir -p $TMP_IMG_DISK2/boot
     mkdir -p $TMP_mount_disk1
     mkdir -p $TMP_mount_disk2
     
@@ -94,9 +106,44 @@ build_image() {
     if [ -f "$OUT_IMG_FILE" ]; then
         rm ${OUT_IMG_FILE}
     fi
+    # 创建img文件
+    if [ -f "$TMP_IMG_DISK1" ];then
+        rm ${TMP_IMG_DISK1}
+    fi
+    run_status "create part1 file" dd if=/dev/zero of=$TMP_IMG_DISK1 bs=1M count=$PART1_SIZE
     
-    local ROOTFS_SIZE=$(du -sm $TMP_rootfs_build | cut -f1)
-    local PART2_SIZE=$((ROOTFS_SIZE + 1000))
+    # 格式化文件TMP_IMG_DISK1为fat32，并挂载到路径 ${TMP_IMG_DISK2}/boot
+    run_status "format part1 file" mkfs.fat -F 32 -n "boot" $TMP_IMG_DISK1
+    run_status "mount part1 file" mount -o loop $TMP_IMG_DISK1 ${TMP_IMG_DISK2}/boot
+
+
+    run_status "add rootfs" tar xf  $OUTFILE_rootfs_tar -C $TMP_IMG_DISK2  -I 'xz -T0'
+
+    # 安装boot相关的deb包
+    cp ${OUTDIR_boot_package}/*.deb  ${TMP_IMG_DISK2}/opt/
+    cd ${TMP_IMG_DISK2}/opt/
+    deb_packages=(*.deb)
+    total=${#deb_packages[@]}
+    for (( i=0; i<$total; i++ )); do
+        deb_package=${deb_packages[$i]}
+        run_status "boot package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_IMG_DISK2} /bin/bash -c "dpkg -i /opt/${deb_package}"
+        rm ${TMP_IMG_DISK2}/opt/${deb_package}
+    done
+    
+    # 安装kernel产生的的deb包，先安装生成时间早的
+    cd ${OUTDIR_kernel_package}/
+    deb_packages=($(ls -t *.deb | tac))
+    cp ${OUTDIR_kernel_package}/*.deb  ${TMP_IMG_DISK2}/opt/
+    cd ${TMP_IMG_DISK2}/opt/
+    total=${#deb_packages[@]}
+    for (( i=0; i<$total; i++ )); do
+        deb_package=${deb_packages[$i]}
+        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_IMG_DISK2} /bin/bash -c "dpkg -i /opt/${deb_package}"
+        rm ${TMP_IMG_DISK2}/opt/${deb_package}
+    done
+    
+    local ROOTFS_SIZE=$(du -sm $TMP_IMG_DISK2 | cut -f1)
+    local PART2_SIZE=$((ROOTFS_SIZE + 100))
     
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
@@ -143,32 +190,11 @@ build_image() {
     
     # 导入文件
     run_status "add $BOOTLOADER_NAME" dd if=$OUTFILE_boot_bin of=$OUT_IMG_FILE bs=1K seek=8 conv=notrunc
-    run_status "add rootfs" tar xf  $OUTFILE_rootfs_tar -C $TMP_mount_disk2  -I 'xz -T0'
-    
-    # 安装boot相关的deb包
-    cp ${OUTDIR_boot_package}/*.deb  ${TMP_mount_disk2}/opt/
-    cd ${TMP_mount_disk2}/opt/
-    deb_packages=(*.deb)
-    total=${#deb_packages[@]}
-    for (( i=0; i<$total; i++ )); do
-        deb_package=${deb_packages[$i]}
-        run_status "boot package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_mount_disk2} /bin/bash -c "dpkg -i /opt/${deb_package}"
-        #  chroot ${TMP_mount_disk2} /bin/bash -c "dpkg -i /opt/${deb_package}"
-        rm ${TMP_mount_disk2}/opt/${deb_package}
-    done
-    
-    # 安装kernel产生的的deb包，先安装生成时间早的
-    cd ${OUTDIR_kernel_package}/
-    deb_packages=($(ls -t *.deb | tac))
-    cp ${OUTDIR_kernel_package}/*.deb  ${TMP_mount_disk2}/opt/
-    cd ${TMP_mount_disk2}/opt/
-    total=${#deb_packages[@]}
-    for (( i=0; i<$total; i++ )); do
-        deb_package=${deb_packages[$i]}
-        run_status "kernel package [$((i+1))/${total}] : ${deb_package} " chroot ${TMP_mount_disk2} /bin/bash -c "dpkg -i /opt/${deb_package}"
-        rm ${TMP_mount_disk2}/opt/${deb_package}
-    done
-    
+    # 使用tar将 TMP_IMG_DISK2 路径下的文件全部原封不动的导到TMP_mount_disk2下
+    echo "move the rootfs files into the image"
+    tar -cf - -C "$TMP_IMG_DISK2" . | tar -xf - -C "$TMP_mount_disk2"
+    # run_status "add rootfs" tar -cf - -C "$TMP_IMG_DISK2" . | tar -xf - -C "$TMP_mount_disk2"
+
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${TMP_mount_disk1}/config.txt
     if [ $IMAGE_FLAG_NO_SCREEN_DISPLAY == $OPT_NO ];then
