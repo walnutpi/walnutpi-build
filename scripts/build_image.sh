@@ -117,6 +117,8 @@ build_image() {
         rm ${TMP_IMG_DISK2}/opt/${deb_package}
     done
     
+    run_status "run set-lcd hdmi install " chroot ${TMP_IMG_DISK2} /bin/bash -c "set-lcd hdmi install"
+
     local ROOTFS_SIZE=$(du -sm $TMP_IMG_DISK2 | cut -f1)
     local PART2_SIZE=$((ROOTFS_SIZE + 100))
     
