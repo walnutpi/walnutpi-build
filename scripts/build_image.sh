@@ -120,7 +120,7 @@ build_image() {
     run_status "run set-lcd hdmi install " chroot ${TMP_IMG_DISK2} /bin/bash -c "set-lcd hdmi install"
 
     local ROOTFS_SIZE=$(du -sm $TMP_IMG_DISK2 | cut -f1)
-    local PART2_SIZE=$((ROOTFS_SIZE + 100))
+    local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 10)/1" | bc)
     
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
