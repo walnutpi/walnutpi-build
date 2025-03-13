@@ -33,7 +33,6 @@ check_resource() {
 
 
 
-
 build_image() {
     # 如果$1不为空
     NEW_IMG_FILE_NAME=$1
@@ -42,34 +41,10 @@ build_image() {
         local LOOP_DEVICE=$1
         echo "Cleaning up..."
         cd $PATH_PROJECT_DIR
-        if mountpoint -q "$TMP_mount_disk2/boot"; then
-            echo "Unmounting $TMP_mount_disk2/boot"
-            while mountpoint -q "$TMP_mount_disk2/boot"; do
-                umount "$TMP_mount_disk2/boot"
-                sleep 1
-            done
-        fi
-        if mountpoint -q "$TMP_IMG_DISK2"; then
-            echo "Unmounting $TMP_IMG_DISK2"
-            while mountpoint -q "$TMP_IMG_DISK2"; do
-                umount "$TMP_IMG_DISK2"
-                sleep 1
-            done
-        fi
-        if mountpoint -q "$TMP_mount_disk1"; then
-            echo "Unmounting $TMP_mount_disk1"
-            while mountpoint -q "$TMP_mount_disk1"; do
-                umount "$TMP_mount_disk1"
-                sleep 1
-            done
-        fi
-        if mountpoint -q "$TMP_mount_disk2"; then
-            echo "Unmounting $TMP_mount_disk2"
-            while mountpoint -q "$TMP_mount_disk2"; do
-                umount "$TMP_mount_disk2"
-                sleep 1
-            done
-        fi
+        unmount_point "$TMP_mount_disk2/boot"
+        unmount_point "$TMP_IMG_DISK2"
+        unmount_point "$TMP_mount_disk1"
+        unmount_point "$TMP_mount_disk2"
         
         if [ ! -z "$LOOP_DEVICE" ]; then
             if losetup -l > /dev/null 2>&1; then

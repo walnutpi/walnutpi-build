@@ -121,7 +121,17 @@ umount_chroot()
     done
 }
 
-
+# 卸载指定挂载点
+unmount_point() {
+    local mount_point=$1
+    if mountpoint -q "$mount_point"; then
+        echo "Unmounting $mount_point"
+        while mountpoint -q "$mount_point"; do
+            umount "$mount_point"
+            sleep 1
+        done
+    fi
+}
 
 
 clone_url() {
