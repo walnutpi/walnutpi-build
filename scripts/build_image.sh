@@ -118,6 +118,14 @@ build_image() {
     done
     
     run_status "run set-lcd hdmi install " chroot ${TMP_IMG_DISK2} /bin/bash -c "set-lcd hdmi install"
+    if [ -f ${FILE_apt_del} ]; then
+        mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_del})
+        total=${#packages[@]}
+        for (( i=0; i<${total}; i++ )); do
+            package=${packages[$i]}
+            run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
+        done
+    fi
 
     local ROOTFS_SIZE=$(du -sm $TMP_IMG_DISK2 | cut -f1)
     local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 10)/1" | bc)

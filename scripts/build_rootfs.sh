@@ -260,12 +260,7 @@ generate_tmp_rootfs() {
     rm ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
     
     
-    mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_del})
-    total=${#packages[@]}
-    for (( i=0; i<${total}; i++ )); do
-        package=${packages[$i]}
-        run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
-    done
+
     
     cd $TMP_rootfs_build
     umount_chroot $TMP_rootfs_build
