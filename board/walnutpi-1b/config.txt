@@ -1,6 +1,10 @@
 version=1.1
 
 screen=hdmi
+#screen=dsi-800x480
+#screen=lcd15-st7789
+#screen=lcd35-st7796
+
 bootlogo=false
 overlay_prefix=sun50i-h616
 fdtfile=sun50i-h616-walnutpi-1b
