@@ -1,5 +1,6 @@
 version=1.2
 
+##  config screen (You can only choose one)
 screen=hdmi
 #screen=dsi-800x480
 #screen=lcd15-st7789
