@@ -1,6 +1,6 @@
 version=1.2
 
-##  config screen (You can only choose one)
+##  config screen
 screen=hdmi
 
 fdtfile=sun55i-t527-walnutpi-2b

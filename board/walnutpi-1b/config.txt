@@ -1,6 +1,6 @@
 version=1.1
 
-##  config screen (You can only choose one)
+##  config screen
 screen=hdmi
 
 
