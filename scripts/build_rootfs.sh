@@ -32,12 +32,6 @@ generate_tmp_rootfs() {
         case "${ENTER_os_ver}" in
             "${OPT_os_debian12}" | "$OPT_os_debian12_burn")
                 debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-                # if [[ $(curl -s ipinfo.io/country) =~ ^(CN|HK)$ ]]; then
-                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-                # else
-                #     debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://ftp.cn.debian.org/debian/
-                # fi
-                
                 exit_if_last_error
                 
                 qemu_arch=""
@@ -80,11 +74,31 @@ generate_tmp_rootfs() {
                 chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
                 
                 # base默认没写dns服务器
-                # sudo echo "nameserver 8.8.8.8"  > ${TMP_rootfs_build}/etc/resolv.conf
                 FILE="${TMP_rootfs_build}/etc/resolv.conf"
                 LINE="nameserver 8.8.8.8"
                 grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+            ;;
+
+            "${OPT_os_ubuntu24}" )
+                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz -O $FILE_base_rootfs
+                run_status "unzip rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
                 
+                qemu_arch=""
+                case "${CHIP_ARCH}" in
+                    "arm64")
+                        qemu_arch="aarch64"
+                    ;;
+                    "arm")
+                        qemu_arch="arm"
+                    ;;
+                esac
+                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
+                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
+                
+                # base默认没写dns服务器
+                FILE="${TMP_rootfs_build}/etc/resolv.conf"
+                LINE="nameserver 8.8.8.8"
+                grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
             ;;
             
         esac

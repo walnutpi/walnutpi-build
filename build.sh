@@ -49,6 +49,7 @@ para_desc () {
     echo -e "  -v : choose the rootfs version"
     echo -e "\t-v $OPT_os_debian12"
     echo -e "\t-v $OPT_os_ubuntu22"
+    echo -e "\t-v $OPT_os_ubuntu24"
     echo ""
     echo -e "  -t : choose the rootfs type"
     echo -e "\t-t $OPT_rootfs_server"

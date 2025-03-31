@@ -42,10 +42,10 @@ MENU_choose_parts(){
         $OPT_part_image "Full OS image"
         $OPT_part_bootloader "generate boot.bin"
         $OPT_part_kernel  "generate Kernel .deb"
-        $OPT_part_rootfs "generate Rootfs .tar"
-        $OPT_part_pack_rootfs "pack the tmp Rootfs files"
+        $OPT_part_rootfs "generate Rootfs files"
+        $OPT_part_pack_rootfs "pack the tmp Rootfs files as tar"
         $OPT_part_pack_image  "pack the output files as an image"
-        $OPT_part_emmc_burn_rootfs "generate eMMC-burner Rootfs .tar"
+        $OPT_part_emmc_burn_rootfs "generate eMMC-burner Rootfs files"
         $OPT_part_pack_emmc_burn "pack the eMMC-burner image"
         
     )
@@ -76,7 +76,8 @@ MENU_choose_os() {
     titlestr="Choose an os version"
     local options=(
         ${OPT_os_debian12}    "debian 12(bookworm)"
-        ${OPT_os_ubuntu22}    "ubuntu 22.04(Jammy)"
+        ${OPT_os_ubuntu22}    "ubuntu 22.04(Jammy Jellyfish)"
+        ${OPT_os_ubuntu24}    "ubuntu 24.04(Noble Numbat)"
     )
     show_menu "${titlestr}" "${options[@]}"
 }
