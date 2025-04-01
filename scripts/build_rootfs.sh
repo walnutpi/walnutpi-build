@@ -3,7 +3,39 @@
 
 APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 APT_DOMAIN="apt.walnutpi.com"
+DEBIAN_BASE_URL="http://mirrors.tuna.tsinghua.edu.cn/debian/"
+UBUNTU22_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz"
+UBUNTU24_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz"
 
+download_ubuntu_base() {
+    local base_url=$1
+    local tmp_file_name=$2
+    local tmp_dir=$3
+    wget $base_url -O $tmp_file_name
+    run_status "unzip rootfs"  tar -xvf $tmp_file_name -C  $TMP_rootfs_build
+    
+    # base默认没写dns服务器
+    local FILE="${TMP_rootfs_build}/etc/resolv.conf"
+    local LINE="nameserver 8.8.8.8"
+    grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+}
+
+download_debian_base() {
+    local base_url=$1
+    local debian_name=$2
+    local tmp_dir=$3
+    
+    debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${tmp_dir} $base_url
+    exit_if_last_error
+    
+    # 完成rootfs的初始化
+    cd ${tmp_dir}
+    mount_chroot $tmp_dir
+    LC_ALL=C LANGUAGE=C LANG=C chroot ${tmp_dir} /debootstrap/debootstrap --second-stage –verbose
+    exit_if_last_error
+    run_slient_when_successfuly chroot $tmp_dir /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    umount_chroot $tmp_dir
+}
 
 generate_tmp_rootfs() {
     cleanup() {
@@ -31,77 +63,24 @@ generate_tmp_rootfs() {
         run_as_silent mkdir ${TMP_rootfs_build} -p
         case "${ENTER_os_ver}" in
             "${OPT_os_debian12}" | "$OPT_os_debian12_burn")
-                debootstrap --foreign --verbose  --arch=${CHIP_ARCH} bookworm ${TMP_rootfs_build}  http://mirrors.tuna.tsinghua.edu.cn/debian/
-                exit_if_last_error
-                
-                qemu_arch=""
-                case "${CHIP_ARCH}" in
-                    "arm64")
-                        qemu_arch="aarch64"
-                    ;;
-                    "arm")
-                        qemu_arch="arm"
-                    ;;
-                esac
-                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
-                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
-                
-                # 完成rootfs的初始化
-                cd ${TMP_rootfs_build}
-                mount_chroot $TMP_rootfs_build
-                LC_ALL=C LANGUAGE=C LANG=C chroot ${TMP_rootfs_build} /debootstrap/debootstrap --second-stage –verbose
-                exit_if_last_error
-                run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
-                umount_chroot $TMP_rootfs_build
-                
-                tar -czf $FILE_base_rootfs ./
+                download_debian_base $DEBIAN_BASE_URL "bookworm" $TMP_rootfs_build
             ;;
             
             "${OPT_os_ubuntu22}" )
-                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz -O $FILE_base_rootfs
-                run_status "unzip rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
-                
-                qemu_arch=""
-                case "${CHIP_ARCH}" in
-                    "arm64")
-                        qemu_arch="aarch64"
-                    ;;
-                    "arm")
-                        qemu_arch="arm"
-                    ;;
-                esac
-                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
-                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
-                
-                # base默认没写dns服务器
-                FILE="${TMP_rootfs_build}/etc/resolv.conf"
-                LINE="nameserver 8.8.8.8"
-                grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+                download_ubuntu_base $UBUNTU22_BASE_URL $FILE_base_rootfs $TMP_rootfs_build
             ;;
-
+            
             "${OPT_os_ubuntu24}" )
-                wget https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz -O $FILE_base_rootfs
-                run_status "unzip rootfs"  tar -xvf $FILE_base_rootfs -C  $TMP_rootfs_build
-                
-                qemu_arch=""
-                case "${CHIP_ARCH}" in
-                    "arm64")
-                        qemu_arch="aarch64"
-                    ;;
-                    "arm")
-                        qemu_arch="arm"
-                    ;;
-                esac
-                cp /usr/bin/qemu-${qemu_arch}-static ${TMP_rootfs_build}/usr/bin/
-                chmod +x ${TMP_rootfs_build}/usr/bin/qemu-${qemu_arch}-static
-                
-                # base默认没写dns服务器
-                FILE="${TMP_rootfs_build}/etc/resolv.conf"
-                LINE="nameserver 8.8.8.8"
-                grep -qF -- "$LINE" "$FILE" || echo "$LINE" >> "$FILE"
+                download_ubuntu_base $UBUNTU22_BASE_URL $FILE_base_rootfs $TMP_rootfs_build
             ;;
             
         esac
+        cp /usr/bin/qemu-aarch64-static ${TMP_rootfs_build}/usr/bin/
+        chmod +x ${TMP_rootfs_build}/usr/bin/qemu-aarch64-static
+        
+        cd $TMP_rootfs_build
+        tar -czf $FILE_base_rootfs ./
+        
         
     fi
     
@@ -273,8 +252,6 @@ generate_tmp_rootfs() {
     # sed -i '$ d' ${TMP_rootfs_build}/etc/apt/sources.list
     rm ${TMP_rootfs_build}/etc/apt/sources.list.d/walnutpi.list
     
-    
-
     
     cd $TMP_rootfs_build
     umount_chroot $TMP_rootfs_build
