@@ -71,7 +71,7 @@ generate_tmp_rootfs() {
             ;;
             
             "${OPT_os_ubuntu24}" )
-                download_ubuntu_base $UBUNTU22_BASE_URL $FILE_base_rootfs $TMP_rootfs_build
+                download_ubuntu_base $UBUNTU24_BASE_URL $FILE_base_rootfs $TMP_rootfs_build
             ;;
             
         esac
