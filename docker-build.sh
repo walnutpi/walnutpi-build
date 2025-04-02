@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMAGE_NAME=walnutpi-build-ubuntu22:1.0
+DOCKER_IMAGE_NAME=walnutpi-build:1.0
 CONTAINER_NAME="walnutpi-build-$(date +%s)"
 RUN_COMMOND="./build.sh $@"
 

@@ -1,5 +1,5 @@
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # 以无交互的方式安装软件
 ENV DEBIAN_FRONTEND=noninteractive
@@ -43,5 +43,10 @@ echo "pi:pi" | chpasswd
 RUN mkdir -p /etc/sudoers.d
 RUN echo "pi ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/pi && \
     chmod 0440 /etc/sudoers.d/pi
+
+# 以解除 pip 安装的限制
+RUN LIB_DIR="${TMP_rootfs_build}/usr/lib" && \
+    FILE_NAME="EXTERNALLY-MANAGED" && \
+    find $LIB_DIR -type f -name "$FILE_NAME"  -delete
 
 RUN pip3 install setuptools
