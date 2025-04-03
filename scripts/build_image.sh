@@ -126,6 +126,15 @@ build_image() {
             run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
         done
     fi
+        
+    # 如果是ubuntu24，则禁用gdm3改为lightdm
+    if [ "$ENTER_os_ver" == "$OPT_os_ubuntu24" ];then
+        if [[ "${ENTER_rootfs_type}" == "desktop" ]]; then
+            echo "切换lightdm为默认桌面环境"
+            run_status "remove gdm3 " chroot ${TMP_IMG_DISK2} /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y gdm3"
+            chroot $TMP_IMG_DISK2 /bin/bash -c "dpkg-reconfigure lightdm"
+        fi
+    fi
 
     local ROOTFS_SIZE=$(du -sm $TMP_IMG_DISK2 | cut -f1)
     local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 10)/1" | bc)
