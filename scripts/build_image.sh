@@ -123,7 +123,7 @@ build_image() {
         total=${#packages[@]}
         for (( i=0; i<${total}; i++ )); do
             package=${packages[$i]}
-            run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
+            run_status "apt remove [$((i+1))/${total}] : $package " chroot $TMP_IMG_DISK2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
         done
     fi
         
