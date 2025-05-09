@@ -60,7 +60,6 @@ device-tree-compiler
 # xinput-calibrator
 # xserver-xorg-input-synaptics
 # xfwm4  
-# lightdm
 
 netplan.io
 inetutils-ping
