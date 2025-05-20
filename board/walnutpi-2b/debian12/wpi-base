@@ -2,6 +2,10 @@ wpi-user
 wpi-host-name
 wpi-welcome-info
 wpi-lightdm
+
+walnutpi.npu
+walnutpi.lib
+
 gpioc
 blinka
 
