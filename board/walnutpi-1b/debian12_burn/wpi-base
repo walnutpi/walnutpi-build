@@ -1,35 +1,36 @@
 wpi-user
 wpi-host-name
 wpi-welcome-info
-# wpi-lightdm
+wpi-lightdm
+# walnutpi-lib
 gpioc
-# blinka
 
-
-# conf-qtenv   
+conf-h616-audio
+conf-qtenv   
 enable-ssh-root  
-# disable-wifi-random
+disable-wifi-random
 
 set-emmc
 set-device  
 set-language  
 set-lcd
-# set-flash
-# set-nvme
-# pyuic
-# # python3-sudo
+pyuic       
+# python3-sudo
 
-# bluez 
-# hcitools
-# initramfs-tools-hook
-# plymouth-themes-walnutpi
+bluez 
+hcitools
+initramfs-tools-hook
+plymouth-themes-walnutpi
 
 service-disable-fbcon
+# service-h616-mac-detect
 # service-resize-part
-# service-aw869-bluetooth
+service-aw859-bluetooth
 service-boot-script
-# service-aw-eth-mac
+service-h616-conf-thermal-trip
+service-w1b-dis-mmc2
 
-# map-device
+map-device
+
 
 emmc-burner
