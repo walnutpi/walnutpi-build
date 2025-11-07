@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PATH_board="${PATH_PROJECT_DIR}/board"
 PATH_SOURCE="${PATH_PROJECT_DIR}/source"
 PATH_OUTPUT="${PATH_PROJECT_DIR}/output"

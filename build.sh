@@ -6,7 +6,7 @@ source "${PATH_SCRIPT}/option.sh"
 source "${PATH_SCRIPT}/menu.sh"
 source "${PATH_SCRIPT}/path.sh"
 
-source "${PATH_SCRIPT}/build_bootloader.sh"
+
 source "${PATH_SCRIPT}/build_kernel.sh"
 source "${PATH_SCRIPT}/build_rootfs.sh"
 source "${PATH_SCRIPT}/build_image.sh"
@@ -198,7 +198,7 @@ fi
 reload_env
 case "$ENTER_build_parts" in
     "$OPT_part_bootloader" )
-        build_bootloader
+        source "${PATH_PROJECT_DIR}/build-bootloader.sh" $ENTER_board_name
     ;;
     "$OPT_part_kernel")
         build_kernel
@@ -214,7 +214,7 @@ case "$ENTER_build_parts" in
     ;;
     "$OPT_part_image")
         if [ ${ENTER_boot_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
-            build_bootloader
+            source "${PATH_PROJECT_DIR}/build-bootloader.sh" $ENTER_board_name
         fi
         if [ ${ENTER_kernel_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
             build_kernel
@@ -225,7 +225,8 @@ case "$ENTER_build_parts" in
     ;;
     "$OPT_part_emmc_burn_rootfs")
         if [ ${ENTER_boot_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ] ; then
-            build_bootloader
+            source "${PATH_PROJECT_DIR}/build-bootloader.sh" $ENTER_board_name
+            
         fi
         if [ ${ENTER_kernel_rebuild_flag}  == "$OPT_user_no_choose" ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ] ; then
             build_kernel

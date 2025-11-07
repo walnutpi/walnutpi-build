@@ -21,3 +21,6 @@ OPT_rootfs_server="server"
 OPT_rootfs_desktop="desktop"
 OPT_skip_boot="skip-boot"
 OPT_skip_kernel="skip-kernel"
+
+FLAG_SCRIPT_get_need="get_need"
+FLAG_SCRIPT_NEED_board="need_board"
