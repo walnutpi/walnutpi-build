@@ -1,0 +1,27 @@
+#!/bin/bash
+# 参数说明:
+# $1 - SOURCE_kernel: 内核源码路径
+# $2 - LINUX_CONFIG: 内核配置文件名
+# $3 - USE_CROSS_COMPILE: 交叉编译前缀
+# $4 - CHIP_ARCH: 芯片架构
+compile_kernel() {
+    local SOURCE_kernel=$1
+    local LINUX_CONFIG=$2
+    local USE_CROSS_COMPILE=$3
+    local CHIP_ARCH=$4
+    # 输出所有参数
+    echo "SOURCE_kernel=$SOURCE_kernel"
+    echo "LINUX_CONFIG=$LINUX_CONFIG"
+    echo "USE_CROSS_COMPILE=$USE_CROSS_COMPILE"
+    echo "CHIP_ARCH=$CHIP_ARCH"
+
+    cd $SOURCE_kernel
+    if [ ! -f .scmversion ]; then
+        touch .scmversion
+    fi
+    thread_count=$(grep -c ^processor /proc/cpuinfo)
+    make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    exit_if_last_error
+    echo "kernel compile success"
+}

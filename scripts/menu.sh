@@ -40,11 +40,11 @@ MENU_choose_parts(){
     local titlestr="Choose an option"
     local options=(
         $OPT_part_image "Full OS image"
-        $OPT_part_bootloader "generate boot.bin"
-        $OPT_part_kernel  "generate Kernel .deb"
+        $OPT_part_pack_image  "pack the output files as an image"
+        # $OPT_part_bootloader "generate boot.bin"
+        # $OPT_part_kernel  "generate Kernel .deb"
         $OPT_part_rootfs "generate Rootfs files"
         $OPT_part_pack_rootfs "pack the tmp Rootfs files as tar"
-        $OPT_part_pack_image  "pack the output files as an image"
         $OPT_part_emmc_burn_rootfs "generate eMMC-burner Rootfs files"
         $OPT_part_pack_emmc_burn "pack the eMMC-burner image"
         

@@ -26,7 +26,6 @@ OUTFILE_boot_bin=${OUTDIR_boot_package}/boot.bin
 PATH_save_boot_files="${ENTER_board_name}/boot"
 
 # 内核编译相关
-SOURCE_kernel="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
 OUTDIR_kernel_package=${PATH_OUTPUT_BOARD}/kernel
 
 # 生成rootfs相关
