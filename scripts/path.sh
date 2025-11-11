@@ -29,16 +29,16 @@ PATH_save_boot_files="${ENTER_board_name}/boot"
 OUTDIR_kernel_package=${PATH_OUTPUT_BOARD}/kernel
 
 # 生成rootfs相关
-# OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
-# TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
-# FILE_base_rootfs=${TMP_rootfs_build}_base_software.tar
-# FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
-# FILE_apt_del="${ENTER_board_name}/${ENTER_os_ver}/apt-del"
-# FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
-# FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
-# FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
-# FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
-# PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
+OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
+TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+FILE_base_rootfs=${TMP_rootfs_build}_base_software.tar
+FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
+FILE_apt_del="${ENTER_board_name}/${ENTER_os_ver}/apt-del"
+FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
+FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
+FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
+FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
+PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
 
 # 打包镜像相关
 TMP_IMG_DISK1="${PATH_TMP}/PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
