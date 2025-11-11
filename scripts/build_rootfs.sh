@@ -84,6 +84,9 @@ generate_tmp_rootfs() {
         
     fi
     
+    cp /usr/bin/qemu-aarch64-static ${TMP_rootfs_build}/usr/bin/
+    chmod +x ${TMP_rootfs_build}/usr/bin/qemu-aarch64-static
+
     # 用这个文件作为安装过的软件的列表，在重复构建时节省时间
     if [[ ! -f $PLACE_sf_list ]]; then
         touch $PLACE_sf_list
