@@ -1,29 +1,5 @@
 #!/bin/bash
 
-# 获取linux版本号，如5.15.147 6.1.9
-# 参数说明:
-# $1 - src_dir: Linux 源码项目的位置
-get_linux_version() {
-    local src_dir=$1
-
-    if [[ ! -d "$src_dir" ]]; then
-        echo "目录不存在: $src_dir"
-        return 1
-    fi
-
-    local makefile="$src_dir/Makefile"
-    if [[ ! -f "$makefile" ]]; then
-        echo "在目录中找不到 Makefile: $src_dir"
-        return 1
-    fi
-
-    local version=$(grep -E '^VERSION = ' "$makefile" | cut -d ' ' -f 3)
-    local patchlevel=$(grep -E '^PATCHLEVEL = ' "$makefile" | cut -d ' ' -f 3)
-    local sublevel=$(grep -E '^SUBLEVEL = ' "$makefile" | cut -d ' ' -f 3)
-    local extraversion=$(grep -E '^EXTRAVERSION = ' "$makefile" | cut -d ' ' -f 3)
-    echo "$version.$patchlevel.$sublevel$extraversion"
-}
-
 # 生成临时包目录
 # 参数说明:
 # $1 - name: 包名称
