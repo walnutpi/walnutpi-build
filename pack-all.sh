@@ -14,7 +14,7 @@ source "${SCRIPT_DIR}/scripts/pack_all_img.sh"
 # $2 为系统版本
 # $3 为rootfs类型
 main() {
-    local ENTER_board_name=$1
+    local ENTER_board_name="${PATH_board}/${1}"
     local ENTER_os_ver=$2
     local ENTER_rootfs_type=$3
 
@@ -26,7 +26,7 @@ main() {
 
 # 如果传入参数个数小于3个,则弹出选择窗口
 if [ $# -lt 3 ]; then
-    ENTER_board_name=$(MENU_choose_board $PATH_board)
+    ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     ENTER_os_ver=$(MENU_choose_os)
     ENTER_rootfs_type=$(MENU_choose_rootfs_type)
 else

@@ -14,7 +14,7 @@ source "${SCRIPT_DIR}/scripts/pack_kernel_deb.sh"
 # $1 为板级配置文件夹的路径
 main() {
 
-    local ENTER_board_name=$1
+    local ENTER_board_name=${PATH_board}/${1}
     source $ENTER_board_name/board.conf
     PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
     echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
@@ -53,7 +53,7 @@ main() {
 
 if [ $# -eq 0 ]; then
     # 如果调用本脚本时没有传入参数,则弹出选择窗口
-    ENTER_board_name=$(MENU_choose_board $PATH_board)
+    ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     if [ $? -ne 0 ]; then
         echo "$ENTER_board_name"
         exit
