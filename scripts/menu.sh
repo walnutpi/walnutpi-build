@@ -40,7 +40,7 @@ MENU_choose_parts(){
     local titlestr="Choose an option"
     local options=(
         $OPT_part_image "Full OS image"
-        $OPT_part_pack_image  "pack the output files as an image"
+        # $OPT_part_pack_image  "pack the output files as an image"
         # $OPT_part_bootloader "generate boot.bin"
         # $OPT_part_kernel  "generate Kernel .deb"
         # $OPT_part_rootfs "generate Rootfs files"
@@ -75,6 +75,7 @@ MENU_choose_os() {
     # 只测试了bookworm的软件兼容性问题，有些库不确定能不能在旧版debian上运行
     titlestr="Choose an os version"
     local options=(
+        ${OPT_os_debian12_burn}    "emmc burner(debian 12)"
         ${OPT_os_debian12}    "debian 12(bookworm)"
         ${OPT_os_ubuntu22}    "ubuntu 22.04(Jammy Jellyfish)"
         ${OPT_os_ubuntu24}    "ubuntu 24.04(Noble Numbat)"

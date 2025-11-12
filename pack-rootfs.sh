@@ -10,7 +10,6 @@ source "${SCRIPT_DIR}/scripts/menu.sh"
 source "${SCRIPT_DIR}/scripts/gen_rootfs.sh"
 source "${SCRIPT_DIR}/scripts/pack_rootfs_tar.sh"
 
-# 构建bootloader
 # $1 为板级配置文件夹的路径
 # $2 为系统版本
 # $3 为rootfs类型
@@ -36,7 +35,11 @@ main() {
 if [ $# -lt 3 ]; then
     ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     ENTER_os_ver=$(MENU_choose_os)
-    ENTER_rootfs_type=$(MENU_choose_rootfs_type)
+    if [ $ENTER_os_ver == $OPT_os_debian12_burn ]; then
+        ENTER_rootfs_type=$OPT_rootfs_server
+    else
+        ENTER_rootfs_type=$(MENU_choose_rootfs_type)
+    fi
 else
     ENTER_board_name=$1
     ENTER_os_ver=$2

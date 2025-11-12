@@ -45,7 +45,12 @@ main() {
 if [ $# -lt 3 ]; then
     ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     ENTER_os_ver=$(MENU_choose_os)
-    ENTER_rootfs_type=$(MENU_choose_rootfs_type)
+    # 如果ENTER_os_ver的值等于OPT_os_debian12_burn
+    if [ $ENTER_os_ver == $OPT_os_debian12_burn ]; then
+        ENTER_rootfs_type=$OPT_rootfs_server
+    else
+        ENTER_rootfs_type=$(MENU_choose_rootfs_type)
+    fi
 else
     ENTER_board_name=$1
     ENTER_os_ver=$2

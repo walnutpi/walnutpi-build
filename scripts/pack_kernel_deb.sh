@@ -40,15 +40,6 @@ _pack_as_kernel_deb() {
     local PATH_PROJECT_DIR=$7
     local SOURCE_kernel=$8
     local OUTDIR_kernel_package=$9
-    echo "path_package: $path_package"
-    echo "part_name: $part_name"
-    echo "package_desc: $package_desc"
-    echo "BOARD_MODEL: $BOARD_MODEL"
-    echo "LINUX_BRANCH: $LINUX_BRANCH"
-    echo "CHIP_ARCH: $CHIP_ARCH"
-    echo "PATH_PROJECT_DIR: $PATH_PROJECT_DIR"
-    echo "SOURCE_kernel: $SOURCE_kernel"
-    echo "OUTDIR_kernel_package: $OUTDIR_kernel_package"
 
     local PACKAGE_IMAGE_NAME="linux-image-${BOARD_MODEL}-${LINUX_BRANCH}"
     local DEB_IMAGE_NAME="${PACKAGE_IMAGE_NAME}_1.0.0_all.deb"
@@ -108,14 +99,6 @@ pack_kernel_Image() {
     local BOARD_NAME=$7
     local OUTDIR_kernel_package=$8
 
-    echo "SOURCE_kernel: $SOURCE_kernel"
-    echo "CHIP_ARCH: $CHIP_ARCH"
-    echo "PATH_TMP: $PATH_TMP"
-    echo "LINUX_CONFIG: $LINUX_CONFIG"
-    echo "LINUX_BRANCH: $LINUX_BRANCH"
-    echo "BOARD_NAME: $BOARD_NAME"
-    echo "OUTDIR_kernel_package: $OUTDIR_kernel_package"
-
     local part_name="kernel-image"
     local TMP_KERNEL_DEB=$(_gen_tmp_package_dir "$part_name" "$PATH_TMP" "$LINUX_CONFIG" "$LINUX_BRANCH")
 
@@ -151,16 +134,6 @@ pack_kernel_dtb() {
     local LINUX_BRANCH=$6
     local BOARD_NAME=$7
     local OUTDIR_kernel_package=$8
-
-    # 输出所有传入的参数
-    echo "PATH_PROJECT_DIR: $PATH_PROJECT_DIR"
-    echo "SOURCE_kernel: $SOURCE_kernel"
-    echo "CHIP_ARCH: $CHIP_ARCH"
-    echo "PATH_TMP: $PATH_TMP"
-    echo "LINUX_CONFIG: $LINUX_CONFIG"
-    echo "LINUX_BRANCH: $LINUX_BRANCH"
-    echo "BOARD_NAME: $BOARD_NAME"
-    echo "OUTDIR_kernel_package: $OUTDIR_kernel_package"
 
     local part_name="kernel-dtb"
     local TMP_KERNEL_DEB=$(_gen_tmp_package_dir "$part_name" "$PATH_TMP" "$LINUX_CONFIG" "$LINUX_BRANCH")
@@ -406,19 +379,6 @@ pack_kernel_headers() {
     local LINUX_GIT=${10}
     local TOOLCHAIN_FILE_NAME=${11}
     local TOOLCHAIN_NAME_IN_APT=${12}
-    # 输出所有传入的参数
-    echo "PATH_PROJECT_DIR=$PATH_PROJECT_DIR"
-    echo "SOURCE_kernel=$SOURCE_kernel"
-    echo "CHIP_ARCH=$CHIP_ARCH"
-    echo "PATH_TMP=$PATH_TMP"
-    echo "LINUX_CONFIG=$LINUX_CONFIG"
-    echo "LINUX_BRANCH=$LINUX_BRANCH"
-    echo "BOARD_NAME=$BOARD_NAME"
-    echo "OUTDIR_kernel_package=$OUTDIR_kernel_package"
-    echo "USE_CROSS_COMPILE=$USE_CROSS_COMPILE"
-    echo "LINUX_GIT=$LINUX_GIT"
-    echo "TOOLCHAIN_FILE_NAME=$TOOLCHAIN_FILE_NAME"
-    echo "TOOLCHAIN_NAME_IN_APT=$TOOLCHAIN_NAME_IN_APT"
 
     local part_name="kernel-headers"
 

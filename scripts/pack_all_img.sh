@@ -61,10 +61,17 @@ __add_file_to_tmp_rootfs_dir() {
     local OUTDIR_boot_package=$2
     local OUTDIR_kernel_package=$3
     local TMP_ROOTFS_DIR=$4
+    local ENTER_img_file=$5
 
     run_status "add rootfs" tar xf $OUTFILE_rootfs_tar -C $TMP_ROOTFS_DIR -I 'xz -T0'
 
-    echo "添加文件"
+    # 如果ENTER_img_file不为空
+    if [ -n "$ENTER_img_file" ]; then
+        mkdir -p ${TMP_ROOTFS_DIR}/opt/burn
+        cp ${ENTER_img_file} ${TMP_ROOTFS_DIR}/opt/burn/
+        run_status "copy $(basename $ENTER_img_file) to ${TMP_ROOTFS_DIR}/opt/burn/" cp "$ENTER_img_file" "${TMP_ROOTFS_DIR}/opt/burn/"
+    fi
+
     echo "TMP_ROOTFS_DIR = ${TMP_ROOTFS_DIR}"
 
     cp /usr/bin/qemu-aarch64-static ${TMP_ROOTFS_DIR}/usr/bin/
@@ -110,22 +117,15 @@ __create_img_file() {
 }
 __get_new_img_file_name() {
     local OUT_IMG_FILE=$1
-    local NEW_IMG_FILE_NAME_PARAM=$2
 
     local current_hour=$(date +"%H")
     local current_minute=$(date +"%M")
     local formatted_hour=$(printf "%02d" "$current_hour")
     local formatted_minute=$(printf "%02d" "$current_minute")
 
-    if [ -z "$NEW_IMG_FILE_NAME_PARAM" ]; then
-        NEW_IMG_FILE_NAME="${OUT_IMG_FILE}--${formatted_hour}_${formatted_minute}.img"
-        echo "${NEW_IMG_FILE_NAME}"
-    else
-        # 提取路径部分和文件名部分
-        local PATH_OUTPUT=$(dirname "$OUT_IMG_FILE")
-        NEW_IMG_FILE_NAME="${PATH_OUTPUT}/${NEW_IMG_FILE_NAME_PARAM}--${formatted_hour}_${formatted_minute}.img"
-        echo "${NEW_IMG_FILE_NAME}"
-    fi
+    NEW_IMG_FILE_NAME="${OUT_IMG_FILE}--${formatted_hour}_${formatted_minute}.img"
+    echo "${NEW_IMG_FILE_NAME}"
+
 }
 # 参数说明:
 # $1  - OUTDIR_boot_package: boot包输出目录
@@ -159,7 +159,7 @@ pack_all_img() {
     local LINUX_GIT=${12}
     local LINUX_BRANCH=${13}
     local PATH_PROJECT_DIR=${14}
-    local NEW_IMG_FILE_NAME_PARAM=${15}
+    local ENTER_img_file=${15}
 
     # 输出所有参数
     echo "=================== pack_all_img 参数值 ==================="
@@ -177,7 +177,7 @@ pack_all_img() {
     echo "LINUX_GIT: $LINUX_GIT"
     echo "LINUX_BRANCH: $LINUX_BRANCH"
     echo "PATH_PROJECT_DIR: $PATH_PROJECT_DIR"
-    echo "NEW_IMG_FILE_NAME_PARAM: $NEW_IMG_FILE_NAME_PARAM"
+    echo "ENTER_img_file: $ENTER_img_file"
     echo "========================================================="
 
     local TMP_IMG_BOOT="${PATH_TMP}/PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
@@ -213,7 +213,7 @@ pack_all_img() {
     # 挂载boot img到rootfs文件夹中
     run_status "mount part1 file" mount -o loop $TMP_IMG_BOOT ${TMP_ROOTFS_DIR}/boot
     # 将boot kernel rootfs都输出到临时目录中
-    __add_file_to_tmp_rootfs_dir "$OUTFILE_rootfs_tar" "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$TMP_ROOTFS_DIR"
+    __add_file_to_tmp_rootfs_dir "$OUTFILE_rootfs_tar" "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$TMP_ROOTFS_DIR" "$ENTER_img_file"
 
     # 为了让set-lcd统一管理显示屏，所以需要构建时运行一次
     run_status "run set-lcd hdmi install " chroot ${TMP_ROOTFS_DIR} /bin/bash -c "set-lcd hdmi install"
@@ -238,7 +238,7 @@ pack_all_img() {
     fi
 
     local ROOTFS_SIZE=$(du -sm $TMP_ROOTFS_DIR | cut -f1)
-    local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 10)/1" | bc)
+    local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 100)/1" | bc)
 
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
@@ -246,8 +246,13 @@ pack_all_img() {
     cd ${PATH_SOURCE}/wpi-update
     echo -n "$BOARD_MODEL" >/tmp/walnutpi-board_model
     local VERSION_APT=$(echo $(./wpi-update -s | tail -n 1))
-    local OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
-
+    if [ -n $ENTER_img_file ]; then
+        echo "使用自定义镜像文件"
+        local OUT_IMG_FILE="${PATH_OUTPUT}/eMMC_burner-$(basename $ENTER_img_file)"
+    else
+        local OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
+    fi
+    echo "镜像文件名为$OUT_IMG_FILE"
     local IMG_SIZE=$((PART1_SIZE + PART2_SIZE + 2))
     __create_img_file "$OUT_IMG_FILE" "$IMG_SIZE" "$PART1_SIZE"
 
@@ -339,7 +344,7 @@ pack_all_img() {
     trap - SIGINT EXIT
     cleanup "$LOOP_DEVICE"
 
-    NEW_IMG_FILE_NAME=$(__get_new_img_file_name "$OUT_IMG_FILE" "$NEW_IMG_FILE_NAME_PARAM")
+    NEW_IMG_FILE_NAME=$(__get_new_img_file_name "$OUT_IMG_FILE")
     mv $OUT_IMG_FILE $NEW_IMG_FILE_NAME
 
     echo -e "\noutputfile:\n\n\t\033[32m$(du -h ${NEW_IMG_FILE_NAME})\033[0m\n\n"
