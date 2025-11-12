@@ -159,7 +159,7 @@ pack_all_img() {
     local LINUX_GIT=${12}
     local LINUX_BRANCH=${13}
     local PATH_PROJECT_DIR=${14}
-    local ENTER_img_file=${15}
+    local ENTER_img_file="${15}"
 
     # 输出所有参数
     echo "=================== pack_all_img 参数值 ==================="
@@ -246,8 +246,7 @@ pack_all_img() {
     cd ${PATH_SOURCE}/wpi-update
     echo -n "$BOARD_MODEL" >/tmp/walnutpi-board_model
     local VERSION_APT=$(echo $(./wpi-update -s | tail -n 1))
-    if [ -n $ENTER_img_file ]; then
-        echo "使用自定义镜像文件"
+    if [ -n "$ENTER_img_file" ]; then
         local OUT_IMG_FILE="${PATH_OUTPUT}/eMMC_burner-$(basename $ENTER_img_file)"
     else
         local OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
