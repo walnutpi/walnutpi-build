@@ -60,15 +60,28 @@ build_image() {
     
     trap 'cleanup "$LOOP_DEVICE"; exit' SIGINT
     check_resource
-    if [  -d $TMP_IMG_DISK2 ]; then
-        rm -r $TMP_IMG_DISK2
+    # 使用安全函数删除临时目录
+    if [ -n "$TMP_IMG_DISK2" ] && [ "$TMP_IMG_DISK2" != "/" ]; then
+        safe_remove_tmp_dir "$TMP_IMG_DISK2"
+    else
+        echo "警告: TMP_IMG_DISK2变量未正确设置，跳过清理操作"
+        echo "TMP_IMG_DISK2 = $TMP_IMG_DISK2"
     fi
-    if [  -d $TMP_mount_disk1 ]; then
-        rm -r $TMP_mount_disk1
+    
+    if [ -n "$TMP_mount_disk1" ] && [ "$TMP_mount_disk1" != "/" ]; then
+        safe_remove_tmp_dir "$TMP_mount_disk1"
+    else
+        echo "警告: TMP_mount_disk1变量未正确设置，跳过清理操作"
+        echo "TMP_mount_disk1 = $TMP_mount_disk1"
     fi
-    if [ -d $TMP_mount_disk2 ]; then
-        rm -r $TMP_mount_disk2
+    
+    if [ -n "$TMP_mount_disk2" ] && [ "$TMP_mount_disk2" != "/" ]; then
+        safe_remove_tmp_dir "$TMP_mount_disk2"
+    else
+        echo "警告: TMP_mount_disk2变量未正确设置，跳过清理操作"
+        echo "TMP_mount_disk2 = $TMP_mount_disk2"
     fi
+    
     mkdir -p $TMP_IMG_DISK2
     mkdir -p $TMP_IMG_DISK2/boot
     mkdir -p $TMP_mount_disk1

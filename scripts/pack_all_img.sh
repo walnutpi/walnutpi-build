@@ -27,24 +27,38 @@ __create_tmp_dir() {
     local TMP_mount_disk1=$2
     local TMP_mount_disk2=$3
 
-    if [ -d $TMP_ROOTFS_DIR/boot ]; then
-        umount $TMP_ROOTFS_DIR/boot
-        rm -r $TMP_ROOTFS_DIR/boot
+    # 使用安全函数删除临时目录
+    if [ -n "$TMP_ROOTFS_DIR" ] && [ "$TMP_ROOTFS_DIR" != "/" ]; then
+        if [ -d "$TMP_ROOTFS_DIR/boot" ]; then
+            umount "$TMP_ROOTFS_DIR/boot" 2>/dev/null || true
+            safe_remove_tmp_dir "$TMP_ROOTFS_DIR/boot"
+        fi
+        safe_remove_tmp_dir "$TMP_ROOTFS_DIR"
+    else
+        echo "警告: TMP_ROOTFS_DIR变量未正确设置，跳过清理操作"
+        echo "TMP_ROOTFS_DIR = $TMP_ROOTFS_DIR"
     fi
-    if [ -d $TMP_ROOTFS_DIR ]; then
-        rm -r $TMP_ROOTFS_DIR
+    
+    if [ -n "$TMP_mount_disk1" ] && [ "$TMP_mount_disk1" != "/" ]; then
+        safe_remove_tmp_dir "$TMP_mount_disk1"
+    else
+        echo "警告: TMP_mount_disk1变量未正确设置，跳过清理操作"
+        echo "TMP_mount_disk1 = $TMP_mount_disk1"
     fi
-    if [ -d $TMP_mount_disk1 ]; then
-        rm -r $TMP_mount_disk1
+    
+    if [ -n "$TMP_mount_disk2" ] && [ "$TMP_mount_disk2" != "/" ]; then
+        safe_remove_tmp_dir "$TMP_mount_disk2"
+    else
+        echo "警告: TMP_mount_disk2变量未正确设置，跳过清理操作"
+        echo "TMP_mount_disk2 = $TMP_mount_disk2"
     fi
-    if [ -d $TMP_mount_disk2 ]; then
-        rm -r $TMP_mount_disk2
-    fi
+    
     mkdir -p $TMP_ROOTFS_DIR
     mkdir -p $TMP_ROOTFS_DIR/boot
     mkdir -p $TMP_mount_disk1
     mkdir -p $TMP_mount_disk2
 }
+
 __create_tmp_img_boot() {
     local TMP_IMG_BOOT=$1
     local PART1_SIZE=$2

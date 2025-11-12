@@ -239,3 +239,27 @@ get_linux_version() {
     local extraversion=$(grep -E '^EXTRAVERSION = ' "$makefile" | cut -d ' ' -f 3)
     echo "$version.$patchlevel.$sublevel$extraversion"
 }
+
+# 安全删除临时目录函数，防止误删系统关键目录
+safe_remove_tmp_dir() {
+    local dir_path=$1
+    
+    if [ -z "$dir_path" ] || [ "$dir_path" = "/" ]; then
+        echo "错误: 尝试删除无效路径: $dir_path"
+        return 1
+    fi
+    if [[ "$dir_path" != *"/tmp/"* && "$dir_path" != *".tmp/"* && "$dir_path" != *"/tmp."* ]]; then
+        echo "错误: 尝试删除非临时目录: $dir_path"
+        return 1
+    fi
+    if [ -d "$dir_path" ]; then
+        echo "删除临时目录: $dir_path"
+        rm -r "$dir_path"
+        return 0
+    else
+        echo "目录不存在，无需删除: $dir_path"
+        return 0
+    fi
+}
+
+
