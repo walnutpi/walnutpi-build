@@ -22,6 +22,11 @@ compile_kernel() {
     thread_count=$(grep -c ^processor /proc/cpuinfo)
     make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+
+    if [ -d bsp/modules/gpu ]; then
+        export srctree=$(pwd)
+        make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH} -C bsp/modules/gpu M=bsp/modules/gpu
+    fi
     exit_if_last_error
     echo "kernel compile success"
 }

@@ -184,6 +184,10 @@ pack_kernel_modules() {
 
     cd "$SOURCE_kernel"
     run_status "export modules" make modules_install INSTALL_MOD_PATH="$TMP_KERNEL_DEB" ARCH="$CHIP_ARCH"
+    if [ -d bsp/modules/gpu ]; then
+        export srctree=$(pwd)
+        run_status "export bsp modules" make modules_install INSTALL_MOD_PATH="$TMP_KERNEL_DEB/" ARCH="$CHIP_ARCH" -C bsp/modules/gpu M=bsp/modules/gpu
+    fi
 
     for dir in "$TMP_KERNEL_DEB"/lib/modules/*/; do
         # 这个build文件夹指向源码绝对位置，要删掉
