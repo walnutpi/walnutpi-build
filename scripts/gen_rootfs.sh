@@ -316,6 +316,12 @@ gen_rootfs() {
 
     _apt_install_base_rootfs $TMP_rootfs_build $FILE_apt_base $FILE_apt_desktop $ENTER_rootfs_type $PLACE_sf_list $FILE_base_rootfs
 
+    # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
+    if grep -q "$APT_DOMAIN" /etc/hosts; then
+        LINE=$(grep "$APT_DOMAIN" /etc/hosts)
+        echo "$LINE" >>"$TMP_rootfs_build/etc/hosts"
+    fi
+
     # wpi-update
     cd ${PATH_SOURCE}
     run_status "download wpi-update" clone_url "https://github.com/walnutpi/wpi-update.git"
@@ -342,11 +348,6 @@ gen_rootfs() {
     cat $relseas_file
     run_status "run wpi-update" chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
 
-    # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
-    if grep -q "$APT_DOMAIN" /etc/hosts; then
-        LINE=$(grep "$APT_DOMAIN" /etc/hosts)
-        echo "$LINE" >>"$TMP_rootfs_build/etc/hosts"
-    fi
 
     _pip_install "$TMP_rootfs_build" "$FILE_pip_list"
     _add_firmware "$PATH_SOURCE" "$FIRMWARE_GIT" "$TMP_rootfs_build"
