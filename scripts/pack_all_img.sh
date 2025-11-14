@@ -194,10 +194,13 @@ pack_all_img() {
     echo "ENTER_img_file: $ENTER_img_file"
     echo "========================================================="
 
-    local TMP_IMG_BOOT="${PATH_TMP}/PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
-    local TMP_ROOTFS_DIR="${PATH_TMP}/PART2-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
-    local TMP_mount_disk1="${PATH_TMP}/MOUNT-PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
-    local TMP_mount_disk2="${PATH_TMP}/MOUNT-PART2-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+    local TMP_IMG_BOOT="${PATH_TMP}/IMG/BootDisk-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+    local TMP_ROOTFS_DIR="${PATH_TMP}/IMG/Rootfs-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+    local TMP_mount_disk1="${PATH_TMP}/MountPoint/PART1-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+    local TMP_mount_disk2="${PATH_TMP}/MountPoint/PART2-${BOARD_NAME}-${ENTER_os_ver}_${ENTER_rootfs_type}"
+
+    create_dir "${PATH_TMP}/IMG"
+    create_dir "${PATH_TMP}/MountPoint"
 
     cleanup() {
         local LOOP_DEVICE=$1

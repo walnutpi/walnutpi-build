@@ -27,8 +27,11 @@ main() {
     PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
 
     OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
-    TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
-    FILE_base_rootfs=${TMP_rootfs_build}_base_software.tar
+    TMP_rootfs_build=${PATH_TMP}/rootfs-build/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+    FILE_base_rootfs=${PATH_TMP}/rootfs-save/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}_base_software.tar
+    create_dir ${PATH_TMP}/rootfs-build
+    create_dir ${PATH_TMP}/rootfs-save
+
     FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
     FILE_apt_del="${ENTER_board_name}/${ENTER_os_ver}/apt-del"
     FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
