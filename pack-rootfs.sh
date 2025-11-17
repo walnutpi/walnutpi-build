@@ -26,7 +26,7 @@ main() {
     PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
 
     OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
-    TMP_rootfs_build=${PATH_TMP}/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
+    TMP_rootfs_build=${PATH_TMP}/rootfs-build/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
 
     pack_rootfs_tar $TMP_rootfs_build $OUTFILE_rootfs_tar
 }
