@@ -75,8 +75,7 @@ Installed-Size: ${size}
 Architecture: ${CHIP_ARCH}
 EOF
     local DEB_IMAGE_NAME="${package_name}_${deb_version}_${CHIP_ARCH}.deb"
-    # 假设 run_status 是一个全局函数，这里保留它
-    run_status "创建deb包 ${DEB_IMAGE_NAME}" dpkg -b "$path_package" "${OUTDIR_kernel_package}/${DEB_IMAGE_NAME}"
+    run_status "创建deb包 ${DEB_IMAGE_NAME}" dpkg-deb -Zgzip -b "$path_package" "${OUTDIR_kernel_package}/${DEB_IMAGE_NAME}"
 }
 
 # 打包内核镜像

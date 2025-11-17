@@ -38,7 +38,7 @@ Architecture: ${CHIP_ARCH}
 EOF
     local DEB_PACKAGE_NAME="${package_name}_${deb_version}_${CHIP_ARCH}.deb"
     echo "创建deb包 ${DEB_PACKAGE_NAME}"
-    dpkg -b "$path_package" "${OUTDIR_boot_package}/${DEB_PACKAGE_NAME}"
+    dpkg-deb -Zgzip -b "$path_package" "${OUTDIR_boot_package}/${DEB_PACKAGE_NAME}"
 }
 
 # 打包config.txt文件
