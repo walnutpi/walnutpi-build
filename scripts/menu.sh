@@ -60,6 +60,7 @@ MENU_choose_os() {
     titlestr="Choose an os version"
     local options=(
         ${OPT_os_debian12}    "debian 12(bookworm)"
+        ${OPT_os_debian11}    "debian 11(bullseye)"
         ${OPT_os_ubuntu22}    "ubuntu 22.04(Jammy Jellyfish)"
         ${OPT_os_ubuntu24}    "ubuntu 24.04(Noble Numbat)"
         ${OPT_os_debian12_burn}    "emmc burner(debian 12)"

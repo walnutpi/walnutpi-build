@@ -33,7 +33,7 @@ _download_debian_base() {
     local tmp_dir=$3
     local chip_arch=$4
 
-    debootstrap --foreign --verbose --arch=${chip_arch} bookworm ${tmp_dir} $base_url
+    debootstrap --foreign --verbose --arch=${chip_arch} ${debian_name} ${tmp_dir} $base_url
     exit_if_last_error
 
     # 完成rootfs的初始化
@@ -68,7 +68,10 @@ _download_base_rootfs() {
         run_as_silent mkdir ${TMP_rootfs_build} -p
         case "${ENTER_os_ver}" in
         "${OPT_os_debian12}" | "$OPT_os_debian12_burn")
-            _download_debian_base $DEBIAN_BASE_URL "bookworm" $TMP_rootfs_build
+            _download_debian_base $DEBIAN_BASE_URL "bookworm" $TMP_rootfs_build arm64
+            ;;
+        "${OPT_os_debian11}")
+            _download_debian_base $DEBIAN_BASE_URL "bullseye" $TMP_rootfs_build arm64
             ;;
         "${OPT_os_ubuntu22}")
             _download_ubuntu_base $UBUNTU22_BASE_URL $FILE_base_rootfs $TMP_rootfs_build

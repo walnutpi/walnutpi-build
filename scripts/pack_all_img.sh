@@ -38,21 +38,21 @@ __create_tmp_dir() {
         echo "警告: TMP_ROOTFS_DIR变量未正确设置，跳过清理操作"
         echo "TMP_ROOTFS_DIR = $TMP_ROOTFS_DIR"
     fi
-    
+
     if [ -n "$TMP_mount_disk1" ] && [ "$TMP_mount_disk1" != "/" ]; then
         safe_remove_tmp_dir "$TMP_mount_disk1"
     else
         echo "警告: TMP_mount_disk1变量未正确设置，跳过清理操作"
         echo "TMP_mount_disk1 = $TMP_mount_disk1"
     fi
-    
+
     if [ -n "$TMP_mount_disk2" ] && [ "$TMP_mount_disk2" != "/" ]; then
         safe_remove_tmp_dir "$TMP_mount_disk2"
     else
         echo "警告: TMP_mount_disk2变量未正确设置，跳过清理操作"
         echo "TMP_mount_disk2 = $TMP_mount_disk2"
     fi
-    
+
     mkdir -p $TMP_ROOTFS_DIR
     mkdir -p $TMP_ROOTFS_DIR/boot
     mkdir -p $TMP_mount_disk1
@@ -299,8 +299,12 @@ pack_all_img() {
                     exit 1
                 fi
                 echo "Warning: Failed to setup $LOOP_DEVICE with $OUT_IMG_FILE, retrying in 1 second... ($RETRY_COUNT/$MAX_RETRIES)"
-                sleep 1
+                kpartx -dv "$LOOP_DEVICE"
+                losetup -d "$LOOP_DEVICE"
+                sleep 3
                 LOOP_DEVICE="" # 清除无效设备路径
+                # 清除缓存
+
             fi
         done
 

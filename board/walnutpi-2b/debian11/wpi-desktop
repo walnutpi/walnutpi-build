@@ -1,0 +1,9 @@
+wpi-xfce4
+service-restart-lightdm
+
+wpi-chromium 
+conf-google-pinyin
+
+
+# realvnc-vnc-viewer
+set-vnc
