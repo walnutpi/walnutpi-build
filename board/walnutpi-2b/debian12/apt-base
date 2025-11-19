@@ -64,4 +64,6 @@ xserver-xorg-input-synaptics
 xfwm4  
 lightdm
 
+glmark2-drm
+
 # plymouth-themes

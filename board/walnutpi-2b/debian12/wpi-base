@@ -6,6 +6,8 @@ wpi-lightdm
 walnutpi.npu
 walnutpi.lib
 
+mesa-xorg-g57-debian12
+
 gpioc
 blinka
 
