@@ -32,9 +32,8 @@ if [ $# -lt 3 ]; then
     if [ $ENTER_os_ver == $OPT_os_debian12_burn ]; then
         ENTER_rootfs_type=$OPT_rootfs_server
         ENTER_img_file="$(MENU_choose_img_file)"
-        if [ ! -z $ENTER_img_file ]; then
-            ENTER_img_file="$PATH_OUTPUT/$(MENU_choose_img_file)"
-        fi
+        [[ -z ${ENTER_board_name} ]] && exit
+        ENTER_img_file="$PATH_OUTPUT/$ENTER_img_file"
     else
         ENTER_rootfs_type=$(MENU_choose_rootfs_type)
     fi

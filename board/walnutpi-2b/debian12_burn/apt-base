@@ -4,8 +4,8 @@ bison
 flex
 libssl-dev
 
-network-manager
-net-tools
+# network-manager
+# net-tools
 # iw
 # wireless-tools
 # ir-keytable
@@ -18,10 +18,10 @@ net-tools
 ssh
 sudo
 bash-completion
-systemd-timesyncd
+# systemd-timesyncd
 parted
 wget
-curl
+# curl
 # fdisk
 # tree
 # btop

@@ -147,6 +147,7 @@ _apt_install_base_rootfs() {
         run_status "apt remove [$((i + 1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get remove -y  ${package}"
     done
     run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
+    run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt autoremove -y"
 
     # 将安装过的软件名称，都写进文件内
     if [[ -f $PLACE_sf_list ]]; then

@@ -243,6 +243,7 @@ pack_all_img() {
             local package=${packages[$i]}
             run_status "apt remove [$((i + 1))/${total}] : $package " chroot $TMP_ROOTFS_DIR /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' remove -y ${package}"
         done
+        run_status "apt remove [$((i + 1))/${total}] : $package " chroot $TMP_ROOTFS_DIR /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt autoremove -y"
     fi
 
     # 如果是ubuntu24，则禁用gdm3改为lightdm
@@ -255,7 +256,7 @@ pack_all_img() {
     fi
 
     local ROOTFS_SIZE=$(du -sm $TMP_ROOTFS_DIR | cut -f1)
-    local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.024 + 100)/1" | bc)
+    local PART2_SIZE=$(echo "scale=0; ($ROOTFS_SIZE * 1.1)/1" | bc)
 
     echo "PART1_SIZE=${PART1_SIZE}MB"
     echo "PART2_SIZE=${PART2_SIZE}MB"
@@ -342,18 +343,15 @@ pack_all_img() {
 
     # 写入uuid
     echo "rootdev=PARTUUID=${ROOTFS_PARTUUID}" | sudo tee -a ${TMP_mount_disk1}/config.txt
-    if [ $IMAGE_FLAG_NO_SCREEN_DISPLAY == $OPT_NO ]; then
+    if [ "x$ENTER_img_file" == "x" ]; then
         echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
     else
-        echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 ro,defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
-    fi
-    echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
-
-    if [ $IMAGE_FLAG_NO_SCREEN_DISPLAY != $OPT_NO ]; then
         local config_file="${TMP_mount_disk1}/config.txt"
         run_status "config.txt : console_display=disable" sed -i 's/console_display=enable/console_display=disable/g' "$config_file"
         run_status "config.txt : display_bootinfo=disable" sed -i 's/display_bootinfo=enable/display_bootinfo=disable/g' "$config_file"
+        echo "PARTUUID=${ROOTFS_PARTUUID} / ext4 ro,defaults,acl,noatime,commit=600,errors=remount-ro 0 1" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
     fi
+    echo "PARTUUID=${BOOT_PARTUUID} /boot vfat defaults 0 0" | sudo tee -a ${TMP_mount_disk2}/etc/fstab
 
     local SOURCE_kernel="${PATH_SOURCE}/$(basename "$LINUX_GIT" .git)-$LINUX_BRANCH"
     local kernel_version=$(get_linux_version $SOURCE_kernel)
