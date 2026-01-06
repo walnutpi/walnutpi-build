@@ -267,7 +267,7 @@ pack_all_img() {
     if [ -n "$ENTER_img_file" ]; then
         local OUT_IMG_FILE="${PATH_OUTPUT}/eMMC_burner-$(basename $ENTER_img_file)"
     else
-        local OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
+        local OUT_IMG_FILE="${PATH_OUTPUT}/V${VERSION_APT}_$(date +%Y-%m-%d)_${ENTER_rootfs_type}_${BOARD_NAME}_${LINUX_BRANCH}_${ENTER_os_ver}"
     fi
     echo "镜像文件名为$OUT_IMG_FILE"
     local IMG_SIZE=$((PART1_SIZE + PART2_SIZE + 2))
