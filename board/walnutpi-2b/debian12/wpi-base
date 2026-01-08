@@ -3,6 +3,8 @@ wpi-host-name
 wpi-welcome-info
 wpi-lightdm
 
+libisp-t527
+walnutpi.isp
 walnutpi.npu
 walnutpi.lib
 
