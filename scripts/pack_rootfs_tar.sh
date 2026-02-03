@@ -8,6 +8,10 @@ pack_rootfs_tar() {
     local OUTFILE_rootfs_tar=$2
     echo "TMP_rootfs_build: $TMP_rootfs_build"
     echo "OUTFILE_rootfs_tar: $OUTFILE_rootfs_tar"
+
+    local OUTFILE_dirname=$(dirname "$OUTFILE_rootfs_tar")
+    create_dir "$OUTFILE_dirname"
+
     cd ${TMP_rootfs_build}
     if [ -f "$OUTFILE_rootfs_tar" ]; then
         rm $OUTFILE_rootfs_tar

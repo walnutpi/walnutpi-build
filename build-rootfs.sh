@@ -40,7 +40,7 @@ main() {
     FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
     PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
 
-    gen_rootfs $TMP_rootfs_build $FILE_base_rootfs $ENTER_os_ver $FILE_apt_base $FILE_apt_desktop $ENTER_rootfs_type $PLACE_sf_list $PATH_SOURCE $FIRMWARE_GIT $FILE_pip_list $FILE_apt_base_board $FILE_apt_desktop_board $BOARD_MODEL "$MODULES_ENABLE"
+    gen_rootfs $TMP_rootfs_build $FILE_base_rootfs $ENTER_os_ver $FILE_apt_base $FILE_apt_desktop $ENTER_rootfs_type $PLACE_sf_list $PATH_SOURCE $FIRMWARE_GIT $FILE_pip_list $FILE_apt_base_board $FILE_apt_desktop_board $BOARD_MODEL "$MODULES_ENABLE" ${CHIP_ARCH}
     pack_rootfs_tar $TMP_rootfs_build $OUTFILE_rootfs_tar
 }
 

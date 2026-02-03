@@ -32,14 +32,17 @@ _download_debian_base() {
     local debian_name=$2
     local tmp_dir=$3
     local chip_arch=$4
+    echo "chip_arch=$chip_arch"
 
+    echo "更新debian源gpg密钥..."
+    wget -O - https://ftp-master.debian.org/keys/archive-key-12.asc | gpg --dearmor > /usr/share/keyrings/debian-archive-keyring.gpg
     debootstrap --foreign --verbose --arch=${chip_arch} ${debian_name} ${tmp_dir} $base_url
     exit_if_last_error
 
     # 完成rootfs的初始化
     cd ${tmp_dir}
     mount_chroot $tmp_dir
-    LC_ALL=C LANGUAGE=C LANG=C chroot ${tmp_dir} /debootstrap/debootstrap --second-stage –verbose
+    LC_ALL=C LANGUAGE=C LANG=C chroot ${tmp_dir} /debootstrap/debootstrap --second-stage --verbose
     exit_if_last_error
     run_slient_when_successfuly chroot $tmp_dir /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
     umount_chroot $tmp_dir
@@ -50,28 +53,33 @@ _download_debian_base() {
 # $1 - FILE_base_rootfs: 基础rootfs压缩包文件路径
 # $2 - TMP_rootfs_build: 临时构建rootfs的目录
 # $3 - ENTER_os_ver: 操作系统版本选择
+# $4 - chip_arch: 芯片架构
 _download_base_rootfs() {
     local FILE_base_rootfs=$1
     local TMP_rootfs_build=$2
     local ENTER_os_ver=$3
+    local chip_arch=$4
 
     if [[ -d $TMP_rootfs_build ]]; then
         run_as_silent umount_chroot $TMP_rootfs_build
         rm -r ${TMP_rootfs_build}
     fi
     mkdir ${TMP_rootfs_build}
-
+    echo "FILE_base_rootfs = $FILE_base_rootfs"
     if [[ -f $FILE_base_rootfs ]]; then
         run_status "unzip last rootfs" tar -xvf $FILE_base_rootfs -C $TMP_rootfs_build
     else
 
         run_as_silent mkdir ${TMP_rootfs_build} -p
         case "${ENTER_os_ver}" in
+        "${OPT_os_debian13}" | "$OPT_os_debian13_burn")
+            _download_debian_base $DEBIAN_BASE_URL "trixie" $TMP_rootfs_build $chip_arch
+            ;;
         "${OPT_os_debian12}" | "$OPT_os_debian12_burn")
-            _download_debian_base $DEBIAN_BASE_URL "bookworm" $TMP_rootfs_build arm64
+            _download_debian_base $DEBIAN_BASE_URL "bookworm" $TMP_rootfs_build $chip_arch
             ;;
         "${OPT_os_debian11}")
-            _download_debian_base $DEBIAN_BASE_URL "bullseye" $TMP_rootfs_build arm64
+            _download_debian_base $DEBIAN_BASE_URL "bullseye" $TMP_rootfs_build $chip_arch
             ;;
         "${OPT_os_ubuntu22}")
             _download_ubuntu_base $UBUNTU22_BASE_URL $FILE_base_rootfs $TMP_rootfs_build
@@ -272,6 +280,7 @@ _wpi_install() {
 # $12 - FILE_apt_desktop_board: 板级桌面环境软件包列表文件
 # $13 - BOARD_MODEL: 开发板型号
 # $14 - MODULES_ENABLE: 需要启用的内核模块列表
+# $15 - chip_arch: 芯片架构
 gen_rootfs() {
     local TMP_rootfs_build=$1
     local FILE_base_rootfs=$2
@@ -287,6 +296,8 @@ gen_rootfs() {
     local FILE_apt_desktop_board=${12}
     local BOARD_MODEL=${13}
     local MODULES_ENABLE=${14}
+    local chip_arch=${15}
+
     # 输出所有传入参数
     echo "TMP_rootfs_build=$TMP_rootfs_build"
     echo "FILE_base_rootfs=$FILE_base_rootfs"
@@ -314,10 +325,15 @@ gen_rootfs() {
     echo -e "\n\n------\t build rootfs \t------"
 
     # 准备基础rootfs
-    _download_base_rootfs $FILE_base_rootfs $TMP_rootfs_build $ENTER_os_ver
-    cp /usr/bin/qemu-aarch64-static ${TMP_rootfs_build}/usr/bin/
-    chmod +x ${TMP_rootfs_build}/usr/bin/qemu-aarch64-static
-
+    _download_base_rootfs $FILE_base_rootfs $TMP_rootfs_build $ENTER_os_ver $chip_arch
+    qemu_bin=""
+    if [ "${chip_arch}" == "arm64" ] || [ "${chip_arch}" == "aarch64" ]; then
+        qemu_bin="qemu-aarch64-static"
+    elif [ "${chip_arch}" == "riscv" ] || [ "${chip_arch}" == "riscv64" ]; then
+        qemu_bin="qemu-riscv64-static"
+    fi
+    cp /usr/bin/$qemu_bin ${TMP_rootfs_build}/usr/bin/
+    chmod +x ${TMP_rootfs_build}/usr/bin/$qemu_bin
     _apt_install_base_rootfs $TMP_rootfs_build $FILE_apt_base $FILE_apt_desktop $ENTER_rootfs_type $PLACE_sf_list $FILE_base_rootfs
 
     # 若主机通过hosts文件修改了apt域名指向，则在rootfs内也做相同的修改
@@ -350,7 +366,7 @@ gen_rootfs() {
     echo "os_type=${ENTER_rootfs_type}" >>$relseas_file
     echo "" >>$relseas_file
     cat $relseas_file
-    run_status "run wpi-update" chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
+    chroot ${TMP_rootfs_build} /bin/bash -c "wpi-update"
 
 
     _pip_install "$TMP_rootfs_build" "$FILE_pip_list"
