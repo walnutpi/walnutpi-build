@@ -138,8 +138,9 @@ if [ ! -z $TOOLCHAIN_DOWN_URL ]; then
 
     USE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
     if [ ! -f "${USE_CROSS_COMPILE}gcc" ]; then
+        TOOLCHAIN_FILE_NAME=$(basename "$TOOLCHAIN_DOWN_URL")
         wget -P ${PATH_TOOLCHAIN} $TOOLCHAIN_DOWN_URL
-        run_status "unzip toolchain" tar -xvf ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}.tar.xz -C $PATH_TOOLCHAIN
+        run_status "unzip toolchain" tar -zxvf ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME} -C $PATH_TOOLCHAIN
     fi
 else
     if [ ! -f /usr/bin/${CROSS_COMPILE}gcc ]; then
