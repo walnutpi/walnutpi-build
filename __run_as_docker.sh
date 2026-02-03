@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOCKER_IMAGE_NAME=walnutpi-build:1.1
+DOCKER_IMAGE_NAME=walnutpi-build:1.2
 CONTAINER_NAME="walnutpi-build-$(date +%s)"
 
 echo_red() {
