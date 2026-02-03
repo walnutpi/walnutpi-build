@@ -28,7 +28,8 @@ main() {
 # 如果传入参数个数小于3个,则弹出选择窗口
 if [ $# -lt 3 ]; then
     ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
-    ENTER_os_ver=$(MENU_choose_os)
+    [[ -z ${ENTER_board_name} ]] && exit
+    ENTER_os_ver=$(MENU_choose_os "${PATH_board}/$ENTER_board_name")
     if [ $ENTER_os_ver == $OPT_os_debian12_burn ]; then
         ENTER_rootfs_type=$OPT_rootfs_server
         ENTER_img_file="$(MENU_choose_img_file)"

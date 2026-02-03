@@ -31,6 +31,7 @@ para_desc() {
     echo -e "  -v : choose the rootfs version"
     echo -e "\t-v $OPT_os_debian12_burn"
     echo -e "\t-v $OPT_os_debian12"
+    echo -e "\t-v $OPT_os_debian13"
     echo -e "\t-v $OPT_os_ubuntu22"
     echo -e "\t-v $OPT_os_ubuntu24"
     echo ""
@@ -93,7 +94,7 @@ if [ $ENTER_board_name == $OPT_user_no_choose ]; then
 fi
 
 if [ $ENTER_os_ver == $OPT_user_no_choose ]; then
-    ENTER_os_ver=$(MENU_choose_os)
+    ENTER_os_ver=$(MENU_choose_os "${PATH_board}/$ENTER_board_name")
     [[ -z ${ENTER_os_ver} ]] && exit
 fi
 if [ $ENTER_rootfs_type == $OPT_user_no_choose ]; then
