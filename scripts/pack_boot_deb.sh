@@ -69,34 +69,7 @@ pack_config_txt() {
         mkdir $path_tmp_package_configtxt/DEBIAN
     fi
     
-    cat << EOF > $postinst_file
-#!/bin/sh
-case "\$1" in
-    configure)
-        old_version="\$2"
-        new_version="\$3"
-        echo "Updating from version \$old_version to version \$new_version"
-
-        cp -r $path_board_tmp_boot/* /boot/
-        set-device
-
-        BLOCK_DEVICE=\$(findmnt "/" -o SOURCE -n)
-        ROOTFS_PARTUUID=\$(blkid -s PARTUUID -o value \$BLOCK_DEVICE)
-        if [ -z "\$ROOTFS_PARTUUID" ]; then
-            echo "无法解析出uuid"
-            exit
-        fi
-        echo "rootdev=PARTUUID=\${ROOTFS_PARTUUID}" | sudo tee -a /boot/config.txt
-
-        ;;
-    abort-upgrade|abort-remove|abort-deconfigure)
-        # 回滚操作
-        ;;
-
-esac
-exit 0
-EOF
-    
+    cp ${PATH_ASSET}/config-txt-postinst.sh $postinst_file
     chmod 755 $postinst_file
     
     source ${ENTER_board_name}/config.txt
@@ -113,7 +86,7 @@ EOF
 pack_boot_bin() {
     local PATH_TMP=$1
     local ENTER_board_name=$2
-    local OUTFILE_boot_bin=$3
+    local OUTFILE_boot_path=$3
     local PATH_save_boot_files=$4
     local OUTDIR_boot_package=$5
     local CHIP_ARCH=$6
@@ -131,9 +104,9 @@ pack_boot_bin() {
     # 复制文件(如果存在)
     [ -f "${ENTER_board_name}/boot.cmd" ] && cp ${ENTER_board_name}/boot.cmd $path_tmp_boot
     [ -f "${ENTER_board_name}/boot.scr" ] && cp ${ENTER_board_name}/boot.scr $path_tmp_boot
-    [ -f "${OUTFILE_boot_bin}" ] && cp ${OUTFILE_boot_bin} $path_tmp_boot
+    [ -d "${OUTFILE_boot_path}" ] && cp ${OUTFILE_boot_path}/*.bin $path_tmp_boot
     
-    # 装入本项目保存的bin文件
+    # 装入本项目保存的要放在boot文件夹内的文件
     if [ -d $PATH_save_boot_files ]; then
         cp -r $PATH_save_boot_files/* $path_tmp_boot
     fi
@@ -141,36 +114,7 @@ pack_boot_bin() {
     local postinst_file=$path_tmp_package_configtxt/DEBIAN/postinst
     mkdir -p $path_tmp_package_configtxt/DEBIAN
     
-    cat << EOF > $postinst_file
-#!/bin/sh
-case "\$1" in
-    configure)
-        old_version="\$2"
-        new_version="\$3"
-        echo "Updating from version \$old_version to version \$new_version"
-        cp -r $path_board_tmp_boot/* /boot/
-
-        BLOCK_DEVICE=\$(findmnt "/boot" -o SOURCE -n)
-        echo "BLOCK_DEVICE=\$BLOCK_DEVICE"
-        BASE_DEVICE=\$(echo "\$BLOCK_DEVICE" | sed -E 's/p[0-9]+\$//')
-        if [ -z "\$BASE_DEVICE" ]; then
-            echo "无法解析出块设备路径"
-            exit
-        fi
-        dd_command="dd if=/boot/boot.bin of=\$BASE_DEVICE bs=1K seek=8 conv=notrunc"
-        echo "\$dd_command"
-        eval \$dd_command
-    ;;
-    abort-upgrade|abort-remove|abort-deconfigure)
-        # 回滚操作
-        ;;
-    *)
-        exit 1
-        ;;
-esac
-
-exit 0
-EOF
+    cp ${PATH_ASSET}/boot-postinst.sh $postinst_file
     chmod 755 $postinst_file
     
     # 从config.txt中读取BOARD_NAME, SYTERKIT_BRANCH, UBOOT_BRANCH
@@ -188,18 +132,18 @@ EOF
 # 参数说明:
 # $1: PATH_TMP - 临时目录路径
 # $2: ENTER_board_name - 板子配置目录路径
-# $3: OUTFILE_boot_bin - boot.bin文件路径
+# $3: OUTFILE_boot_path - 板子输出路径
 # $4: PATH_save_boot_files - 保存的boot文件目录
 # $5: OUTDIR_boot_package - 输出目录
 # $6: CHIP_ARCH - 芯片架构
 pack_boot_deb(){
     local PATH_TMP=$1
     local ENTER_board_name=$2
-    local OUTFILE_boot_bin=$3
+    local OUTFILE_boot_path=$3
     local PATH_save_boot_files=$4
     local OUTDIR_boot_package=$5
     local CHIP_ARCH=$6
     
     pack_config_txt "$PATH_TMP" "$ENTER_board_name" "$OUTDIR_boot_package" "$CHIP_ARCH"
-    pack_boot_bin "$PATH_TMP" "$ENTER_board_name" "$OUTFILE_boot_bin" "$PATH_save_boot_files" "$OUTDIR_boot_package" "$CHIP_ARCH"
+    pack_boot_bin "$PATH_TMP" "$ENTER_board_name" "$OUTFILE_boot_path" "$PATH_save_boot_files" "$OUTDIR_boot_package" "$CHIP_ARCH"
 }

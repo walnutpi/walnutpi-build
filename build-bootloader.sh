@@ -41,20 +41,38 @@ build_bootloader() {
 
     OUTDIR_boot_package=${PATH_OUTPUT_BOARD}/boot
     OUTFILE_boot_bin=${OUTDIR_boot_package}/boot.bin
+    OUTFILE_boot_bin_1M=${OUTDIR_boot_package}/boot_1M.bin
+    OUTFILE_boot_bin_2M=${OUTDIR_boot_package}/boot_2M.bin
     PATH_save_boot_files="${ENTER_board_name}/boot"
+
+    mkdir -p $OUTDIR_boot_package
 
     if [ -n "$UBOOT_CONFIG" ]; then
         if [ -n "$ATF_GIT" ]; then
             compile_atf "$PATH_SOURCE" "$ATF_GIT" "$ATF_BRANCH" "$ATF_PLAT" "$USE_CROSS_COMPILE"
         fi
         compile_uboot "$PATH_SOURCE" "$UBOOT_GIT" "$UBOOT_BRANCH" "$UBOOT_CONFIG" \
-            "$USE_CROSS_COMPILE" "$UBOOT_BIN_NAME" "$OUTFILE_boot_bin" "$ATF_PLAT"
+            "$USE_CROSS_COMPILE" "$ATF_PLAT"
+
+        local uboot_dirname="${PATH_SOURCE}/$(basename "$UBOOT_GIT" .git)-$UBOOT_BRANCH"
+        if [ "x$UBOOT_BIN_NAME" != "x" ]; then
+            local uboot_bin_file="${uboot_dirname}/${UBOOT_BIN_NAME}"
+            cp "$uboot_bin_file" "$OUTFILE_boot_bin"
+        fi
+        if [ "x$UBOOT_BIN_NAME_2M" != "x" ]; then
+            cp "${uboot_dirname}/${UBOOT_BIN_NAME_2M}" "$OUTFILE_boot_bin_1M"
+        fi
+        if [ "x$UBOOT_BIN_NAME_1M" != "x" ]; then
+            cp "${uboot_dirname}/${UBOOT_BIN_NAME_1M}" "$OUTFILE_boot_bin_2M"
+        fi
+
     fi
     if [ -n "$SYTERKIT_BOARD_FILE" ]; then
         compile_syterkit "$PATH_SOURCE" "$SYTERKIT_GIT" "$SYTERKIT_BRANCH" \
             "$SYTERKIT_BOARD_FILE" "$SYTERKIT_OUT_BIN" "$OUTFILE_boot_bin"
     fi
-    pack_boot_deb "$PATH_TMP" "$ENTER_board_name" "$OUTFILE_boot_bin" "$PATH_save_boot_files" \
+
+    pack_boot_deb "$PATH_TMP" "$ENTER_board_name" "$OUTDIR_boot_package" "$PATH_save_boot_files" \
         "$OUTDIR_boot_package" "$CHIP_ARCH"
 }
 
