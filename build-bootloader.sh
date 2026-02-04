@@ -60,10 +60,10 @@ build_bootloader() {
             cp "$uboot_bin_file" "$OUTFILE_boot_bin"
         fi
         if [ "x$UBOOT_BIN_NAME_2M" != "x" ]; then
-            cp "${uboot_dirname}/${UBOOT_BIN_NAME_2M}" "$OUTFILE_boot_bin_1M"
+            cp "${uboot_dirname}/${UBOOT_BIN_NAME_2M}" "$OUTFILE_boot_bin_2M"
         fi
         if [ "x$UBOOT_BIN_NAME_1M" != "x" ]; then
-            cp "${uboot_dirname}/${UBOOT_BIN_NAME_1M}" "$OUTFILE_boot_bin_2M"
+            cp "${uboot_dirname}/${UBOOT_BIN_NAME_1M}" "$OUTFILE_boot_bin_1M"
         fi
 
     fi

@@ -22,7 +22,7 @@ main() {
     source $ENTER_board_name/board.conf
     PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
     source "${SCRIPT_DIR}/scripts/path.sh"
-    pack_all_img "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar" "$PATH_SOURCE" "$BOARD_MODEL" "$FILE_apt_del" "$ENTER_os_ver" "$ENTER_rootfs_type" "$IMAGE_FLAG_NO_SCREEN_DISPLAY" "$BOOTLOADER_NAME" "$OUTFILE_boot_bin" "$LINUX_GIT" "$LINUX_BRANCH" "$PATH_PROJECT_DIR" "$ENTER_img_file"
+    pack_all_img "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar" "$PATH_SOURCE" "$BOARD_MODEL" "$FILE_apt_del" "$ENTER_os_ver" "$ENTER_rootfs_type" "$IMAGE_FLAG_NO_SCREEN_DISPLAY" "$BOOTLOADER_NAME" "$(dirname $OUTFILE_boot_bin)" "$LINUX_GIT" "$LINUX_BRANCH" "$PATH_PROJECT_DIR" "$ENTER_img_file"
 }
 
 # 如果传入参数个数小于3个,则弹出选择窗口

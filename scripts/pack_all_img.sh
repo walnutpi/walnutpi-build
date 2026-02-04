@@ -125,7 +125,7 @@ __create_img_file() {
     run_status "create img file: $OUT_IMG_FILE $IMG_SIZE MB" dd if=/dev/zero of=$OUT_IMG_FILE bs=1M count=$IMG_SIZE
     echo "创建分区"
     parted $OUT_IMG_FILE --script mklabel msdos
-    parted $OUT_IMG_FILE --script mkpart primary fat32 1M $((PART1_SIZE + 1))M
+    parted $OUT_IMG_FILE --script mkpart primary fat32 4M $((PART1_SIZE + 1))M
     parted $OUT_IMG_FILE --script mkpart primary ext4 $((PART1_SIZE + 1))M 100%
     parted $OUT_IMG_FILE set 1 boot on
 }
@@ -152,7 +152,7 @@ __get_new_img_file_name() {
 # $8  - ENTER_rootfs_type: rootfs类型
 # $9  - IMAGE_FLAG_NO_SCREEN_DISPLAY: 无屏幕显示标志
 # $10 - BOOTLOADER_NAME: bootloader名称
-# $11 - OUTFILE_boot_bin: boot二进制文件路径
+# $11 - OUTPATH_boot_bin: 输出的boot二进制文件的存放路径
 # $12 - LINUX_GIT: Linux Git仓库地址
 # $13 - LINUX_BRANCH: Linux分支名称
 # $14 - PATH_PROJECT_DIR: 项目目录路径
@@ -169,7 +169,7 @@ pack_all_img() {
     local ENTER_rootfs_type=$8
     local IMAGE_FLAG_NO_SCREEN_DISPLAY=$9
     local BOOTLOADER_NAME=${10}
-    local OUTFILE_boot_bin=${11}
+    local OUTPATH_boot_bin=${11}
     local LINUX_GIT=${12}
     local LINUX_BRANCH=${13}
     local PATH_PROJECT_DIR=${14}
@@ -187,7 +187,7 @@ pack_all_img() {
     echo "ENTER_rootfs_type: $ENTER_rootfs_type"
     echo "IMAGE_FLAG_NO_SCREEN_DISPLAY: $IMAGE_FLAG_NO_SCREEN_DISPLAY"
     echo "BOOTLOADER_NAME: $BOOTLOADER_NAME"
-    echo "OUTFILE_boot_bin: $OUTFILE_boot_bin"
+    echo "OUTPATH_boot_bin: $OUTPATH_boot_bin"
     echo "LINUX_GIT: $LINUX_GIT"
     echo "LINUX_BRANCH: $LINUX_BRANCH"
     echo "PATH_PROJECT_DIR: $PATH_PROJECT_DIR"
@@ -335,7 +335,17 @@ pack_all_img() {
     local ROOTFS_PARTUUID=$(blkid -s PARTUUID -o value $MAPPER_DEVICE2)
 
     # 导入文件
-    run_status "add $BOOTLOADER_NAME" dd if=$OUTFILE_boot_bin of=$OUT_IMG_FILE bs=1K seek=8 conv=notrunc
+    # run_status "add $BOOTLOADER_NAME" dd if=$OUTPATH_boot_bin/boot.bin of=$OUT_IMG_FILE bs=1K seek=8 conv=notrunc
+    if [ -f "$OUTPATH_boot_bin/boot.bin" ]; then
+        run_status "add $BOOTLOADER_NAME" dd if=$OUTPATH_boot_bin/boot.bin of=$OUT_IMG_FILE bs=1K seek=8 conv=notrunc
+    fi
+    if [ -f "$OUTPATH_boot_bin/boot_1M.bin" ]; then
+        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_1M.bin" dd if=$OUTPATH_boot_bin/boot_1M.bin of=$OUT_IMG_FILE bs=1 seek=1M
+    fi
+    if [ -f "$OUTPATH_boot_bin/boot_2M.bin" ]; then
+        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_2M.bin" dd if=$OUTPATH_boot_bin/boot_2M.bin of=$OUT_IMG_FILE bs=1 seek=2M
+    fi
+
     # 使用tar将 TMP_ROOTFS_DIR 路径下的文件全部原封不动的导到TMP_mount_disk2下
     echo "move the rootfs files into the image"
     tar -cf - -C "$TMP_ROOTFS_DIR" . | tar -xf - -C "$TMP_mount_disk2"
