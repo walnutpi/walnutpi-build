@@ -4,7 +4,7 @@ configure)
     old_version="$2"
     new_version="$3"
     echo "Updating from version $old_version to version $new_version"
-    cp -r $path_board_tmp_boot/* /boot/
+    cp -r /tmp-boot/boot-configtxt/* /boot/
 
     BLOCK_DEVICE=$(findmnt "/boot" -o SOURCE -n)
     echo "BLOCK_DEVICE=$BLOCK_DEVICE"

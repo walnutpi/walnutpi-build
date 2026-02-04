@@ -5,7 +5,7 @@ case "$1" in
         new_version="$3"
         echo "Updating from version $old_version to version $new_version"
 
-        cp -r $path_board_tmp_boot/* /boot/
+        cp -r /tmp-boot/boot-configtxt/* /boot/
         set-device
 
         BLOCK_DEVICE=$(findmnt "/" -o SOURCE -n)
