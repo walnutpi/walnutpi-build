@@ -233,7 +233,7 @@ pack_all_img() {
     __add_file_to_tmp_rootfs_dir "$OUTFILE_rootfs_tar" "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$TMP_ROOTFS_DIR" "$ENTER_img_file"
 
     # 为了让set-lcd统一管理显示屏，所以需要构建时运行一次
-    run_status "run set-lcd hdmi install " chroot ${TMP_ROOTFS_DIR} /bin/bash -c "set-lcd hdmi install"
+    chroot ${TMP_ROOTFS_DIR} /bin/bash -c "set-lcd hdmi install"
 
     # 为了减小体积，可以删除掉在构建完成后就不需要了的包
     if [ -f ${FILE_apt_del} ]; then

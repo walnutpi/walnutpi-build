@@ -72,7 +72,7 @@ Version: ${deb_version}
 Section: free
 Priority: optional
 Installed-Size: ${size}
-Architecture: ${CHIP_ARCH}
+Architecture: all
 EOF
     local DEB_IMAGE_NAME="${package_name}_${deb_version}_${CHIP_ARCH}.deb"
     run_status "创建deb包 ${DEB_IMAGE_NAME}" dpkg-deb -Zgzip -b "$path_package" "${OUTDIR_kernel_package}/${DEB_IMAGE_NAME}"
@@ -105,11 +105,16 @@ pack_kernel_Image() {
     local path_tmp_boot="${TMP_KERNEL_DEB}${path_board_tmp_boot}"
     mkdir -p "$path_tmp_boot"
 
+
     cp "${SOURCE_kernel}/.config" "$path_tmp_boot/config-$(get_linux_version "$SOURCE_kernel")"
     cd "$SOURCE_kernel"
+    if [ $CHIP_ARCH == "riscv64" ]; then
+        CHIP_ARCH="riscv"
+    fi
     run_status "export Image" cp "${SOURCE_kernel}/arch/${CHIP_ARCH}/boot/Image" "$path_tmp_boot"
 
     _gen_postinst_cp_file "$TMP_KERNEL_DEB" "$path_board_tmp_boot" /boot/
+    
     _pack_as_kernel_deb "$TMP_KERNEL_DEB" "$part_name" "linux kernel image file" \
         "$BOARD_NAME" "$LINUX_BRANCH" "$CHIP_ARCH" "$PATH_PROJECT_DIR" "$SOURCE_kernel" "$OUTDIR_kernel_package"
 }
@@ -140,6 +145,10 @@ pack_kernel_dtb() {
     local path_board_tmp_boot="/tmp-boot/dtb"
     local path_tmp_boot="${TMP_KERNEL_DEB}${path_board_tmp_boot}"
     mkdir -p "$path_tmp_boot"
+
+    if [ $CHIP_ARCH == "riscv64" ]; then
+        CHIP_ARCH="riscv"
+    fi
 
     cd "$SOURCE_kernel"
     run_status "export device-tree" make dtbs_install INSTALL_DTBS_PATH="$path_tmp_boot" ARCH="$CHIP_ARCH"
@@ -180,6 +189,10 @@ pack_kernel_modules() {
 
     local part_name="kernel-modules"
     local TMP_KERNEL_DEB=$(_gen_tmp_package_dir "$part_name" "$PATH_TMP" "$LINUX_CONFIG" "$LINUX_BRANCH")
+
+    if [ $CHIP_ARCH == "riscv64" ]; then
+        CHIP_ARCH="riscv"
+    fi
 
     cd "$SOURCE_kernel"
     run_status "export modules" make modules_install INSTALL_MOD_PATH="$TMP_KERNEL_DEB" ARCH="$CHIP_ARCH"
@@ -392,6 +405,10 @@ pack_kernel_headers() {
         rm -r "$SOURCE_kernel_CLEAN"
     fi
     run_status "copy kernel" cp -r "$SOURCE_kernel" "$SOURCE_kernel_CLEAN"
+
+    if [ $CHIP_ARCH == "riscv64" ]; then
+        CHIP_ARCH="riscv"
+    fi
 
     cd "$SOURCE_kernel_CLEAN"
     run_status "make the kernel clean" make clean CROSS_COMPILE="$USE_CROSS_COMPILE" ARCH="$CHIP_ARCH"

@@ -15,17 +15,20 @@ compile_kernel() {
     echo "USE_CROSS_COMPILE=$USE_CROSS_COMPILE"
     echo "CHIP_ARCH=$CHIP_ARCH"
 
+    if [ $CHIP_ARCH == "riscv64" ]; then
+        CHIP_ARCH="riscv"
+    fi
+    
     cd $SOURCE_kernel
     if [ ! -f .scmversion ]; then
         touch .scmversion
     fi
-    thread_count=$(grep -c ^processor /proc/cpuinfo)
     make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
-    make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
+    make -j$(nproc) CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
 
     if [ -d bsp/modules/gpu ]; then
         export srctree=$(pwd)
-        make -j$thread_count CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH} -C bsp/modules/gpu M=bsp/modules/gpu
+        make -j$(nproc) CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH} -C bsp/modules/gpu M=bsp/modules/gpu
     fi
     exit_if_last_error
     echo "kernel compile success"

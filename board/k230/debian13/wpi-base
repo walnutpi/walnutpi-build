@@ -21,7 +21,7 @@ wpi-welcome-info
 # conf-iptables-as-legacy
 
 # set-emmc
-# set-device  
+set-device  
 # set-language  
 # set-lcd
 # set-flash
