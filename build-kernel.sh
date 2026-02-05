@@ -41,6 +41,9 @@ main() {
     fi
 
     compile_kernel $SOURCE_kernel $LINUX_CONFIG $USE_CROSS_COMPILE $CHIP_ARCH
+    if [ "x$BR2_PACKAGE_RTL8189FS" == "xy" ]; then
+        ${SCRIPT_DIR}/scripts/package/BR2_PACKAGE_RTL8189FS.sh "${PATH_SOURCE}" "$SOURCE_kernel" "$USE_CROSS_COMPILE" "$CHIP_ARCH"
+    fi
     OUTDIR_kernel_package=${PATH_OUTPUT_BOARD}/kernel
     if [ -d $OUTDIR_kernel_package ]; then
         rm -r $OUTDIR_kernel_package
