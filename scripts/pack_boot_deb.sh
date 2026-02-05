@@ -102,7 +102,11 @@ pack_boot_bin() {
     mkdir -p $path_tmp_boot
     
     # 复制文件(如果存在)
-    [ -f "${ENTER_board_name}/boot.cmd" ] && cp ${ENTER_board_name}/boot.cmd $path_tmp_boot
+    if [ -f "${ENTER_board_name}/boot.cmd" ]; then
+        echo "复制 ${ENTER_board_name}/boot.cmd 到包中"
+        mkimage -C none -A arm -T script -d ${ENTER_board_name}/boot.cmd ${path_tmp_boot}/boot.scr
+        cp ${ENTER_board_name}/boot.cmd $path_tmp_boot
+    fi
     [ -f "${ENTER_board_name}/boot.scr" ] && cp ${ENTER_board_name}/boot.scr $path_tmp_boot
     [ -d "${OUTFILE_boot_path}" ] && cp ${OUTFILE_boot_path}/*.bin $path_tmp_boot
     
