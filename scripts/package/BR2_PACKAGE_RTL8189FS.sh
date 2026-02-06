@@ -27,6 +27,22 @@ if [ ! -d "$PACKAGE_PATH" ]; then
     git checkout 5d523593f41c0b8d723c6aa86b217ee1d0965786
 fi
 
+# 应用补丁：禁用CONFIG_CONCURRENT_MODE
+# 检查第26行是否为目标行，如果是则替换
+cd "$PACKAGE_PATH"
+line_26=$(sed -n '26p' Makefile 2>/dev/null)
+if [ "$line_26" = "EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE" ]; then
+    echo "应用禁用CONFIG_CONCURRENT_MODE的补丁..."
+    if sed -i '26s/^EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE$/# EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE/' Makefile; then
+        echo "补丁应用成功"
+    else
+        echo "警告：补丁应用失败"
+        exit 1
+    fi
+else
+    echo "第26行不是目标行或补丁已存在"
+fi
+
 cd "$PACKAGE_PATH"
 make -C $SOURCE_kernel \
     ARCH=$ARCH \
