@@ -340,10 +340,10 @@ pack_all_img() {
         run_status "add $BOOTLOADER_NAME" dd if=$OUTPATH_boot_bin/boot.bin of=$OUT_IMG_FILE bs=1K seek=8 conv=notrunc
     fi
     if [ -f "$OUTPATH_boot_bin/boot_1M.bin" ]; then
-        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_1M.bin" dd if=$OUTPATH_boot_bin/boot_1M.bin of=$OUT_IMG_FILE bs=1 seek=1M
+        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_1M.bin" dd if=$OUTPATH_boot_bin/boot_1M.bin of=$OUT_IMG_FILE bs=1 seek=1M conv=notrunc
     fi
     if [ -f "$OUTPATH_boot_bin/boot_2M.bin" ]; then
-        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_2M.bin" dd if=$OUTPATH_boot_bin/boot_2M.bin of=$OUT_IMG_FILE bs=1 seek=2M
+        run_status "add $BOOTLOADER_NAME $OUTPATH_boot_bin/boot_2M.bin" dd if=$OUTPATH_boot_bin/boot_2M.bin of=$OUT_IMG_FILE bs=1 seek=2M conv=notrunc
     fi
 
     # 使用tar将 TMP_ROOTFS_DIR 路径下的文件全部原封不动的导到TMP_mount_disk2下
