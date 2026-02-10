@@ -46,9 +46,8 @@ if test "${bootlogo}" = "true"; then
 else
 	setenv consoleargs "splash=verbose ${consoleargs}"
 fi
-
-# setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} net.ifnames=0 ${consoleargs} ${consoleargs_diplay} consoleblank=0 loglevel=${printk_level} usb-storage.quirks=${usbstoragequirks} ${extraargs}"
-setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} net.ifnames=0 ${consoleargs} consoleblank=0 loglevel=${printk_level} usb-storage.quirks=${usbstoragequirks} ${extraargs}"
+setenv args_console "${consoleargs} ${consoleargs_diplay}"
+setenv bootargs "root=${rootdev} rootwait rw rootfstype=${rootfstype} net.ifnames=0 ${args_console} consoleblank=0 loglevel=${printk_level} usb-storage.quirks=${usbstoragequirks} ${extraargs}"
 
 # 加载设备树
 if mmc dev 1; then

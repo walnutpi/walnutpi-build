@@ -10,7 +10,7 @@ fdtfile=k230-canmv-01studio
 console_uart=uart0
 
 ## show the bootinfo to the screen
-#x display_bootinfo=enable
+display_bootinfo=enable
 
 ## force hdmi fb hotplug
 #xhdmi_force_hotplug=1
