@@ -1,12 +1,12 @@
 version=1.0
 
 ##  config screen
-#x screen=hdmi
+screen=hdmi
 
 fdtfile=k230-canmv-01studio
 
 ##  enable the console with screen
-#x console_display=enable
+console_display=enable
 console_uart=uart0
 
 ## show the bootinfo to the screen
@@ -18,10 +18,10 @@ display_bootinfo=enable
 ## loglevel
 printk_level=3
 
-#x overlay_prefix=k230-canmv-01studio
+overlay_prefix=k230-canmv-01studio
 
 # 开机后运行set-device指令管理overlays
-#x overlays=
+overlays=spidev0_0 spidev0_1 csi2
 
 
 #------------------------------------------------#

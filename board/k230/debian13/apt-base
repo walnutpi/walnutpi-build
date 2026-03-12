@@ -3,6 +3,7 @@ libc6-dev
 bison
 flex
 libssl-dev
+libmxml1
 
 network-manager
 net-tools
@@ -12,8 +13,6 @@ ir-keytable
 evtest
 rfkill
 # bluez
-# ntp
-# ntpdate
 
 ssh
 sudo
@@ -27,17 +26,18 @@ tree
 btop
 bc
 
-# fbterm
-# locales 
-# fonts-wqy-zenhei
+fbterm
+locales 
+fonts-wqy-zenhei
 
 vim
 gcc
 git
 make
-# python3
-# python3-pip
-# python-dev-is-python3
+python3
+python3-pip
+python-dev-is-python3
+build-essential
 # python3-pyqt5*
 
 i2c-tools
@@ -47,22 +47,28 @@ toilet
 nfs-common
 fbset
 libts-bin
-alsa-utils
+# alsa-utils
+libasound2-dev
+libopenal1 
+libopenal-dev
 mtd-utils
 pciutils
 dosfstools
-
+v4l-utils
+libdrm-dev
 u-boot-tools
 initramfs-tools
 device-tree-compiler
 
-# dbus-x11
-# xorg
-# xserver-xorg-input-evdev
-# xinput-calibrator
-# xserver-xorg-input-synaptics
-# xfwm4  
-# lightdm
+python3-opencv
+
+dbus-x11
+xorg
+xserver-xorg-input-evdev
+xinput-calibrator
+xserver-xorg-input-synaptics
+xfwm4  
+lightdm
 
 # glmark2-drm
 
