@@ -13,7 +13,10 @@ create_dir $PATH_TMP
 create_dir $PATH_LOG
 create_dir $PATH_TOOLCHAIN
 
-# LOG_START_TIME=$(date +%m-%d_%H:%M) #在build.sh内定义
+# 如果LOG_START_TIME没有定义，则定义它
+if [ -z "$LOG_START_TIME" ]; then
+    LOG_START_TIME=$(date +%m-%d_%H:%M)
+fi
 LOG_MONTH_DIR="${PATH_LOG}/$(date +%Y-%m)"
 LOG_FILE="${LOG_MONTH_DIR}/${LOG_START_TIME}.log"
 create_dir $LOG_MONTH_DIR
