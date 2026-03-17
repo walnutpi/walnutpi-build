@@ -1,0 +1,10 @@
+wpi-xfce4
+service-restart-lightdm
+
+# conf-google-pinyin
+
+
+# realvnc-vnc-viewer
+set-vnc
+
+# goodix-ts-auto-rotation

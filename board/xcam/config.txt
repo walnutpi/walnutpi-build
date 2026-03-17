@@ -1,0 +1,28 @@
+version=1.0
+
+##  config screen
+screen=hdmi
+
+fdtfile=k230-xcam
+
+##  enable the console with screen
+console_display=enable
+console_uart=uart0
+
+## show the bootinfo to the screen
+display_bootinfo=enable
+
+## force hdmi fb hotplug
+#xhdmi_force_hotplug=1
+
+## loglevel
+printk_level=3
+
+overlay_prefix=k230-xcam
+
+# 开机后运行set-device指令管理overlays
+overlays=
+
+
+#------------------------------------------------#
+rootfstype=ext4
