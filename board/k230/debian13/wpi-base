@@ -3,23 +3,21 @@ wpi-host-name
 wpi-welcome-info
 wpi-lightdm
 
-# libisp-t527
-# walnutpi.isp
-# walnutpi.npu
-# walnutpi.lib
+walnutpi.kpu
+walnutpi.lib
 
 
 gpioc
 blinka
 
 
-# conf-qtenv   
 enable-ssh-root  
-# disable-wifi-random
+disable-wifi-random
+k230-alsa-fix
 
 # set-emmc
 set-device  
-# set-language  
+set-language  
 set-lcd
 # set-flash
 # set-nvme
@@ -31,10 +29,10 @@ set-lcd
 # initramfs-tools-hook
 # plymouth-themes-walnutpi
 
-# service-disable-fbcon
+service-disable-fbcon
 service-resize-part
 # service-aw869-bluetooth
-# service-boot-script
+service-boot-script
 service-k230-isp-media
 
 # map-device

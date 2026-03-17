@@ -47,10 +47,10 @@ toilet
 nfs-common
 fbset
 libts-bin
-# alsa-utils
 libasound2-dev
 libopenal1 
 libopenal-dev
+alsa-utils
 mtd-utils
 pciutils
 dosfstools
