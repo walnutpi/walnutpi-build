@@ -40,15 +40,15 @@ if [ "$line_26" = "EXTRA_CFLAGS += -DCONFIG_CONCURRENT_MODE" ]; then
         exit 1
     fi
 else
-    echo "第26行不是目标行或补丁已存在"
+    echo "补丁已存在"
 fi
 
 cd "$PACKAGE_PATH"
-make -C $SOURCE_kernel \
-    ARCH=$ARCH \
-    CROSS_COMPILE=$CROSS_COMPILE \
-    M=$(pwd) \
-    clean
+# make -C $SOURCE_kernel \
+#     ARCH=$ARCH \
+#     CROSS_COMPILE=$CROSS_COMPILE \
+#     M=$(pwd) \
+#     clean
 make -C $SOURCE_kernel \
     ARCH=$ARCH \
     CROSS_COMPILE=$CROSS_COMPILE \

@@ -29,11 +29,11 @@ fi
 
 
 cd "$PACKAGE_PATH"
-make -C $SOURCE_kernel \
-    ARCH=$ARCH \
-    CROSS_COMPILE=$CROSS_COMPILE \
-    M=$(pwd) \
-    clean
+# make -C $SOURCE_kernel \
+#     ARCH=$ARCH \
+#     CROSS_COMPILE=$CROSS_COMPILE \
+#     M=$(pwd) \
+#     clean
 make -C $SOURCE_kernel \
     ARCH=$ARCH \
     CROSS_COMPILE=$CROSS_COMPILE \
