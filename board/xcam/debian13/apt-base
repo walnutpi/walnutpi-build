@@ -12,7 +12,7 @@ wireless-tools
 ir-keytable
 evtest
 rfkill
-# bluez
+bluez
 
 ssh
 sudo

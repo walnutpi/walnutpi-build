@@ -25,13 +25,13 @@ set-lcd
 # python3-sudo
 
 # bluez 
-# hcitools
+hcitools
 # initramfs-tools-hook
 # plymouth-themes-walnutpi
 
 service-disable-fbcon
 service-resize-part
-# service-aw869-bluetooth
+service-aw869-bluetooth
 service-boot-script
 service-k230-isp-media
 

@@ -1,7 +1,7 @@
 version=1.0
 
 ##  config screen
-screen=hdmi
+screen=dsi-lcd24-st7701-480x640
 
 fdtfile=k230-xcam
 
