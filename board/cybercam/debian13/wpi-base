@@ -9,11 +9,12 @@ walnutpi.lib
 
 gpioc
 blinka
-
+opencv-4.10-python3.13
 
 enable-ssh-root  
 disable-wifi-random
 k230-alsa-fix
+k230-display
 
 # set-emmc
 set-device  

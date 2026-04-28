@@ -3,7 +3,7 @@ version=1.0
 ##  config screen
 screen=dsi-lcd24-st7701-480x640
 
-fdtfile=k230-xcam
+fdtfile=k230-cybercam
 
 ##  enable the console with screen
 console_display=enable
@@ -18,10 +18,10 @@ display_bootinfo=enable
 ## loglevel
 printk_level=3
 
-overlay_prefix=k230-xcam
+overlay_prefix=k230-cybercam
 
 # 开机后运行set-device指令管理overlays
-overlays=
+overlays=csi2
 
 
 #------------------------------------------------#
