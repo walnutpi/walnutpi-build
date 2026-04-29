@@ -6,7 +6,7 @@ screen=dsi-lcd24-st7701-480x640
 fdtfile=k230-cybercam
 
 ##  enable the console with screen
-console_display=enable
+console_display=disable
 console_uart=uart0
 
 ## show the bootinfo to the screen

@@ -36,4 +36,7 @@ service-aw869-bluetooth
 service-boot-script
 service-k230-isp-media
 
+cybercam-startup
+cybercam-app-yolo11-cls
+cybercam-app-yolo11-det
 # map-device
