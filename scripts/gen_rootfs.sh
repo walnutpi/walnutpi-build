@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APT_SOURCES_WALNUTPI="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
+APT_SOURCES_WALNUTPI_PREFIX="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
 APT_DOMAIN="apt.walnutpi.com"
 DEBIAN_BASE_URL="http://mirrors.tuna.tsinghua.edu.cn/debian/"
 UBUNTU22_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz"
@@ -227,11 +227,14 @@ _add_firmware() {
 # $2 - FILE_apt_base_board: 板级基础软件包列表文件
 # $3 - FILE_apt_desktop_board: 板级桌面环境软件包列表文件
 # $4 - ENTER_rootfs_type: rootfs类型 (desktop 或其他)
+# $5 - BOARD_MODEL: 开发板型号
+
 _wpi_install() {
     local TMP_rootfs_build=$1
     local FILE_apt_base_board=$2
     local FILE_apt_desktop_board=$3
     local ENTER_rootfs_type=$4
+    local BOARD_MODEL=$5
 
     mount_chroot $TMP_rootfs_build
     # 插入walnutpi的apt源
@@ -239,7 +242,10 @@ _wpi_install() {
     if [ -f $apt_source_list ]; then
         rm $apt_source_list
     fi
-    echo $APT_SOURCES_WALNUTPI >>$apt_source_list
+    
+    # BOARD_MODEL转换为小写
+    BOARD_MODEL=$(echo "$BOARD_MODEL" | tr '[:upper:]' '[:lower:]')
+    echo "$APT_SOURCES_WALNUTPI_PREFIX $BOARD_MODEL" >>$apt_source_list
     run_status "apt update" chroot ${TMP_rootfs_build} /bin/bash -c "apt-get update"
 
     mapfile -t packages < <(grep -vE '^#|^$' ${FILE_apt_base_board})
@@ -253,10 +259,6 @@ _wpi_install() {
         run_status "apt [$((i + 1))/${total}] : $package " chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get -o Dpkg::Options::='--force-overwrite' install -y ${package}"
     done
 
-    # 删除插入hosts文件的内容
-    if grep -q "$APT_DOMAIN" "$TMP_rootfs_build/etc/hosts"; then
-        sed -i "/$APT_DOMAIN/d" "$TMP_rootfs_build/etc/hosts"
-    fi
 
     # 去除残余
     run_slient_when_successfuly chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  apt-get clean"
@@ -372,7 +374,13 @@ gen_rootfs() {
     _pip_install "$TMP_rootfs_build" "$FILE_pip_list"
     _add_firmware "$PATH_SOURCE" "$FIRMWARE_GIT" "$TMP_rootfs_build"
 
-    _wpi_install $TMP_rootfs_build $FILE_apt_base_board $FILE_apt_desktop_board $ENTER_rootfs_type $APT_DOMAIN
+    _wpi_install $TMP_rootfs_build $FILE_apt_base_board $FILE_apt_desktop_board $ENTER_rootfs_type $BOARD_MODEL
+
+
+    # 删除插入hosts文件的内容
+    if grep -q "$APT_DOMAIN" "$TMP_rootfs_build/etc/hosts"; then
+        sed -i "/$APT_DOMAIN/d" "$TMP_rootfs_build/etc/hosts"
+    fi
 
     # 设置要开机加载的驱动模块
     MODULES_LIST=$(echo ${MODULES_ENABLE} | tr ' ' '\n')
