@@ -28,4 +28,3 @@ service-h616-conf-thermal-trip
 service-w1b-dis-mmc2
 
 fix-ubuntu-networkd-wait
-map-device
