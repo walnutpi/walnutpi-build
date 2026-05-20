@@ -15,6 +15,7 @@ enable-ssh-root
 disable-wifi-random
 k230-alsa-fix
 k230-display
+k230-ffmpeg
 
 # set-emmc
 set-device  
@@ -36,6 +37,7 @@ service-aw869-bluetooth
 service-boot-script
 service-k230-isp-media
 
+cybercam-usb
 cybercam-startup
 cybercam-app-yolo11-cls
 cybercam-app-yolo11-det
