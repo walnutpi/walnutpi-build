@@ -11,6 +11,11 @@ fdtfile_emmc=sun50i-h616-walnutpi-1b-emmc
 
 ##  enable the console with screen
 console_display=enable
+
+## Auto-login for on-screen terminal
+autologin=enable
+
+##  Select the serial port to use as terminal
 console_uart=uart0
 
 ## show the bootinfo to the screen
