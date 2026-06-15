@@ -194,7 +194,7 @@ _pip_install() {
         for ((i = 0; i < ${total}; i++)); do
             local package=${packages[$i]}
             # echo "pip3 [$((i+1))/${total}] : $package"
-            run_status "pip3 [$((i + 1))/${total}] : $package" chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install   ${package}"
+            run_status "pip3 [$((i + 1))/${total}] : $package" chroot $TMP_rootfs_build /bin/bash -c "DEBIAN_FRONTEND=noninteractive  pip3 --no-cache-dir install --no-build-isolation ${package}"
         done
     fi
 }
