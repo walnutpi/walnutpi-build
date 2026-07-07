@@ -23,9 +23,14 @@ fi
 PACKAGE_PATH="${PATH_SOURCE}/vvcam-driver"
 if [ ! -d "$PACKAGE_PATH" ]; then
     git clone https://github.com/walnutpi/vvcam-driver.git "$PACKAGE_PATH"
+else
     cd "$PACKAGE_PATH"
-    git checkout a27f0a84fce7a7f95f2638c4ab4b5719c3d2a070
+    git config --global --add safe.directory "$PACKAGE_PATH"
+    git checkout main
+    git pull
 fi
+cd "$PACKAGE_PATH"
+git checkout 97c758a2f07ff5129cd59dbe46651d6a8d576858
 
 
 cd "$PACKAGE_PATH"
