@@ -3,9 +3,10 @@ wpi-host-name
 wpi-welcome-info
 wpi-lightdm
 
+walnutpi.imu
 walnutpi.kpu
+walnutpi.imgxfer
 walnutpi.lib
-
 
 gpioc
 blinka
@@ -38,7 +39,7 @@ service-boot-script
 service-k230-isp-media
 
 cybercam-usb
-cybercam-startup
-cybercam-app-yolo11-cls
-cybercam-app-yolo11-det
-# map-device
+cybercam-usb-worker
+cybercam-desktop
+cybercam-apps
+cybercam-map-device

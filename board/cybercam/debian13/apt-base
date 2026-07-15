@@ -38,6 +38,7 @@ python3
 python3-pip
 python3-dev
 python-dev-is-python3
+python3-setuptools
 build-essential
 # python3-pyqt5*
 
@@ -52,6 +53,8 @@ libasound2-dev
 libopenal1 
 libopenal-dev
 libevdev-dev
+libportaudio2 
+libsndfile1
 alsa-utils
 mtd-utils
 pciutils
@@ -61,9 +64,11 @@ libdrm-dev
 u-boot-tools
 initramfs-tools
 device-tree-compiler
+libfreetype6-dev 
+libharfbuzz-dev
 
-# python3-opencv
 python3-numpy
+python3-cffi
 
 dbus-x11
 xorg

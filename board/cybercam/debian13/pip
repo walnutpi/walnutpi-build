@@ -1,3 +1,7 @@
 jedi
 numpy
 paho-mqtt
+watchdog
+python-periphery
+sounddevice
+soundfile

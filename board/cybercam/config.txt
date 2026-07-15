@@ -5,8 +5,16 @@ screen=dsi-lcd24-st7701-480x640
 
 fdtfile=k230-cybercam
 
+##  Configure the USB as a HID device
+usb_hid=disable
+
 ##  enable the console with screen
-console_display=disable
+console_display=enable
+
+## Auto-login for on-screen terminal
+autologin=enable
+
+##  Select the serial port to use as terminal
 console_uart=uart0
 
 ## show the bootinfo to the screen
@@ -16,12 +24,12 @@ display_bootinfo=enable
 #xhdmi_force_hotplug=1
 
 ## loglevel
-printk_level=3
+printk_level=2
 
 overlay_prefix=k230-cybercam
 
 # 开机后运行set-device指令管理overlays
-overlays=csi2
+overlays=csi2 uart2
 
 
 #------------------------------------------------#
