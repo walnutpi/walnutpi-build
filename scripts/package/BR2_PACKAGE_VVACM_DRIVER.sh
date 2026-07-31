@@ -30,7 +30,7 @@ else
     git pull
 fi
 cd "$PACKAGE_PATH"
-git checkout 97c758a2f07ff5129cd59dbe46651d6a8d576858
+git checkout b22e3cd0ab0f1d5d1db8c1d30d128aa0ba44d277
 
 
 cd "$PACKAGE_PATH"
