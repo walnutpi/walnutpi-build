@@ -215,7 +215,29 @@ esac
 EOF
     chmod 755 $postinst_file
 }
-
+_gen_prerm_rm_file(){
+    local path_package=$1
+    local path_source=$2
+    local path_target=$3
+    prerm_file=$path_package/DEBIAN/prerm
+    
+    cat <<EOF >$prerm_file
+#!/bin/sh
+if [ -d "$path_source" ] && [ -d "$path_target" ]; then
+    cd "$path_source" || exit 1
+    find . -type f | while read relpath; do
+        relpath=\${relpath#./}
+        target_path="$path_target/\$relpath"
+        # 只删除文件，不删除目录
+        if [ -f "\$target_path" ]; then
+            rm -f "\$target_path"
+        fi
+    done
+    cd - >/dev/null 2>&1
+fi
+EOF
+    chmod 755 $prerm_file
+}
 # 获取linux版本号，如5.15.147 6.1.9
 # 参数说明:
 # $1 - src_dir: Linux 源码项目的位置
