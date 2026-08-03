@@ -1,18 +1,21 @@
 #!/bin/bash
-# 获取文件所在路径
+# scripts/boot/build.sh — bootloader 构建入口
 
-PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/common.sh"
-source "${SCRIPT_DIR}/scripts/path.sh"
-source "${SCRIPT_DIR}/scripts/option.sh"
-source "${SCRIPT_DIR}/scripts/menu.sh"
-source "${SCRIPT_DIR}/scripts/compile_uboot.sh"
-source "${SCRIPT_DIR}/scripts/compile_Syterkit.sh"
-source "${SCRIPT_DIR}/scripts/pack_boot_deb.sh"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+PATH_PROJECT_DIR="${ROOT_DIR}"
+
+source "${ROOT_DIR}/scripts/__common.sh"
+source "${ROOT_DIR}/scripts/__path.sh"
+source "${ROOT_DIR}/scripts/__option.sh"
+source "${ROOT_DIR}/scripts/__menu.sh"
+
+source "${SCRIPT_DIR}/__uboot.sh"
+source "${SCRIPT_DIR}/__syterkit.sh"
+source "${SCRIPT_DIR}/__pack.sh"
 
 # 构建bootloader
-# $1 为板级配置文件夹的路径
+# $1 为板卡名
 build_bootloader() {
     local ENTER_board_name=${PATH_board}/${1}
     source $ENTER_board_name/board.conf
@@ -76,8 +79,8 @@ build_bootloader() {
         "$OUTDIR_boot_package" "$CHIP_ARCH"
 }
 
+# CLI 入口
 if [ $# -eq 0 ]; then
-    # 如果调用本脚本时没有传入参数,则弹出选择窗口
     ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     if [ $? -ne 0 ]; then
         echo "$ENTER_board_name"

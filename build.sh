@@ -1,13 +1,13 @@
 #!/bin/bash
 PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 PATH_SCRIPT="${PATH_PROJECT_DIR}/scripts"
-source "${PATH_SCRIPT}/common.sh"
-source "${PATH_SCRIPT}/option.sh"
-source "${PATH_SCRIPT}/menu.sh"
-source "${PATH_SCRIPT}/path.sh"
+source "${PATH_SCRIPT}/__common.sh"
+source "${PATH_SCRIPT}/__option.sh"
+source "${PATH_SCRIPT}/__menu.sh"
+source "${PATH_SCRIPT}/__path.sh"
 
 reload_env() {
-    source "${PATH_SCRIPT}/path.sh"
+    source "${PATH_SCRIPT}/__path.sh"
 }
 
 ENTER_board_name=$OPT_user_no_choose
@@ -155,12 +155,12 @@ fi
 # 执行
 reload_env
 if [ ${ENTER_boot_rebuild_flag} == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ]; then
-    source "${PATH_PROJECT_DIR}/build-bootloader.sh" $ENTER_board_name
+    source "${PATH_SCRIPT}/boot/build.sh" $ENTER_board_name
 fi
 if [ ${ENTER_kernel_rebuild_flag} == "$OPT_user_no_choose" ] || [ ${ENTER_kernel_rebuild_flag} == "$OPT_YES" ]; then
-    source "${PATH_PROJECT_DIR}/build-kernel.sh" $ENTER_board_name
+    source "${PATH_SCRIPT}/kernel/build.sh" $ENTER_board_name
 fi
-source "${PATH_PROJECT_DIR}/build-rootfs.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type
+source "${PATH_SCRIPT}/rootfs/build.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type
 source "${PATH_PROJECT_DIR}/pack-all.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type $ENTER_img_file
 
 

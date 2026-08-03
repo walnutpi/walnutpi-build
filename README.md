@@ -21,8 +21,8 @@ sudo apt install whiptail bc
 cd walnutpi-build
 sudo ./build.sh
 
-# 如果本机有安装docker，建议使用docker-build.sh
-# sudo ./docker-build.sh
+# 如果本机有安装docker，建议使用本项目下的docker.sh，它可以创建一个docker环境运行指定脚本，比如使用docker来运行build.sh
+# sudo ./docker.sh ./build.sh
 ```
 
 在命令行出来的界面里，按`Esc`退出，`上下方向键`选择,按`回车`确认
@@ -42,9 +42,9 @@ sudo ./build.sh
 
 ## 单独编译
 提供如下脚本可以单独编译某些部件
-- build-bootloader.sh , 单独编译boot，结果输出到 **output/板名/boot/** 路径下
-- build-kernel.sh , 单独编译kernel，结果输出到 **output/板名/kernel/** 路径下
-- build-rootfs.sh , 单独编译rootfs，结果输出到 **output/板名/** 路径下
+- ./scripts/boot/build.sh , 单独编译boot，结果输出到 **output/板名/boot/** 路径下
+- ./scripts/kernel/build.sh , 单独编译kernel，结果输出到 **output/板名/kernel/** 路径下
+- ./scripts/rootfs/build.sh , 单独编译rootfs，结果输出到 **output/板名/** 路径下
 - pack-all.sh , 将 **output/板名/** 路径下的输出结果打包成镜像
 
 

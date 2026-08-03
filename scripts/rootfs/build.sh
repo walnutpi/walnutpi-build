@@ -1,17 +1,20 @@
 #!/bin/bash
-# 获取文件所在路径
+# scripts/rootfs/build.sh — rootfs 构建入口
 
-PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/common.sh"
-source "${SCRIPT_DIR}/scripts/path.sh"
-source "${SCRIPT_DIR}/scripts/option.sh"
-source "${SCRIPT_DIR}/scripts/menu.sh"
-source "${SCRIPT_DIR}/scripts/gen_rootfs.sh"
-source "${SCRIPT_DIR}/scripts/pack_rootfs_tar.sh"
+ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+PATH_PROJECT_DIR="${ROOT_DIR}"
 
-# 构建bootloader
-# $1 为板级配置文件夹的路径
+source "${ROOT_DIR}/scripts/__common.sh"
+source "${ROOT_DIR}/scripts/__path.sh"
+source "${ROOT_DIR}/scripts/__option.sh"
+source "${ROOT_DIR}/scripts/__menu.sh"
+
+source "${SCRIPT_DIR}/__gen.sh"
+source "${SCRIPT_DIR}/__pack.sh"
+
+# 构建rootfs
+# $1 为板卡名
 # $2 为系统版本
 # $3 为rootfs类型
 main() {
@@ -44,12 +47,11 @@ main() {
     pack_rootfs_tar $TMP_rootfs_build $OUTFILE_rootfs_tar
 }
 
-# 如果传入参数个数小于3个,则弹出选择窗口
+# CLI 入口: 需要 3 个参数
 if [ $# -lt 3 ]; then
     ENTER_board_name=$(basename $(MENU_choose_board $PATH_board))
     [[ -z ${ENTER_board_name} ]] && exit
     ENTER_os_ver=$(MENU_choose_os "${PATH_board}/$ENTER_board_name")
-    # 如果ENTER_os_ver的值等于OPT_os_debian12_burn
     if [ $ENTER_os_ver == $OPT_os_debian12_burn ]; then
         ENTER_rootfs_type=$OPT_rootfs_server
     else

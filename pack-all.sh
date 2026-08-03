@@ -3,11 +3,11 @@
 
 PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/common.sh"
-source "${SCRIPT_DIR}/scripts/path.sh"
-source "${SCRIPT_DIR}/scripts/option.sh"
-source "${SCRIPT_DIR}/scripts/menu.sh"
-source "${SCRIPT_DIR}/scripts/pack_all_img.sh"
+source "${SCRIPT_DIR}/scripts/__common.sh"
+source "${SCRIPT_DIR}/scripts/__path.sh"
+source "${SCRIPT_DIR}/scripts/__option.sh"
+source "${SCRIPT_DIR}/scripts/__menu.sh"
+source "${SCRIPT_DIR}/scripts/image/__make.sh"
 
 # $1 为板级配置文件夹的路径
 # $2 为系统版本
@@ -21,7 +21,7 @@ main() {
 
     source $ENTER_board_name/board.conf
     PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
-    source "${SCRIPT_DIR}/scripts/path.sh"
+    source "${SCRIPT_DIR}/scripts/__path.sh"
     pack_all_img "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar" "$PATH_SOURCE" "$BOARD_MODEL" "$FILE_apt_del" "$ENTER_os_ver" "$ENTER_rootfs_type" "$IMAGE_FLAG_NO_SCREEN_DISPLAY" "$BOOTLOADER_NAME" "$(dirname $OUTFILE_boot_bin)" "$LINUX_GIT" "$LINUX_BRANCH" "$PATH_PROJECT_DIR" "$ENTER_img_file"
 }
 
