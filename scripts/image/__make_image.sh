@@ -47,45 +47,59 @@ __mount_img_to_dir() {
 
     LOOP_DEVICE=""
     local MAX_RETRIES=5
-    local RETRY_COUNT=0
 
-    # 循环获取可用 loop 设备并关联镜像文件
-    until [ -n "$LOOP_DEVICE" ] && [ -b "$LOOP_DEVICE" ]; do
-        LOOP_DEVICE=$(losetup -f)
-        if [ $? -ne 0 ] || [ -z "$LOOP_DEVICE" ]; then
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-                echo "Error: Failed to get a loop device after $MAX_RETRIES attempts."
-                exit 1
+    # 原子操作：一次性查找空闲 loop 设备并绑定镜像文件（消除 TOCTOU 竞态）
+    for ((i = 0; i < MAX_RETRIES; i++)); do
+        LOOP_DEVICE=$(losetup --find --show "$OUT_IMG_FILE" 2>/dev/null)
+        local ret=$?
+
+        if [ $ret -eq 0 ] && [ -n "$LOOP_DEVICE" ] && [ -b "$LOOP_DEVICE" ]; then
+            # 验证：确认 loop 设备确实指向我们的镜像文件
+            local actual_file=$(losetup -ln -O BACK-FILE "$LOOP_DEVICE" 2>/dev/null)
+            if [ "$actual_file" = "$OUT_IMG_FILE" ]; then
+                echo "成功绑定 loop 设备: $LOOP_DEVICE -> $OUT_IMG_FILE"
+                break
+            else
+                echo "警告: loop 设备验证失败，期望 $OUT_IMG_FILE，实际 $actual_file"
+                losetup -d "$LOOP_DEVICE" 2>/dev/null || true
+                LOOP_DEVICE=""
             fi
-            echo "Warning: Failed to get loop device, retrying in 3 second... ($RETRY_COUNT/$MAX_RETRIES)"
-            sleep 3
-            continue
         fi
 
-        losetup "$LOOP_DEVICE" "$OUT_IMG_FILE"
-        if [ $? -ne 0 ]; then
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-                echo "Error: Failed to setup loop device after $MAX_RETRIES attempts."
-                exit 1
-            fi
-            echo "Warning: Failed to setup $LOOP_DEVICE with $OUT_IMG_FILE, retrying in 1 second... ($RETRY_COUNT/$MAX_RETRIES)"
-            kpartx -dv "$LOOP_DEVICE"
-            losetup -d "$LOOP_DEVICE"
-            sleep 3
-            LOOP_DEVICE="" # 清除无效设备路径
-        fi
+        echo "获取 loop 设备失败，重试 ($((i + 1))/$MAX_RETRIES)..."
+        sleep 2
     done
 
+    if [ -z "$LOOP_DEVICE" ]; then
+        echo "错误: 无法获取可用 loop 设备"
+        exit 1
+    fi
+
+    # 3. 使用 kpartx 扫描分区表（比 losetup -P 更兼容，-P 在某些内核不生效）
     kpartx -av "$LOOP_DEVICE"
+    local LOOP_BASENAME=$(basename "$LOOP_DEVICE")
+    MAPPER_DEVICE1="/dev/mapper/${LOOP_BASENAME}p1"
+    MAPPER_DEVICE2="/dev/mapper/${LOOP_BASENAME}p2"
 
-    # 挂载镜像文件
-    local MAPPER_DEVICE=$(echo "$LOOP_DEVICE" | sed 's/\/dev\///' | sed 's/\//p/')
-    MAPPER_DEVICE1="/dev/mapper/${MAPPER_DEVICE}p1"
-    MAPPER_DEVICE2="/dev/mapper/${MAPPER_DEVICE}p2"
-    echo "MAPPER_DEVICE=${MAPPER_DEVICE}"
+    # 等待分区设备出现
+    for i in {1..10}; do
+        if [ -b "$MAPPER_DEVICE1" ] && [ -b "$MAPPER_DEVICE2" ]; then
+            break
+        fi
+        echo "等待分区设备就绪... ($i/10)"
+        sleep 0.5
+    done
 
+    if [ ! -b "$MAPPER_DEVICE1" ] || [ ! -b "$MAPPER_DEVICE2" ]; then
+        echo "错误: 分区设备未出现 $MAPPER_DEVICE1 $MAPPER_DEVICE2"
+        kpartx -dv "$LOOP_DEVICE" 2>/dev/null || true
+        losetup -d "$LOOP_DEVICE"
+        exit 1
+    fi
+
+    echo "分区设备就绪: $MAPPER_DEVICE1 $MAPPER_DEVICE2"
+
+    # 格式化并挂载
     run_status "format part 1" mkfs.vfat "$MAPPER_DEVICE1"
     run_status "format part 2" mkfs.ext4 "$MAPPER_DEVICE2"
 
@@ -109,18 +123,44 @@ cleanup_image() {
 
     echo "Cleaning up..."
     cd $PATH_PROJECT_DIR
+
+    # 1. 卸载主镜像的分区挂载
     unmount_point "$TMP_mount_disk2/boot"
-    unmount_point "$TMP_ROOTFS_DIR"
     unmount_point "$TMP_mount_disk1"
     unmount_point "$TMP_mount_disk2"
+
+    # 2. 卸载 boot 镜像（阶段1 prepare_staging 挂载的），并释放其 loop 设备
+    if [ -n "$TMP_ROOTFS_DIR" ] && [ "$TMP_ROOTFS_DIR" != "/" ]; then
+        unmount_point "$TMP_ROOTFS_DIR/boot"
+
+        # 查找关联 BootDisk 镜像的 loop 设备并释放
+        while IFS= read -r ld_dev; do
+            [ -z "$ld_dev" ] && continue
+            # 统一格式：去掉可能的前缀 /dev/ 后重新拼接
+            ld_dev="/dev/${ld_dev#/dev/}"
+            echo "Releasing boot image loop device: $ld_dev"
+            losetup -d "$ld_dev" 2>/dev/null || true
+        done < <(losetup -ln -O NAME,BACK-FILE 2>/dev/null \
+            | grep "BootDisk-" \
+            | awk '{print $1}')
+    fi
+
+    # 3. 释放主镜像的 loop 设备（带最大重试次数，避免死循环）
     if [ -n "$LOOP_DEVICE" ]; then
-        if losetup -l >/dev/null 2>&1; then
-            while losetup -l | grep -q "$LOOP_DEVICE"; do
-                echo "Releasing loop device $LOOP_DEVICE"
-                kpartx -dv "$LOOP_DEVICE"
-                losetup -d "$LOOP_DEVICE"
-                sleep 1
-            done
+        local max_release_retries=10
+        for ((i = 0; i < max_release_retries; i++)); do
+            if ! losetup -l 2>/dev/null | grep -q "$LOOP_DEVICE"; then
+                echo "Loop device $LOOP_DEVICE already released"
+                break
+            fi
+            echo "Releasing loop device $LOOP_DEVICE (attempt $((i + 1))/$max_release_retries)"
+            kpartx -dv "$LOOP_DEVICE" 2>/dev/null || true
+            losetup -d "$LOOP_DEVICE" 2>/dev/null && break
+            echo "  -> release failed, retrying in 1s..."
+            sleep 1
+        done
+        if losetup -l 2>/dev/null | grep -q "$LOOP_DEVICE"; then
+            echo "WARNING: Failed to release loop device $LOOP_DEVICE after $max_release_retries attempts"
         fi
     fi
 }
@@ -157,8 +197,8 @@ create_image_from_staging() {
     local TMP_mount_disk1=${12}
     local TMP_mount_disk2=${13}
 
-    # 设置 trap 以便 Ctrl+C 时能正确清理 loop 设备
-    trap 'cleanup_image "$LOOP_DEVICE" "$TMP_ROOTFS_DIR" "$TMP_mount_disk1" "$TMP_mount_disk2" "$PATH_PROJECT_DIR"; exit' SIGINT
+    # 设置 trap 以便异常退出时能正确清理 loop 设备
+    trap 'cleanup_image "$LOOP_DEVICE" "$TMP_ROOTFS_DIR" "$TMP_mount_disk1" "$TMP_mount_disk2" "$PATH_PROJECT_DIR"; exit' SIGINT SIGTERM EXIT
 
     # 计算 rootfs 大小并确定分区尺寸
     local ROOTFS_SIZE=$(du -sm $TMP_ROOTFS_DIR | cut -f1)
@@ -220,7 +260,7 @@ create_image_from_staging() {
     run_as_silent chroot $TMP_mount_disk2 /bin/bash -c "DEBIAN_FRONTEND=noninteractive  update-initramfs -uv -k $kernel_version"
 
     # 清理并重命名输出镜像
-    trap - SIGINT EXIT
+    trap - SIGINT SIGTERM EXIT
     cleanup_image "$LOOP_DEVICE" "$TMP_ROOTFS_DIR" "$TMP_mount_disk1" "$TMP_mount_disk2" "$PATH_PROJECT_DIR"
 
     NEW_IMG_FILE_NAME=$(__get_new_img_file_name "$OUT_IMG_FILE")
