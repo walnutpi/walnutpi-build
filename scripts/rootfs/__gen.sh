@@ -1,10 +1,10 @@
 #!/bin/bash
 
-APT_SOURCES_WALNUTPI_PREFIX="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
-APT_DOMAIN="apt.walnutpi.com"
-DEBIAN_BASE_URL="http://mirrors.tuna.tsinghua.edu.cn/debian/"
-UBUNTU22_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz"
-UBUNTU24_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz"
+readonly APT_SOURCES_WALNUTPI_PREFIX="deb [trusted=yes] http://apt.walnutpi.com/debian/ bookworm main"
+readonly APT_DOMAIN="apt.walnutpi.com"
+readonly DEBIAN_BASE_URL="http://mirrors.tuna.tsinghua.edu.cn/debian/"
+readonly UBUNTU22_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.4-base-arm64.tar.gz"
+readonly UBUNTU24_BASE_URL="https://mirror.tuna.tsinghua.edu.cn/ubuntu-cdimage/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-arm64.tar.gz"
 
 # 参数说明:
 # $1 - base_url: Ubuntu基础镜像的下载URL

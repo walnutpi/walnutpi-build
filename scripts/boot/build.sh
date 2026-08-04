@@ -2,8 +2,12 @@
 # scripts/boot/build.sh — bootloader 构建入口
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PATH_PROJECT_DIR="${ROOT_DIR}"
+if [ -z "${ROOT_DIR}" ]; then
+    ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+fi
+if [ -z "${PATH_PROJECT_DIR}" ]; then
+    PATH_PROJECT_DIR="${ROOT_DIR}"
+fi
 
 source "${ROOT_DIR}/scripts/__common.sh"
 source "${ROOT_DIR}/scripts/__path.sh"
@@ -19,8 +23,7 @@ source "${SCRIPT_DIR}/__pack.sh"
 build_bootloader() {
     local ENTER_board_name=${PATH_board}/${1}
     source $ENTER_board_name/board.conf
-    PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
-    create_dir $PATH_OUTPUT_BOARD
+    create_dir "${PATH_OUTPUT}/${1}"
     if [ ! -z $TOOLCHAIN_DOWN_URL ]; then
 
         USE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
@@ -37,18 +40,17 @@ build_bootloader() {
 
     fi
 
-    if [ -d $OUTDIR_boot_package ]; then
-        rm -r $OUTDIR_boot_package
+    local OUTDIR_boot_package=$(_path_outdir_boot "$1")
+    local OUTFILE_boot_bin=$(_path_outfile_boot "$1")
+    local OUTFILE_boot_bin_1M="${OUTDIR_boot_package}/boot_1M.bin"
+    local OUTFILE_boot_bin_2M="${OUTDIR_boot_package}/boot_2M.bin"
+    local PATH_save_boot_files="${ENTER_board_name}/boot"
+
+    if [ -d "$OUTDIR_boot_package" ]; then
+        rm -r "$OUTDIR_boot_package"
     fi
-    create_dir $OUTDIR_boot_package
-
-    OUTDIR_boot_package=${PATH_OUTPUT_BOARD}/boot
-    OUTFILE_boot_bin=${OUTDIR_boot_package}/boot.bin
-    OUTFILE_boot_bin_1M=${OUTDIR_boot_package}/boot_1M.bin
-    OUTFILE_boot_bin_2M=${OUTDIR_boot_package}/boot_2M.bin
-    PATH_save_boot_files="${ENTER_board_name}/boot"
-
-    mkdir -p $OUTDIR_boot_package
+    create_dir "$OUTDIR_boot_package"
+    mkdir -p "$OUTDIR_boot_package"
 
     if [ -n "$UBOOT_CONFIG" ]; then
         if [ -n "$ATF_GIT" ]; then

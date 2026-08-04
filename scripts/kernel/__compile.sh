@@ -22,6 +22,8 @@ compile_kernel() {
     cd $SOURCE_kernel
     if [ ! -f .scmversion ]; then
         touch .scmversion
+        # 删除旧的 kernel.release，强制 make 用新 .scmversion 重新计算版本号
+        rm -f include/config/kernel.release
     fi
     make $LINUX_CONFIG CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}
     make -j$(nproc) CROSS_COMPILE=$USE_CROSS_COMPILE ARCH=${CHIP_ARCH}

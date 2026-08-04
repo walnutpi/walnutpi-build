@@ -6,10 +6,6 @@ source "${PATH_SCRIPT}/__option.sh"
 source "${PATH_SCRIPT}/__menu.sh"
 source "${PATH_SCRIPT}/__path.sh"
 
-reload_env() {
-    source "${PATH_SCRIPT}/__path.sh"
-}
-
 ENTER_board_name=$OPT_user_no_choose
 ENTER_boot_rebuild_flag=$OPT_user_no_choose
 ENTER_kernel_rebuild_flag=$OPT_user_no_choose
@@ -86,7 +82,6 @@ while [ "x$#" != "x0" ]; do
 done
 
 # 获取用户输入
-reload_env
 if [ $ENTER_board_name == $OPT_user_no_choose ]; then
     ENTER_board_name=$(MENU_choose_board $PATH_board)
     [[ -z ${ENTER_board_name} ]] && exit
@@ -109,12 +104,12 @@ if [ $ENTER_rootfs_type == $OPT_user_no_choose ]; then
 fi
 
 source ${PATH_board}/$ENTER_board_name/board.conf
-PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name}
-echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
-create_dir $PATH_OUTPUT_BOARD
-reload_env
+create_dir "${PATH_OUTPUT}/${ENTER_board_name}"
 
-if [ -d ${OUTDIR_boot_package} ]; then
+local OUTDIR_boot_package=$(_path_outdir_boot "$ENTER_board_name")
+local OUTDIR_kernel_package=$(_path_outdir_kernel "$ENTER_board_name")
+
+if [ -d "$OUTDIR_boot_package" ]; then
     if [ "$ENTER_boot_rebuild_flag" == $OPT_user_no_choose ]; then
         ENTER_boot_rebuild_flag=$(MENU_sikp_boot)
         [[ -z ${ENTER_boot_rebuild_flag} ]] && exit
@@ -135,25 +130,7 @@ if [ ! -d ${FLAG_DIR_NO_FIRST} ]; then
     mkdir -p ${FLAG_DIR_NO_FIRST}
 fi
 
-if [ ! -z $TOOLCHAIN_DOWN_URL ]; then
-
-    USE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
-    if [ ! -f "${USE_CROSS_COMPILE}gcc" ]; then
-        TOOLCHAIN_FILE_NAME=$(basename "$TOOLCHAIN_DOWN_URL")
-        wget -P ${PATH_TOOLCHAIN} $TOOLCHAIN_DOWN_URL
-        run_status "unzip toolchain" tar -zxvf ${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME} -C $PATH_TOOLCHAIN
-    fi
-else
-    if [ ! -f /usr/bin/${CROSS_COMPILE}gcc ]; then
-        apt install ${TOOLCHAIN_NAME_IN_APT}
-    fi
-    USE_CROSS_COMPILE="${CROSS_COMPILE}"
-
-fi
-
-
 # 执行
-reload_env
 if [ ${ENTER_boot_rebuild_flag} == "$OPT_user_no_choose" ] || [ ${ENTER_boot_rebuild_flag} == "$OPT_YES" ]; then
     source "${PATH_SCRIPT}/boot/build.sh" $ENTER_board_name
 fi
@@ -161,7 +138,7 @@ if [ ${ENTER_kernel_rebuild_flag} == "$OPT_user_no_choose" ] || [ ${ENTER_kernel
     source "${PATH_SCRIPT}/kernel/build.sh" $ENTER_board_name
 fi
 source "${PATH_SCRIPT}/rootfs/build.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type
-source "${PATH_PROJECT_DIR}/pack-all.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type $ENTER_img_file
+source "${PATH_SCRIPT}/image/build.sh" $ENTER_board_name $ENTER_os_ver $ENTER_rootfs_type $ENTER_img_file
 
 
 

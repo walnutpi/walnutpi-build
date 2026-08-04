@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# kernel/deb 目录路径（原 __path.sh 中的 PATH_KERNEL_ASSET，仅本文件使用）
+readonly KERNEL_DEB_DIR="${PATH_PROJECT_DIR}/scripts/kernel/deb"
+
 # 生成临时包目录
 # 参数说明:
 # $1 - name: 包名称
@@ -113,7 +116,11 @@ pack_kernel_Image() {
     fi
     run_status "export Image" cp "${SOURCE_kernel}/arch/${CHIP_ARCH}/boot/Image" "$path_tmp_boot"
 
-    _gen_postinst_cp_file "$TMP_KERNEL_DEB" "$path_board_tmp_boot" /boot/
+    if [ ! -d "$TMP_KERNEL_DEB/DEBIAN" ]; then
+        mkdir -p "$TMP_KERNEL_DEB/DEBIAN"
+    fi
+    cp "${KERNEL_DEB_DIR}/image-postinst.sh" "$TMP_KERNEL_DEB/DEBIAN/postinst"
+    chmod 755 "$TMP_KERNEL_DEB/DEBIAN/postinst"
     
     _pack_as_kernel_deb "$TMP_KERNEL_DEB" "$part_name" "linux kernel image file" \
         "$BOARD_NAME" "$LINUX_BRANCH" "$CHIP_ARCH" "$PATH_PROJECT_DIR" "$SOURCE_kernel" "$OUTDIR_kernel_package"
@@ -158,10 +165,13 @@ pack_kernel_dtb() {
     cp -r "${folder_name}"* "$path_tmp_boot"
     rm -r "$folder_name"
 
-    _gen_postinst_cp_file "$TMP_KERNEL_DEB" "$path_board_tmp_boot" /boot/
-    _gen_prerm_rm_file "$TMP_KERNEL_DEB" "$path_board_tmp_boot" "/boot/"
-    echo "set-device" >>"$TMP_KERNEL_DEB/DEBIAN/postinst"
-    echo "echo \"ok\"" >>"$TMP_KERNEL_DEB/DEBIAN/postinst"
+    if [ ! -d "$TMP_KERNEL_DEB/DEBIAN" ]; then
+        mkdir -p "$TMP_KERNEL_DEB/DEBIAN"
+    fi
+    cp "${KERNEL_DEB_DIR}/dtb-postinst.sh" "$TMP_KERNEL_DEB/DEBIAN/postinst"
+    chmod 755 "$TMP_KERNEL_DEB/DEBIAN/postinst"
+    cp "${KERNEL_DEB_DIR}/dtb-prerm.sh" "$TMP_KERNEL_DEB/DEBIAN/prerm"
+    chmod 755 "$TMP_KERNEL_DEB/DEBIAN/prerm"
     _pack_as_kernel_deb "$TMP_KERNEL_DEB" "$part_name" "linux kernel dtb files" \
         "$BOARD_NAME" "$LINUX_BRANCH" "$CHIP_ARCH" "$PATH_PROJECT_DIR" "$SOURCE_kernel" "$OUTDIR_kernel_package"
 }

@@ -1,13 +1,20 @@
 #!/bin/bash
-# 获取文件所在路径
+# scripts/image/build.sh — 镜像组装入口
 
-PATH_PROJECT_DIR="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/scripts/__common.sh"
-source "${SCRIPT_DIR}/scripts/__path.sh"
-source "${SCRIPT_DIR}/scripts/__option.sh"
-source "${SCRIPT_DIR}/scripts/__menu.sh"
-source "${SCRIPT_DIR}/scripts/image/__make.sh"
+if [ -z "${ROOT_DIR}" ]; then
+    ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+fi
+if [ -z "${PATH_PROJECT_DIR}" ]; then
+    PATH_PROJECT_DIR="${ROOT_DIR}"
+fi
+
+source "${ROOT_DIR}/scripts/__common.sh"
+source "${ROOT_DIR}/scripts/__path.sh"
+source "${ROOT_DIR}/scripts/__option.sh"
+source "${ROOT_DIR}/scripts/__menu.sh"
+
+source "${SCRIPT_DIR}/__make.sh"
 
 # $1 为板级配置文件夹的路径
 # $2 为系统版本
@@ -20,9 +27,17 @@ main() {
     local ENTER_img_file=$4
 
     source $ENTER_board_name/board.conf
-    PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
-    source "${SCRIPT_DIR}/scripts/__path.sh"
-    pack_all_img "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar" "$PATH_SOURCE" "$BOARD_MODEL" "$FILE_apt_del" "$ENTER_os_ver" "$ENTER_rootfs_type" "$IMAGE_FLAG_NO_SCREEN_DISPLAY" "$BOOTLOADER_NAME" "$(dirname $OUTFILE_boot_bin)" "$LINUX_GIT" "$LINUX_BRANCH" "$PATH_PROJECT_DIR" "$ENTER_img_file"
+
+    local OUTDIR_boot_package=$(_path_outdir_boot "$1")
+    local OUTDIR_kernel_package=$(_path_outdir_kernel "$1")
+    local OUTFILE_rootfs_tar=$(_path_outfile_rootfs_tar "$1" "$ENTER_os_ver" "$ENTER_rootfs_type")
+    local FILE_apt_del=$(_path_file_apt_del "$1" "$ENTER_os_ver")
+
+    pack_all_img \
+        "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar" \
+        "$PATH_SOURCE" "$BOARD_MODEL" "$FILE_apt_del" "$ENTER_os_ver" "$ENTER_rootfs_type" \
+        "$IMAGE_FLAG_NO_SCREEN_DISPLAY" "$BOOTLOADER_NAME" "$OUTDIR_boot_package" \
+        "$LINUX_GIT" "$LINUX_BRANCH" "$PATH_PROJECT_DIR" "$ENTER_img_file"
 }
 
 # 如果传入参数个数小于3个,则弹出选择窗口

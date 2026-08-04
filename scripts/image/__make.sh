@@ -1,23 +1,27 @@
 #!/bin/bash
 
-IMAGE_FLAG_NO_SCREEN_DISPLAY=$OPT_NO
-IMAGE_FLAG_DISK_RAED_ONLY=$OPT_NO
+readonly IMAGE_FLAG_NO_SCREEN_DISPLAY=$OPT_NO
+readonly IMAGE_FLAG_DISK_RAED_ONLY=$OPT_NO
 
-PART1_SIZE=150
-PART2_SIZE=0
+readonly PART1_SIZE=150
+readonly PART2_SIZE=0
 
 # 检查所需文件是不是都生成了
 check_resource() {
+    local OUTDIR_boot_package=$1
+    local OUTDIR_kernel_package=$2
+    local OUTFILE_rootfs_tar=$3
+
     if [ ! -d "$OUTDIR_boot_package" ]; then
-        echo $OUTDIR_boot_package "no exist"
+        echo "$OUTDIR_boot_package no exist"
         exit
     fi
     if [ ! -d "$OUTDIR_kernel_package" ]; then
-        echo $OUTDIR_kernel_package "no exist"
+        echo "$OUTDIR_kernel_package no exist"
         exit
     fi
     if [ ! -f "$OUTFILE_rootfs_tar" ]; then
-        echo $OUTFILE_rootfs_tar "no exist"
+        echo "$OUTFILE_rootfs_tar no exist"
         exit
     fi
 }
@@ -223,7 +227,7 @@ pack_all_img() {
     }
 
     trap 'cleanup "$LOOP_DEVICE"; exit' SIGINT
-    check_resource
+    check_resource "$OUTDIR_boot_package" "$OUTDIR_kernel_package" "$OUTFILE_rootfs_tar"
 
     __create_tmp_dir "$TMP_ROOTFS_DIR" "$TMP_mount_disk1" "$TMP_mount_disk2"
     __create_tmp_img_boot "$TMP_IMG_BOOT" "$PART1_SIZE"

@@ -2,8 +2,12 @@
 # scripts/rootfs/build.sh — rootfs 构建入口
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PATH_PROJECT_DIR="${ROOT_DIR}"
+if [ -z "${ROOT_DIR}" ]; then
+    ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+fi
+if [ -z "${PATH_PROJECT_DIR}" ]; then
+    PATH_PROJECT_DIR="${ROOT_DIR}"
+fi
 
 source "${ROOT_DIR}/scripts/__common.sh"
 source "${ROOT_DIR}/scripts/__path.sh"
@@ -27,21 +31,20 @@ main() {
     echo "rootfs_type: $ENTER_rootfs_type"
 
     source $ENTER_board_name/board.conf
-    PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
 
-    OUTFILE_rootfs_tar="${PATH_OUTPUT_BOARD}/rootfs_${ENTER_os_ver}_${ENTER_rootfs_type}.tar.gz"
-    TMP_rootfs_build=${PATH_TMP}/rootfs-build/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}
-    FILE_base_rootfs=${PATH_TMP}/rootfs-save/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}_base_software.tar
-    create_dir ${PATH_TMP}/rootfs-build
-    create_dir ${PATH_TMP}/rootfs-save
+    local OUTFILE_rootfs_tar=$(_path_outfile_rootfs_tar "$1" "$ENTER_os_ver" "$ENTER_rootfs_type")
+    local TMP_rootfs_build=$(_path_tmp_rootfs_build "$BOARD_MODEL" "$ENTER_os_ver" "$ENTER_rootfs_type")
+    local FILE_base_rootfs="${PATH_TMP}/rootfs-save/${BOARD_MODEL}_${ENTER_os_ver}_${ENTER_rootfs_type}_base_software.tar"
+    create_dir "${PATH_TMP}/rootfs-build"
+    create_dir "${PATH_TMP}/rootfs-save"
 
-    FILE_apt_base="${ENTER_board_name}/${ENTER_os_ver}/apt-base"
-    FILE_apt_del="${ENTER_board_name}/${ENTER_os_ver}/apt-del"
-    FILE_apt_desktop="${ENTER_board_name}/${ENTER_os_ver}/apt-desktop"
-    FILE_apt_base_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-base"
-    FILE_apt_desktop_board="${ENTER_board_name}/${ENTER_os_ver}/wpi-desktop"
-    FILE_pip_list="${ENTER_board_name}/${ENTER_os_ver}/pip"
-    PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
+    local FILE_apt_base=$(_path_file_apt_base "$1" "$ENTER_os_ver")
+    local FILE_apt_del=$(_path_file_apt_del "$1" "$ENTER_os_ver")
+    local FILE_apt_desktop=$(_path_file_apt_desktop "$1" "$ENTER_os_ver")
+    local FILE_apt_base_board=$(_path_file_apt_wpi_base "$1" "$ENTER_os_ver")
+    local FILE_apt_desktop_board=$(_path_file_apt_wpi_desk "$1" "$ENTER_os_ver")
+    local FILE_pip_list=$(_path_file_pip_list "$1" "$ENTER_os_ver")
+    local PLACE_sf_list="${TMP_rootfs_build}/etc/release-apt"
 
     gen_rootfs $TMP_rootfs_build $FILE_base_rootfs $ENTER_os_ver $FILE_apt_base $FILE_apt_desktop $ENTER_rootfs_type $PLACE_sf_list $PATH_SOURCE $FIRMWARE_GIT $FILE_pip_list $FILE_apt_base_board $FILE_apt_desktop_board $BOARD_MODEL "$MODULES_ENABLE" ${CHIP_ARCH}
     pack_rootfs_tar $TMP_rootfs_build $OUTFILE_rootfs_tar

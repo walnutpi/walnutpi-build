@@ -183,62 +183,9 @@ replace_in_file() {
     exit_if_last_error "替换字符串失败: $search_string -> $replace_string 在文件 $file_path"
 }
 
-# 生成deb包需要的postinst文件，功能是在安装时复制指定的文件到指定路径
-_gen_postinst_cp_file() {
-    local path_package=$1
-    local source_path=$2
-    local target_path=$3
-    postinst_file=$path_package/DEBIAN/postinst
-    if [ ! -d $path_package/DEBIAN ]; then
-        mkdir $path_package/DEBIAN
-    fi
-    cat <<EOF >$postinst_file
-#!/bin/sh
-set -e
-case "\$1" in
-    configure)
-        old_version="\$2"
-        new_version="\$3"
-        echo "Updating from version $old_version to version $new_version"
-
-        cp -r $source_path/* $target_path
-
-        ;;
-    abort-upgrade|abort-remove|abort-deconfigure)
-        # 回滚操作
-        ;;
-    *)
-        exit 1
-        ;;
-esac
-
-EOF
-    chmod 755 $postinst_file
-}
-_gen_prerm_rm_file(){
-    local path_package=$1
-    local path_source=$2
-    local path_target=$3
-    prerm_file=$path_package/DEBIAN/prerm
-    
-    cat <<EOF >$prerm_file
-#!/bin/sh
-if [ -d "$path_source" ] && [ -d "$path_target" ]; then
-    cd "$path_source" || exit 1
-    find . -type f | while read relpath; do
-        relpath=\${relpath#./}
-        target_path="$path_target/\$relpath"
-        # 只删除文件，不删除目录
-        if [ -f "\$target_path" ]; then
-            rm -f "\$target_path"
-        fi
-    done
-    cd - >/dev/null 2>&1
-fi
-EOF
-    chmod 755 $prerm_file
-}
-# 获取linux版本号，如5.15.147 6.1.9
+# 获取linux版本号，如5.15.147 6.1.9 6.6.36-g4c2753247479
+# 优先读取构建产物 include/config/kernel.release（与实际 make 输出一致），
+# 未构建时回退到 Makefile 解析。
 # 参数说明:
 # $1 - src_dir: Linux 源码项目的位置
 get_linux_version() {
@@ -247,6 +194,13 @@ get_linux_version() {
     if [[ ! -d "$src_dir" ]]; then
         echo "目录不存在: $src_dir"
         return 1
+    fi
+
+    # 优先使用构建产物中的版本号（包含 CONFIG_LOCALVERSION / CONFIG_LOCALVERSION_AUTO 等动态后缀）
+    local kernel_release_file="$src_dir/include/config/kernel.release"
+    if [[ -f "$kernel_release_file" ]]; then
+        cat "$kernel_release_file"
+        return
     fi
 
     local makefile="$src_dir/Makefile"
@@ -283,5 +237,4 @@ safe_remove_tmp_dir() {
         return 0
     fi
 }
-
 

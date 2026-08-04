@@ -1,5 +1,6 @@
 #!/bin/bash
-# 获取文件所在路径
+
+readonly BOOT_DEB_DIR="${PATH_PROJECT_DIR}/scripts/boot/deb"
 
 _pack_as_boot_deb(){
     local path_package=$1
@@ -69,7 +70,7 @@ pack_config_txt() {
         mkdir $path_tmp_package_configtxt/DEBIAN
     fi
     
-    cp ${PATH_ASSET}/config-txt-postinst.sh $postinst_file
+    cp ${BOOT_DEB_DIR}/config-txt-postinst.sh $postinst_file
     chmod 755 $postinst_file
     
     source ${ENTER_board_name}/config.txt
@@ -118,7 +119,7 @@ pack_boot_bin() {
     local postinst_file=$path_tmp_package_configtxt/DEBIAN/postinst
     mkdir -p $path_tmp_package_configtxt/DEBIAN
     
-    cp ${PATH_ASSET}/boot-postinst.sh $postinst_file
+    cp ${BOOT_DEB_DIR}/boot-postinst.sh $postinst_file
     chmod 755 $postinst_file
     
     # 从config.txt中读取BOARD_NAME, SYTERKIT_BRANCH, UBOOT_BRANCH

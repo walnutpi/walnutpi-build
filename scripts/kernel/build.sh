@@ -2,8 +2,12 @@
 # scripts/kernel/build.sh — kernel 构建入口
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PATH_PROJECT_DIR="${ROOT_DIR}"
+if [ -z "${ROOT_DIR}" ]; then
+    ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+fi
+if [ -z "${PATH_PROJECT_DIR}" ]; then
+    PATH_PROJECT_DIR="${ROOT_DIR}"
+fi
 
 source "${ROOT_DIR}/scripts/__common.sh"
 source "${ROOT_DIR}/scripts/__path.sh"
@@ -18,10 +22,8 @@ source "${SCRIPT_DIR}/__pack.sh"
 main() {
     local ENTER_board_name=${PATH_board}/${1}
     source $ENTER_board_name/board.conf
-    PATH_OUTPUT_BOARD=${PATH_OUTPUT}/${ENTER_board_name##*/}
-    echo "PATH_OUTPUT_BOARD=${PATH_OUTPUT_BOARD}"
 
-    create_dir $PATH_OUTPUT_BOARD
+    create_dir "${PATH_OUTPUT}/${1}"
     if [ ! -z $TOOLCHAIN_DOWN_URL ]; then
         USE_CROSS_COMPILE="${PATH_TOOLCHAIN}/${TOOLCHAIN_FILE_NAME}/bin/${CROSS_COMPILE}"
         if [ ! -f "${USE_CROSS_COMPILE}gcc" ]; then
@@ -52,11 +54,11 @@ main() {
     if [ "x$BR2_PACKAGE_AIC8800_SDIO" == "xy" ]; then
         ${ROOT_DIR}/scripts/package/BR2_PACKAGE_AIC8800_SDIO.sh "${PATH_SOURCE}" "$SOURCE_kernel" "$USE_CROSS_COMPILE" "$CHIP_ARCH"
     fi
-    OUTDIR_kernel_package=${PATH_OUTPUT_BOARD}/kernel
-    if [ -d $OUTDIR_kernel_package ]; then
-        rm -r $OUTDIR_kernel_package
+    local OUTDIR_kernel_package=$(_path_outdir_kernel "$1")
+    if [ -d "$OUTDIR_kernel_package" ]; then
+        rm -r "$OUTDIR_kernel_package"
     fi
-    create_dir $OUTDIR_kernel_package
+    create_dir "$OUTDIR_kernel_package"
     pack_kernel_Image $ROOT_DIR $SOURCE_kernel $CHIP_ARCH $PATH_TMP $LINUX_CONFIG $LINUX_BRANCH $BOARD_NAME $OUTDIR_kernel_package
     pack_kernel_dtb $ROOT_DIR $SOURCE_kernel $CHIP_ARCH $PATH_TMP $LINUX_CONFIG $LINUX_BRANCH $BOARD_NAME $OUTDIR_kernel_package
     pack_kernel_modules $ROOT_DIR $SOURCE_kernel $CHIP_ARCH $PATH_TMP $LINUX_CONFIG $LINUX_BRANCH $BOARD_NAME $OUTDIR_kernel_package
