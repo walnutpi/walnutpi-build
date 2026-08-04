@@ -330,50 +330,23 @@ generate_kernel_headers() {
     # copy .config manually to be where it's expected to be
     create_dir "$tmpdir/DEBIAN"
     [[ ! -f $tmpdir/DEBIAN/postinst ]] && touch "$tmpdir/DEBIAN/postinst"
-    local relseas_file="/etc/WalnutPi-release"
 
-    cat <<EOF >"$tmpdir/DEBIAN/postinst"
-#!/bin/bash
-cd /usr/src/linux-headers-$version
-
-echo "Compiling headers - please wait ..."
-yes "" | make ARCH=$arch clean
-NCPU=\$(grep -c 'processor' /proc/cpuinfo)
-find -type f -exec touch {} +
-yes "" | make ARCH=$arch oldconfig
-make -j\$NCPU ARCH=$arch -s scripts
-make -j\$NCPU ARCH=$arch -s M=scripts/mod/
-echo "Compiling end"
-
-function replace_or_append() {
-    local file_path="$relseas_file"
-    local search_string="\$1"
-    local replace_string="\$2"
-
-    if grep -q "^\$search_string" "\$file_path"; then
-        sed -i "/^\$search_string/c\\\\\$replace_string" "\$file_path"
-    else
-        echo "\$replace_string" >> "\$file_path"
-    fi
-}
-replace_or_append "kernel_git" "kernel_git=$LINUX_GIT"
-replace_or_append "kernel_branch" "kernel_branch=$LINUX_BRANCH"
-replace_or_append "kernel_config" "kernel_config=$LINUX_CONFIG"
-replace_or_append "toolchain" "toolchain=$TOOLCHAIN_FILE_NAME$TOOLCHAIN_NAME_IN_APT"
-
-update-initramfs -uv -k $version
-
-EOF
+    # expand headers-postinst template with build-time variables
+    sed \
+        -e "s|\${version}|$version|g" \
+        -e "s|\${arch}|$arch|g" \
+        -e "s|\${LINUX_GIT}|$LINUX_GIT|g" \
+        -e "s|\${LINUX_BRANCH}|$LINUX_BRANCH|g" \
+        -e "s|\${LINUX_CONFIG}|$LINUX_CONFIG|g" \
+        -e "s|\${TOOLCHAIN_FILE_NAME}|$TOOLCHAIN_FILE_NAME|g" \
+        -e "s|\${TOOLCHAIN_NAME_IN_APT}|$TOOLCHAIN_NAME_IN_APT|g" \
+        "${KERNEL_DEB_DIR}/headers-postinst.sh" \
+        >"$tmpdir/DEBIAN/postinst"
     chmod +x "$tmpdir/DEBIAN/postinst"
 
-    cat <<EOF >"$tmpdir/DEBIAN/postrm"
-#!/bin/bash
-if [ "\$1" = "remove" ]  ; then
-    if [ -d /usr/src/linux-headers-$version ]; then
-        rm -r /usr/src/linux-headers-$version
-    fi
-fi
-EOF
+    sed "s|\${version}|$version|g" \
+        "${KERNEL_DEB_DIR}/headers-postrm.sh" \
+        >"$tmpdir/DEBIAN/postrm"
     chmod +x "$tmpdir/DEBIAN/postrm"
 
     cp .config "$destdir/.config"
