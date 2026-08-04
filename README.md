@@ -40,12 +40,13 @@ sudo ./build.sh
 | walnutpi-2b | debian12 | desktop |
 | Cybercam | debian12 | server |
 
-## 单独编译
-提供如下脚本可以单独编译某些部件
-- ./scripts/boot/build.sh , 单独编译boot，结果输出到 **output/板名/boot/** 路径下
-- ./scripts/kernel/build.sh , 单独编译kernel，结果输出到 **output/板名/kernel/** 路径下
-- ./scripts/rootfs/build.sh , 单独编译rootfs，结果输出到 **output/板名/** 路径下
-- pack-all.sh , 将 **output/板名/** 路径下的输出结果打包成镜像
+## 单独构建某个组件
+| 脚本名称 | 功能 | 输出路径 |
+| -------- | -------- | -------- |
+| ./scripts/boot/build.sh | 单独编译boot | output/板名/boot/ 路径下生成 boot.bin bootbin-xxx.deb,configtxt-xxx.deb |
+| ./scripts/kernel/build.sh | 单独编译kernel | output/板名/kernel/ kernel-dtb-xxx.deb, kernel-modules-xxx.deb kernel-image-xxx.deb kernel-headers-xxx.deb |
+| ./scripts/rootfs/build.sh | 单独编译rootfs | output/板名/ rootfs-xxx.tar.gz|
+| scripts/image/build.sh | 将output/板名/下的输出结果打包成镜像 | output/xxx.img|
 
 
 ## 修改配置
