@@ -5,3 +5,4 @@ watchdog
 python-periphery
 sounddevice
 soundfile
+requests
