@@ -20,6 +20,8 @@ compile_kernel() {
     fi
     
     cd $SOURCE_kernel
+    # 传入空 LOCALVERSION，屏蔽 scripts/setlocalversion 的 scm 后缀（-g<hash>/-dirty/+）
+    export LOCALVERSION=
     if [ ! -f .scmversion ]; then
         touch .scmversion
         # 删除旧的 kernel.release，强制 make 用新 .scmversion 重新计算版本号
