@@ -1,9 +1,12 @@
-version=1.2
+version=1.3
 
 ##  config screen
 screen=hdmi
 
 fdtfile=sun55i-t527-walnutpi-2b
+
+## RTC Battery Charge (2.9V)
+rtc_charge=disable
 
 ##  enable the console with screen
 console_display=enable
